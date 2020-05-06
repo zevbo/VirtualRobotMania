@@ -1,6 +1,10 @@
 #lang racket
 (require 2htdp/image)
-(provide create-robot-img)
+(provide create-robot-img
+         ROBOT_WIDTH ROBOT_LENGTH
+         OPTIONAL_DEFAULT)
+
+(define ROBOT_WIDTH 55.0)
 
 (define (rounded-rectangle width height pen-type color rounded-radius)
   (define (add-edge body st-bot? st-right?)
@@ -35,29 +39,32 @@
        outline)
       outline))
               
-  
+(define OPTIONAL_DEFAULT 'DEFAULT) ;; signals to choose what would be the default
+(define-syntax-rule (->default! var default) ;; Needs better name
+  (cond
+    [(equal? var OPTIONAL_DEFAULT) (set! var default)]))
 
-(define ROBOT_WIDTH 300.0)
 (define ROBOT_L/W 1.5)
 (define ROBOT_LENGTH (* ROBOT_WIDTH ROBOT_L/W))
 (define WHEEL_RADIUS (* ROBOT_WIDTH .16))
 (define WHEEL_DISTANCE_CONSTANT 0.6)
 (define WHEEL_WIDTH_CONSTANT 0.8)
-(define CORNER_RADIUS (/ ROBOT_WIDTH 10))
+(define CORNER_RADIUS (floor (/ ROBOT_WIDTH 10)))
 (define IDEAL_IMAGE_WIDTH  (/ ROBOT_WIDTH 2))
 (define IDEAL_IMAGE_HEIGHT (/ ROBOT_LENGTH 2))
+(define VERTICAL_IMAGE_PLACEMENT -0.2) ;; percentage up from center
 (define MAX_IMAGE_WIDTH  ROBOT_WIDTH)
 (define MAX_IMAGE_HEIGHT (* ROBOT_LENGTH 0.65))
-(define NAME_PLACEMENT 0.65) ;; percentage up from center
-(define NAME_FONT_SIZE (floor (/ ROBOT_WIDTH 14.0)))
+(define NAME_PLACEMENT 0.5) ;; percentage up from center
+(define NAME_FONT_SIZE (floor (/ ROBOT_WIDTH 8.0)))
 (define DEFAULT_NAME_FONT "modern")
 (define DEFAULT_NAME_COLOR "black")
 (define DEFAULT_NAME_STYLE 'normal)
-(define MAX_NAME_WIDTH (* ROBOT_WIDTH .75))
-
+(define MAX_NAME_WIDTH (* ROBOT_WIDTH .85))
+(define NO_IMAGE "N/A")
 (define (add-image robot image-url)
   (cond
-    [(equal? image-url "N/A") robot]
+    [(equal? image-url NO_IMAGE) robot]
     [else
      (begin
        (define img (bitmap/url image-url))
@@ -66,10 +73,11 @@
        (define ideal-c (/ (+ ideal-width-c ideal-height-c) 2))
        (define worst-width-c  (/ MAX_IMAGE_WIDTH  (image-width img)))
        (define worst-height-c (/ MAX_IMAGE_HEIGHT (image-width img)))
-       (overlay
+       (overlay/offset
         (scale
          (min worst-width-c worst-height-c ideal-c)
          img)
+        0 (* VERTICAL_IMAGE_PLACEMENT ROBOT_LENGTH)
         robot))]))
 
 (define (multiply-str str n)
@@ -147,10 +155,14 @@
    robot))
 
 (define (create-robot-img body-color wheel-color robot-name
-                      #:custom-font [font DEFAULT_NAME_FONT]
-                      #:custom-name-color [color DEFAULT_NAME_COLOR]
-                      #:custom-name-style [style DEFAULT_NAME_STYLE]
-                      #:image-url [image-url "N/A"])
+                      #:custom-name-font [font OPTIONAL_DEFAULT]
+                      #:custom-name-color [color OPTIONAL_DEFAULT]
+                      #:custom-name-style [style OPTIONAL_DEFAULT]
+                      #:image-url [image-url OPTIONAL_DEFAULT])
+  (->default! font DEFAULT_NAME_FONT)
+  (->default! color DEFAULT_NAME_COLOR)
+  (->default! style DEFAULT_NAME_STYLE)
+  (->default! image-url NO_IMAGE)
   (define (add-wheel body bottom? right?)
     (underlay/offset
      (circle WHEEL_RADIUS "solid" wheel-color)
@@ -173,14 +185,16 @@
        #t #f)
       #f #t)
      #f #f))
-  (add-name
-   (add-image robot image-url)
-   robot-name color font style))
+   (rotate
+    -90
+    (add-name
+     (add-image robot image-url)
+     robot-name color font style)))
 
-#|
-Examle:
+#| 
+;Examle:
 (create-robot-img "magenta" "navy" "THE PELOSI MO-BEEL"
               #:custom-name-color "white"
               #:image-url "https://upload.wikimedia.org/wikipedia/commons/a/a5/Official_photo_of_Speaker_Nancy_Pelosi_in_2019.jpg")
 
-|#
+;|#
