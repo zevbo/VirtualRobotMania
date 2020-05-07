@@ -4,7 +4,7 @@
          ROBOT_WIDTH ROBOT_LENGTH
          OPTIONAL_DEFAULT)
 
-(define ROBOT_WIDTH 55.0)
+(define ROBOT_WIDTH 60.0)
 
 (define (rounded-rectangle width height pen-type color rounded-radius)
   (define (add-edge body st-bot? st-right?)

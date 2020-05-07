@@ -2,12 +2,13 @@
 (require "basicWorldVisualization.rkt")
 (require "baseWorldLogic.rkt")
 (require "robotVisualization.rkt")
-(require "geo.rkt")
+(require "helpers/geo.rkt")
 (require (prefix-in R- "robot.rkt"))
 (provide make-robot set-world
          run
          set-motors! change-motor-inputs
-         get-left% get-right%)
+         get-left% get-right% get-robot-angle
+         get-lookahead-dist get-lookbehind-dist)
 
 (struct world:primo (canvas robot))
 (define global-world (void))
@@ -17,8 +18,8 @@
 
 (define DEFAULT_BODY_COLOR "grey")
 (define DEFAULT_WHEEL_COLOR "black")
-(define WORLD_WIDTH 1000)
-(define WORLD_HEIGHT 700)
+(define WORLD_WIDTH 800)
+(define WORLD_HEIGHT 500)
 
 (define (make-robot name
                     #:image-url  [image-url  OPTIONAL_DEFAULT]
@@ -41,7 +42,7 @@
 (create-run-function
  run
  (lambda (world)
-   (move-bot (world:primo-robot world) 2)
+   (move-bot (world:primo-robot world) 1)
    (display-robot
     (world:primo-canvas world)
     (world:primo-robot world))) [] [])
@@ -53,27 +54,29 @@
 (define (change-motor-inputs Δleft% Δright%)
   (set-motors! (+ (get-left%) Δleft%) (+ (get-right%) Δright%)))
 (define (get-robot-angle)
-  (R-robot-angle (world:primo-robot global-world)))
+  (R-robot-angle (get-robot)))
 (define (get-dists)
-  (define bot (world:primo-robot global-world))
+  (define bot (get-robot))
   (define pos (R-robot-point bot))
   (define angle (R-robot-angle bot))
-  (define vision-line
-    (point-angle-form pos angle))
+  (define vision-line (point-angle-form pos angle))
   (define tr (point (/ WORLD_WIDTH  2) (/ WORLD_HEIGHT  2)))
   (define br (point (/ WORLD_WIDTH  2) (/ WORLD_HEIGHT -2)))
   (define tl (point (/ WORLD_WIDTH -2) (/ WORLD_HEIGHT  2)))
   (define bl (point (/ WORLD_WIDTH -2) (/ WORLD_HEIGHT -2)))
-  (define intTop   (intersection vision-line (line tr tl)))
-  (define intRight (intersection vision-line (line br tr)))
-  (define intBot   (intersection vision-line (line bl br)))
-  (define intLeft  (intersection vision-line (line tl bl)))
+  (define hor? (= (sin (R-robot-angle bot)) 0))
+  (define ver? (= (cos (R-robot-angle bot)) 0))
+  (define inf-p (point +inf.0 +inf.0))
+  (define intTop   (if hor? inf-p (intersection vision-line (line tr tl))))
+  (define intRight (if ver? inf-p (intersection vision-line (line br tr))))
+  (define intBot   (if hor? inf-p (intersection vision-line (line bl br))))
+  (define intLeft  (if ver? inf-p (intersection vision-line (line tl bl))))
   (define-values (forHor backHor)
     (if (> (cos angle) 0)
         (values intRight intLeft)
         (values intLeft intRight)))
   (define-values (forVert backVert)
-    (if (> (cos angle) 0)
+    (if (> (sin angle) 0)
         (values intTop intBot)
         (values intBot intTop)))
   (cons
@@ -84,19 +87,15 @@
 
 ;; EXample
 (define my-bot (make-robot "simplo"))
-(define my-world (set-world my-bot))
-(R-set-robot-angle! my-bot 45)
-(define (on-tick)
-  (change-motor-inputs
-   my-bot
-   (/ (- (random) 0.4) 15)
-   (/ (- (random) 0.4) 15))
+(set-world my-bot)
+(define (on-tick tick#)
   (cond
-    [(< (get-lookahead-dist) 150)
-     ;(printf "ahead:~s~n" (get-lookahead-dist my-world))
-      (set-motors! my-world -0.8 -0.8)]
-    [(< (get-lookbehind-dist) 150)
-     ;(printf "behind:~s~n" (get-lookbehind-dist my-world))
-      (set-motors! my-world 0.8 0.8)]))
-(run my-world on-tick)
+    [(= tick# 0) (set-motors! 1 1)])
+  (change-motor-inputs
+   (/ (- (random) 0.45) 5)
+   (/ (- (random) 0.45) 5))
+  (cond
+    [(< (get-lookahead-dist)  100) (set-motors! -0.8 -0.8)]
+    [(< (get-lookbehind-dist) 100) (set-motors! 0.8 0.8)]))
+(run global-world on-tick)
                              

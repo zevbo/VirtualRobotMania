@@ -29,12 +29,15 @@
 ;; on-tick takes an argument for the world
 (define-syntax-rule (create-run-function run-func to-draw-f
                                          [body-start ...] [body-end ...])
-  (define (run-func world on-tick-f)
-    (big-bang world
-      [to-draw to-draw-f]
-      [on-tick
-       (lambda (world) body-start ... (on-tick-f) body-end ... world)
-       TICK_LENGTH])))
+  (begin
+    (define tick# 0)
+    (define (run-func world on-tick-f)
+      (big-bang world
+        [to-draw to-draw-f]
+        [on-tick
+         (lambda (world) body-start ... (on-tick-f tick#) body-end ...
+           (set! tick# (+ tick# 1)) world)
+         TICK_LENGTH]))))
 
 (struct world:blank (robot canvas))
 (define (create-world:blank robot)

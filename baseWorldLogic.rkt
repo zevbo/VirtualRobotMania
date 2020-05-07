@@ -5,13 +5,13 @@
  TICKS_PER_SECOND
  TICK_LENGTH)
 
-(define TICKS_PER_SECOND 50)
+(define TICKS_PER_SECOND 30) ;; anymore than 40 doesn't really do anything
 (define TICK_LENGTH (/ 1.0 TICKS_PER_SECOND))
 
 ;; acceleration = M * %output - k * V
 (define (get-acceleration m %output k v)
   (- (* m %output) (* k v)))
-(define M 1000) ;; arbitrary
+(define M 5000) ;; arbitrary
 (define VEL_ERROR 0.0001)
 (define (bounce robot #:bounce-size [bounce-size 5])
   (set-inputs! robot (- 0 (robot-left% robot)) (- 0 (robot-right% robot)))

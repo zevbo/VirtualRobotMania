@@ -1,12 +1,18 @@
 #lang racket
 (provide (struct-out point) (struct-out line)
          point-slope-form point-angle-form
-         intersection add-points sub-points scale-point
-         dist distSq)
+         intersection
+         add-points sub-points scale-point rotate-point
+         dist distSq
+         slope-of parallel? on-line?)
+
+(define DELTA 1)
+(define EPSILON 0.00001)
 
 (struct point (x y) #:transparent)
 (struct line (p1 p2) #:transparent)
-(define DELTA 1)
+(struct line-seg (p1 p2) #:transparent)
+
 (define (point-slope-form p slope)
   (line p (point (+ (point-x p) DELTA) (+ (point-y p) (* DELTA slope)))))
 (define (point-angle-form p angle)
@@ -22,6 +28,20 @@
 (define (scale-point c p)
   (point (* c (point-x p))
          (* c (point-y p))))
+(define (rotate-point p theta)
+  (point (- (* (point-x p) (cos theta)) (* (point-y p) (sin theta)))
+         (+ (* (point-y p) (sin theta)) (* (point-x p) (cos theta)))))
+
+(define (slope-of l)
+  (define diff (sub-points (line-p1 l) (line-p2 l)))
+  (/ (point-y diff) (point-x diff)))
+(define (parallel? l1 l2)
+  (= (slope-of l1) (slope-of l2)))
+(define (collinear? p1 p2 p3)
+  (< (abs (- (* (- (point-y p2) (point-y p2)) (- (point-x p3) (point-x p2)))
+             (* (- (point-x p2) (point-x p1)) (- (point-y p3) (point-y p2)))))))
+(define (on-line? l p)
+  (collinear? (line-p1 l) (line-p2 l) p))
 
 (define (intersection l1 l2)
   ;; can't currently handle parallell lines
