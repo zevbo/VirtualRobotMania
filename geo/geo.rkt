@@ -57,6 +57,12 @@
 (define (get-p1 ll) (line-p1 (to-line ll)))
 (define (get-p2 ll) (line-p2 (to-line ll)))
 
+(define (constructor-of-ll ll)
+  (match ll
+    [(line _0 _1) line]
+    [(line-seg _0 _1) line-seg]
+    [(ray _0 _1) ray]))
+    
 (define (to-line ll)
   (match ll
     [(line p1 p2) (line p1 p2)]
@@ -111,8 +117,9 @@
 
 
 (provide point-slope-form point-angle-form
-         intersection
+         intersection intersect?
          add-points sub-points scale-point rotate-point
+         add-p-to-ll rotate-ll
          dist distSq
          slope-of parallel?)
 
@@ -133,7 +140,14 @@
          (* c (point-y p))))
 (define (rotate-point p theta)
   (point (- (* (point-x p) (cos theta)) (* (point-y p) (sin theta)))
-         (+ (* (point-y p) (sin theta)) (* (point-x p) (cos theta)))))
+         (+ (* (point-x p) (sin theta)) (* (point-y p) (cos theta)))))
+
+(define (transform-ll f ll)
+  ((constructor-of-ll ll) (f (get-p1 ll)) (f (get-p2 ll))))
+(define (add-p-to-ll ll p)
+  (transform-ll (lambda (p0) (add-points p0 p)) ll))
+(define (rotate-ll ll theta)
+  (transform-ll (lambda (p) (rotate-point p theta)) ll))
 
 (define (slope-of ll)
   (define diff (sub-points (get-p1 ll) (get-p2 ll)))
@@ -161,6 +175,8 @@
      (if (and (on-ll? ll1 p) (on-ll? ll2 p))
          p
          empty-value)]))
+(define (intersect? ll1 ll2)
+  (not (equal? (intersection ll1 ll2) (void))))
 
 (define (distSq p1 p2)
   (+ (expt (- (point-x p1) (point-x p2)) 2)

@@ -40,10 +40,12 @@
    global-world
    (world:primo (create-blank-canvas WORLD_WIDTH WORLD_HEIGHT) robot)))
 
+(define EDGES (get-edges WORLD_WIDTH WORLD_HEIGHT
+                         #:as-list? #t))
 (create-run-function
  run
  (lambda (world)
-   (move-bot (world:primo-robot world) 1)
+   (move-bot (world:primo-robot world) 1 #:edges EDGES)
    (display-robot
     (world:primo-canvas world)
     (world:primo-robot world))) [] [])
@@ -92,6 +94,7 @@
    (/ (- (random) 0.45) 5))
   (cond
     [(< (get-lookahead-dist)  100) (set-motors! -0.8 -0.8)]
-    [(< (get-lookbehind-dist) 100) (set-motors! 0.8 0.8)]))
+    [(< (get-lookbehind-dist) 100) (set-motors! 0.8 0.8)])
+  )
 (run global-world on-tick)
                              

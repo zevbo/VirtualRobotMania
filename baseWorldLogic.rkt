@@ -1,5 +1,6 @@
 #lang racket
 (require "robot.rkt")
+(require "helpers/edge-helpers.rkt")
 (provide
  move-bot
  TICKS_PER_SECOND
@@ -13,16 +14,18 @@
   (- (* m %output) (* k v)))
 (define M 5000) ;; arbitrary
 (define VEL_ERROR 0.0001)
-(define (bounce robot #:bounce-size [bounce-size 5])
-  (set-inputs! robot (- 0 (robot-left% robot)) (- 0 (robot-right% robot)))
+(define DEFAULT_BOUNCE_SIZE 1)
+(define (bounce robot #:bounciness [bounciness 0.3] #:bounce-size [bounce-size DEFAULT_BOUNCE_SIZE])
+  (set-vels! robot (* -1 bounciness (robot-vl robot)) (* -1 bounciness (robot-vr robot)))
   (update-pos robot #:dt bounce-size))
-
 ;; dt starts out as in ticks
-(define (update-pos robot #:dt [dt:ticks 1])
+(define (update-pos robot #:edges [edges (list)] #:bounce-size [bounce-size DEFAULT_BOUNCE_SIZE]  #:dt [dt:ticks 1])
   (define dt (* dt:ticks TICK_LENGTH))
   (define Δl (* dt (robot-vl robot)))
   (define Δr (* dt (robot-vr robot)))
   (cond
+    [(map-intersect? robot edges) 
+     (bounce robot #:bounce-size bounce-size)]
     [(< (abs (- Δl Δr)) VEL_ERROR) 
      (define Δx (* Δl (cos (robot-angle robot))))
      (define Δy (* Δl (sin (robot-angle robot))))
@@ -40,13 +43,14 @@
      (define Δx (* rm (- (cos new-angle) (cos old-angle))))
      (define Δy (* rm (- (sin new-angle) (sin old-angle))))
      (change-pos robot Δx Δy)
-     (set-robot-angle! robot (+ (robot-angle robot) Δangle))]))
+     (set-robot-angle! robot (+ (robot-angle robot) Δangle))])
+  )
 (define (update-vels robot k #:dt [dt TICK_LENGTH])
   (define Δvl (* dt (get-acceleration M (robot-left%  robot) k (robot-vl robot))))
   (define Δvr (* dt (get-acceleration M (robot-right% robot) k (robot-vr robot))))
   (change-vel robot Δvl Δvr))
-(define (move-bot robot k #:dt [dt TICK_LENGTH])
-  (update-pos  robot #:dt dt)
+(define (move-bot robot k #:edges [edges (list)] #:dt [dt TICK_LENGTH])
+  (update-pos  robot #:edges edges #:dt dt)
   (update-vels robot k #:dt dt))
 
 #|
