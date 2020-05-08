@@ -1,17 +1,120 @@
 #lang racket
-(provide (struct-out point) (struct-out line)
-         point-slope-form point-angle-form
-         intersection
-         add-points sub-points scale-point rotate-point
-         dist distSq
-         slope-of parallel? on-line?)
 
 (define DELTA 1)
 (define EPSILON 0.00001)
 
+
+;                                                    
+;                                                    
+;                                                    
+;                           ;;                       
+;   ;;;;;;                  ;;                 ;;    
+;   ;;   ;;                                    ;;    
+;   ;;    ;;                                   ;;    
+;   ;;    ;;    ;;;;      ;;;;    ;; ;;;;    ;;;;;;; 
+;   ;;    ;;   ;;  ;;       ;;    ;;;  ;;;     ;;    
+;   ;;   ;;   ;;    ;;      ;;    ;;    ;;     ;;    
+;   ;;;;;;    ;;    ;;      ;;    ;;    ;;     ;;    
+;   ;;        ;;    ;;      ;;    ;;    ;;     ;;    
+;   ;;        ;;    ;;      ;;    ;;    ;;     ;;    
+;   ;;        ;;    ;;      ;;    ;;    ;;     ;;    
+;   ;;         ;;  ;;       ;;    ;;    ;;     ;;    
+;   ;;          ;;;;     ;;;;;;;; ;;    ;;      ;;;; 
+;                                                    
+;                                                    
+;                                                    
+;                                                    
+(provide (struct-out point))
+
 (struct point (x y) #:transparent)
+
+;                                                                                  
+;                                                                                  
+;                                                                                  
+;                 ;;                                      ;;    ;;                 
+;   ;;            ;;                        ;;            ;;    ;;                 
+;   ;;                                      ;;                  ;;                 
+;   ;;                                      ;;                  ;;                 
+;   ;;          ;;;;    ;; ;;;;     ;;;;;   ;;          ;;;;    ;;   ;;;    ;;;;;  
+;   ;;            ;;    ;;;  ;;;   ;;   ;;  ;;            ;;    ;;  ;;;    ;;   ;; 
+;   ;;            ;;    ;;    ;;  ;;     ;  ;;            ;;    ;; ;;;    ;;     ; 
+;   ;;            ;;    ;;    ;;  ;;;;;;;;; ;;            ;;    ;;;;;     ;;;;;;;;;
+;   ;;            ;;    ;;    ;;  ;;        ;;            ;;    ;;;;;     ;;       
+;   ;;            ;;    ;;    ;;  ;;        ;;            ;;    ;;;;;;    ;;       
+;   ;;            ;;    ;;    ;;  ;;        ;;            ;;    ;;  ;;    ;;       
+;   ;;            ;;    ;;    ;;   ;;    ;  ;;            ;;    ;;   ;;    ;;    ; 
+;   ;;;;;;;;   ;;;;;;;; ;;    ;;     ;;;;;  ;;;;;;;;   ;;;;;;;; ;;   ;;;     ;;;;; 
+;                                                                                  
+;                                                                                  
+;
+(provide (struct-out line) (struct-out line-seg) (struct-out ray)
+         get-p1 get-p2 to-line collinear? on-ll?)
+
 (struct line (p1 p2) #:transparent)
 (struct line-seg (p1 p2) #:transparent)
+(struct ray (p-end p-dir) #:transparent)
+
+(define (get-p1 ll) (line-p1 (to-line ll)))
+(define (get-p2 ll) (line-p2 (to-line ll)))
+
+(define (to-line ll)
+  (match ll
+    [(line p1 p2) (line p1 p2)]
+    [(line-seg p1 p2) (line p1 p2)]
+    [(ray p-end p-dir) (line p-end p-dir)]))
+
+(define (collinear? p1 p2 p3)
+  (< (abs (- (* (- (point-y p2) (point-y p2)) (- (point-x p3) (point-x p2)))
+             (* (- (point-x p2) (point-x p1)) (- (point-y p3) (point-y p2)))))))
+(define (on-line? l p)
+  (collinear? (line-p1 l) (line-p2 l) p))
+
+(define (on-ll? ll p)
+  (and
+   (on-line? (to-line ll) p)
+   (match ll
+     [(line p1 p2) #t]
+     [(line-seg p1 p2)
+       (begin
+         (define diffs (cons (sub-points p1 p) (sub-points p2 p)))
+         (and (<= (* (point-x (car diffs)) (point-x (cdr diffs))) 0)
+              (<= (* (point-y (car diffs)) (point-y (cdr diffs))) 0)))]
+     [(ray p-end p-dir)
+      (begin
+       (define dir-p (sub-points p p-end))
+       (define dir-real (sub-points p-dir p-end))
+       (or (> (* (point-x dir-p) (point-x dir-real)) 0)
+           (> (* (point-y dir-p) (point-y dir-real)) 0)
+           (equal? p p-end)))])))
+
+
+;                                                                        
+;                                                                        
+;                                                                        
+;                                                                ;;;;    
+;      ;;;;                                                        ;;    
+;    ;;;   ;                                                       ;;    
+;    ;;                                                            ;;    
+;   ;;          ;;;;;   ;; ;;;;     ;;;;;     ;;  ;;    ;;;;;      ;;    
+;   ;;         ;;   ;;  ;;;  ;;;   ;;   ;;    ;;;;  ;  ;    ;;     ;;    
+;   ;;        ;;     ;  ;;    ;;  ;;     ;    ;;;           ;;     ;;    
+;   ;;  ;;;;  ;;;;;;;;; ;;    ;;  ;;;;;;;;;   ;;        ;;;;;;     ;;    
+;   ;;    ;;  ;;        ;;    ;;  ;;          ;;      ;;;   ;;     ;;    
+;   ;;    ;;  ;;        ;;    ;;  ;;          ;;      ;;    ;;     ;;    
+;    ;;   ;;  ;;        ;;    ;;  ;;          ;;      ;;    ;;     ;;    
+;    ;;   ;;   ;;    ;  ;;    ;;   ;;    ;    ;;      ;;   ;;;     ;;    
+;      ;;;;      ;;;;;  ;;    ;;     ;;;;;    ;;       ;;;; ;;      ;;;; 
+;                                                                        
+;                                                                        
+;                                                                        
+;                                                                        
+
+
+(provide point-slope-form point-angle-form
+         intersection
+         add-points sub-points scale-point rotate-point
+         dist distSq
+         slope-of parallel?)
 
 (define (point-slope-form p slope)
   (line p (point (+ (point-x p) DELTA) (+ (point-y p) (* DELTA slope)))))
@@ -32,28 +135,32 @@
   (point (- (* (point-x p) (cos theta)) (* (point-y p) (sin theta)))
          (+ (* (point-y p) (sin theta)) (* (point-x p) (cos theta)))))
 
-(define (slope-of l)
-  (define diff (sub-points (line-p1 l) (line-p2 l)))
+(define (slope-of ll)
+  (define diff (sub-points (get-p1 ll) (get-p2 ll)))
   (/ (point-y diff) (point-x diff)))
-(define (parallel? l1 l2)
-  (= (slope-of l1) (slope-of l2)))
-(define (collinear? p1 p2 p3)
-  (< (abs (- (* (- (point-y p2) (point-y p2)) (- (point-x p3) (point-x p2)))
-             (* (- (point-x p2) (point-x p1)) (- (point-y p3) (point-y p2)))))))
-(define (on-line? l p)
-  (collinear? (line-p1 l) (line-p2 l) p))
+(define (angle-of ll)
+  (cond
+    [(= (point-x (get-p1 ll)) (point-x (get-p2 ll))) (/ pi 2)]
+    [(atan (slope-of ll))]))
+(define (parallel? ll1 ll2)
+  (= (angle-of ll1) (angle-of ll2)))
 
-(define (intersection l1 l2)
-  ;; can't currently handle parallell lines
+(define (intersection ll1 ll2 #:empty-value [empty-value (void)])
   ;; Algorithim: http://geomalgorithms.com/a05-_intersect-1.html
-  (define u (sub-points (line-p2 l1) (line-p1 l1)))
-  (define v (sub-points (line-p2 l2) (line-p1 l2)))
-  (define w (sub-points (line-p1 l1) (line-p1 l2)))
-  ; (v.y * w.x - v.x * w.y) / (v.x * u.y - v.y * u.x);
-  (define s (/
-             (- (* (point-y v) (point-x w)) (* (point-x v) (point-y w)))
-             (- (* (point-x v) (point-y u)) (* (point-y v) (point-x u)))))
-  (add-points (line-p1 l1) (scale-point s u)))
+  (cond
+    [(parallel? ll1 ll2) empty-value]
+    [else
+     (define u (sub-points (get-p2 ll1) (get-p1 ll1)))
+     (define v (sub-points (get-p2 ll2) (get-p1 ll2)))
+     (define w (sub-points (get-p1 ll1) (get-p1 ll2)))
+     ; (v.y * w.x - v.x * w.y) / (v.x * u.y - v.y * u.x);
+     (define s (/
+                (- (* (point-y v) (point-x w)) (* (point-x v) (point-y w)))
+                (- (* (point-x v) (point-y u)) (* (point-y v) (point-x u)))))
+     (define p (add-points (get-p1 ll1) (scale-point s u)))
+     (if (and (on-ll? ll1 p) (on-ll? ll2 p))
+         p
+         empty-value)]))
 
 (define (distSq p1 p2)
   (+ (expt (- (point-x p1) (point-x p2)) 2)

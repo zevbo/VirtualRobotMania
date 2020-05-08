@@ -1,6 +1,6 @@
 #lang racket
 (require "robotVisualization.rkt")
-(require "helpers/geo.rkt")
+(require "geo/geo.rkt")
 (provide
  (struct-out robot) robot-point simple-bot
  set-inputs! set-pos! set-vels! change-inputs change-pos change-vel)
