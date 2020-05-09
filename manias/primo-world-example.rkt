@@ -25,4 +25,4 @@
 
 
 (set-world! my-bot) ;; Leave this line how it is
-(run on-tick) ;; Leave this line how it is
+(void (run on-tick)) ;; Leave this line how it is
