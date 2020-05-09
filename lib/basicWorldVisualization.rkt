@@ -27,25 +27,15 @@
 
 ;; every game must have a world
 ;; on-tick takes an argument for the world
-(define-syntax-rule (create-run-function run-func to-draw-f
+(define-syntax-rule (create-run-function run-func [body-initialize ...] to-draw-f get-world-f
                                          [body-start ...] [body-end ...])
   (begin
     (define tick# 0)
-    (define (run-func world on-tick-f)
-      (big-bang world
+    (define (run-func on-tick-f)
+      body-initialize ...
+      (big-bang (get-world-f)
         [to-draw to-draw-f]
         [on-tick
          (lambda (world) body-start ... (on-tick-f tick#) body-end ...
            (set! tick# (+ tick# 1)) world)
          TICK_LENGTH]))))
-
-(struct world:blank (robot canvas))
-(define (create-world:blank robot)
-  (world:blank robot (create-blank-canvas 1000 700)))
-(create-run-function
- run-world:blank
- (lambda (world)
-   (move-bot (world:blank-robot world) 1)
-   (display-robot
-    (world:blank-canvas world)
-    (world:blank-robot world))) [] [])

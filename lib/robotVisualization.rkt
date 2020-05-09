@@ -52,10 +52,10 @@
 (define CORNER_RADIUS (floor (/ ROBOT_WIDTH 10)))
 (define IDEAL_IMAGE_WIDTH  (/ ROBOT_WIDTH 2))
 (define IDEAL_IMAGE_HEIGHT (/ ROBOT_LENGTH 2))
-(define VERTICAL_IMAGE_PLACEMENT -0.2) ;; percentage up from center
+(define VERTICAL_IMAGE_PLACEMENT -0.1) ;; percentage up from center
 (define MAX_IMAGE_WIDTH  ROBOT_WIDTH)
 (define MAX_IMAGE_HEIGHT (* ROBOT_LENGTH 0.65))
-(define NAME_PLACEMENT 0.5) ;; percentage up from center
+(define NAME_PLACEMENT 0.6) ;; percentage up from center
 (define NAME_FONT_SIZE (floor (/ ROBOT_WIDTH 8.0)))
 (define DEFAULT_NAME_FONT "modern")
 (define DEFAULT_NAME_COLOR "black")
@@ -82,7 +82,6 @@
 
 (define (multiply-str str n)
   (string-join (build-list n (lambda (_) str)) ""))
-
 
 (define (append-images-horizontally . images)
   (set! images (flatten images))

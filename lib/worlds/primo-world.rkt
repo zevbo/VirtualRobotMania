@@ -5,14 +5,15 @@
 (require "../helpers/canvas-edges.rkt")
 (require "../geo/geo.rkt")
 (require (prefix-in R- "../robot.rkt"))
-(provide make-robot set-world
+(provide make-robot set-world!
          run
          set-motors! change-motor-inputs
-         get-left% get-right% get-robot-angle
+         get-left% get-right% get-robot-angle get-vl get-vr
          get-lookahead-dist get-lookbehind-dist)
 
 (struct world:primo (canvas robot))
 (define global-world (void))
+(define (get-world) global-world)
 (define (get-robot)
   (world:primo-robot global-world))
 
@@ -35,7 +36,7 @@
               #:image-url image-url))
   (simple-bot robot-image))
 
-(define (set-world robot)
+(define (set-world! robot)
   (set!
    global-world
    (world:primo (create-blank-canvas WORLD_WIDTH WORLD_HEIGHT) robot)))
@@ -44,16 +45,21 @@
                          #:as-list? #t))
 (create-run-function
  run
+ []
  (lambda (world)
    (move-bot (world:primo-robot world) 0.7 #:edges EDGES)
    (display-robot
     (world:primo-canvas world)
-    (world:primo-robot world))) [] [])
+    (world:primo-robot world)))
+ get-world
+ [] [])
 
 (define (set-motors! left% right%)
-  (R-set-inputs! (world:primo-robot global-world) left% right% #:max 0.5))
+  (R-set-inputs! (world:primo-robot global-world) left% right%))
 (define (get-left%)  (R-robot-left%  (get-robot)))
 (define (get-right%) (R-robot-right% (get-robot)))
+(define (get-vl) (R-robot-vl (get-robot)))
+(define (get-vr) (R-robot-vr (get-robot)))
 (define (change-motor-inputs Δleft% Δright%)
   (set-motors! (+ (get-left%) Δleft%) (+ (get-right%) Δright%)))
 (define (get-robot-angle)
@@ -84,6 +90,7 @@
 (define (get-lookbehind-dist) (cdr (get-dists)))
 
 ;; EXample
+#|
 (define my-bot (make-robot "simplo"))
 (set-world my-bot)
 (define (on-tick tick#)
@@ -97,4 +104,5 @@
     [(< (get-lookbehind-dist) 100) (set-motors! 0.8 0.8)])
   )
 (run global-world on-tick)
+|#
                              

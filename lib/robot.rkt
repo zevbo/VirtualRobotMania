@@ -8,11 +8,12 @@
 (define-syntax-rule (mutable-struct name (vars ...))
   (struct name ([vars #:mutable] ...)))
 ;; vl = left velocity, vr = right veloicty
-(mutable-struct robot (image width length x y angle vl vr left% right%))
+(mutable-struct robot (image width length x y angle vl vr left% right% M))
 (define (robot-point bot)
   (point (robot-x bot) (robot-y bot)))
+(define DEFAULT_M 2500)
 (define (simple-bot image)
-  (robot image ROBOT_WIDTH ROBOT_LENGTH 0 0 0 0 0 0 0))
+  (robot image ROBOT_WIDTH ROBOT_LENGTH 0 0 0 0 0 0 0 DEFAULT_M))
 
 (define (limit v minVal maxVal) (min maxVal (max minVal v)))
 (define (limit-mag v max) (limit v (- 0 max) max))
