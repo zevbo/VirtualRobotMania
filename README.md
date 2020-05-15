@@ -1,7 +1,7 @@
 # VirtualRobotMania
 
 ### Getting Started
-1. Clone this repository on to your computer by going to terminal and writing "git clone https://github.com/zevbo/VirtualRobotMania/"
+1. Clone this repository on to your computer by going to terminal and writing "git clone https://github.com/zevbo/VirtualRobotMania/" or by clicking the green button in the mid/upper right that says "clone or download" and download the zip file. If you downloaded it directly from the github website, make sure to open the zip file.
 2. Download DrRacket here: https://download.racket-lang.org/
 3. Open DrRacket
 4. In DrRacket, click file -> open (on the top) and navigate to VirtualRobotMania/manias/.
