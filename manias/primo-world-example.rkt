@@ -22,7 +22,7 @@
 (define my-bot
   (make-robot
    "Free Shavocado!"
-   ;#:image-url "https://loveonetoday.com/wp-content/uploads/2017/07/Love-One-Today-how-to-store-avocados-3a.jpg"
+   #:image-url "https://loveonetoday.com/wp-content/uploads/2017/07/Love-One-Today-how-to-store-avocados-3a.jpg"
    ))
 
 (define (on-tick tick#)
