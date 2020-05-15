@@ -7,6 +7,7 @@
 ;; (change-motor-inputs Δleft% Δright%) -> changes wheel torque by the delta
 ;; (get-left%), (get-right%), (get-robot-angle), (get-vl) or (get-vr)
 ;; (get-lookahead-dist) or (get-lookbehind-dist) -> to see how far away you are from a wall
+;; (get-looking-dist angle) -> angle is in degrees, get's dist from center of bot
 ;; (random) -> get's a random number between 0 and 1
 ;; (random num1 num2) -> get's a random integer between num1 and num2 - 1
 
@@ -20,12 +21,13 @@
 
 (define my-bot
   (make-robot
-   "Free Shavacoado!"
-   #:image-url "https://loveonetoday.com/wp-content/uploads/2017/07/Love-One-Today-how-to-store-avocados-3a.jpg"
+   "Free Shavocado!"
+   ;#:image-url "https://loveonetoday.com/wp-content/uploads/2017/07/Love-One-Today-how-to-store-avocados-3a.jpg"
    ))
 
 (define (on-tick tick#)
-  (set-motors! 1 1)
+  (cond
+    [(= tick# 0) (set-motors! 1 1)])
   ;; write stuff here!
   
   )

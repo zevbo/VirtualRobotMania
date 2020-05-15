@@ -118,10 +118,11 @@
 
 (provide point-slope-form point-angle-form
          intersection intersect?
-         add-points sub-points scale-point rotate-point
+         add-points sub-points scale-point rotate-point mid-point
          add-p-to-ll rotate-ll
          dist distSq
-         slope-of parallel?)
+         slope-of parallel?
+         ray-point-angle-form)
 
 (define (point-slope-form p slope)
   (line p (point (+ (point-x p) DELTA) (+ (point-y p) (* DELTA slope)))))
@@ -129,6 +130,9 @@
   (if (= angle (/ pi 2))
       (line p (point (point-x p) (+ (point-y p) DELTA)))
       (point-slope-form p (tan angle))))
+(define (ray-point-angle-form p angle)
+  (ray p (point (+ (point-x p) (* DELTA (cos angle)))
+                (+ (point-y p) (* DELTA (sin angle))))))
 
 (define (add-points p1 p2)
   (point (+ (point-x p1) (point-x p2))
@@ -141,6 +145,8 @@
 (define (rotate-point p theta)
   (point (- (* (point-x p) (cos theta)) (* (point-y p) (sin theta)))
          (+ (* (point-x p) (sin theta)) (* (point-y p) (cos theta)))))
+(define (mid-point . points)
+  (scale-point (/ 1 (length points)) (foldl add-points (point 0 0) points)))
 
 (define (transform-ll f ll)
   ((constructor-of-ll ll) (f (get-p1 ll)) (f (get-p2 ll))))

@@ -43,7 +43,7 @@
      (change-pos robot Δx Δy)
      (set-robot-angle! robot (+ (robot-angle robot) Δangle))])
   (cond
-    [(map-intersect? robot edges) 
+    [(map-robot-intersect? edges robot) 
      (bounce robot #:bounce-size bounce-size)])
   )
 (define (update-vels robot k #:dt [dt TICK_LENGTH])
