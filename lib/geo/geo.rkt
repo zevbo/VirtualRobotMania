@@ -71,7 +71,7 @@
 
 (define (collinear? p1 p2 p3)
   (< (abs (- (* (- (point-y p2) (point-y p2)) (- (point-x p3) (point-x p2)))
-             (* (- (point-x p2) (point-x p1)) (- (point-y p3) (point-y p2)))))))
+             (* (- (point-x p2) (point-x p1)) (- (point-y p3) (point-y p2))))) EPSILON))
 (define (on-line? l p)
   (collinear? (line-p1 l) (line-p2 l) p))
 
