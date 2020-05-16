@@ -21,15 +21,12 @@
 (define my-bot
   (make-robot
    "Free Shavocado!"
-   ;#:image-url "https://loveonetoday.com/wp-content/uploads/2017/07/Love-One-Today-how-to-store-avocados-3a.jpg"
+   #:image-url "https://loveonetoday.com/wp-content/uploads/2017/07/Love-One-Today-how-to-store-avocados-3a.jpg"
    ))
 
 (define (on-tick tick#)
   (cond
-    [(= tick# 0) (set-motors! 1 1)]
-    [(< (get-lookahead-dist) 100) (set-motors! -0.8 -0.8)]
-    [else (change-motor-inputs (/ (- (random) 0.45) 2)
-                               (/ (- (random) 0.45) 2))])
+    [(= tick# 0) (set-motors! 1 1)])
   ;; write stuff here!
   
   )
