@@ -28,11 +28,14 @@
 
 (define (on-tick tick#)
   (cond
-    [(= tick# 0) (set-motors! 1 1)])
+    [(= tick# 0) (set-motors! 1 1)]
+    [(< (get-lookahead-dist) 100) (set-motors! -0.8 -0.8)]
+    [else (change-motor-inputs (/ (- (random) 0.45) 2)
+                               (/ (- (random) 0.45) 2))])
   ;; write stuff here!
   
   )
 
 
-(set-world! my-bot)  ;; Leave this line how it is
+(set-world! my-bot #:width 700)
 (void (run on-tick)) ;; Leave this line how it is

@@ -26,8 +26,12 @@
 
 (define DEFAULT_BODY_COLOR "grey")
 (define DEFAULT_WHEEL_COLOR "black")
-(define WORLD_WIDTH 800)
-(define WORLD_HEIGHT 500)
+(define WORLD_HEIGHT/WORLD_WIDTH (/ 5.0 8))
+(define WORLD_WIDTH 700)
+(define WORLD_HEIGHT 400)
+(define (set-world-width width)
+  (set! WORLD_WIDTH width)
+  (set! WORLD_HEIGHT (* WORLD_WIDTH WORLD_HEIGHT/WORLD_WIDTH)))
 
 (define (make-robot name
                     #:image-url  [image-url  OPTIONAL_DEFAULT]
@@ -70,7 +74,8 @@
 
 (define edges (create-edges))
 
-(define (set-world! robot)
+(define (set-world! robot #:width [width WORLD_WIDTH])
+  (set-world-width width)
   (set! edges (create-edges))
   (set!
    global-world
