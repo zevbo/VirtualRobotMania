@@ -1,8 +1,6 @@
 #lang racket
 (require "../lib/worlds/primo-world.rkt")
 
-;; The width of the field is 700 and the height is 500
-
 ;; BASICS
 ;; (if trueOrFalse then else)
 ;; (+ nums ...), (- num1 num2), (* nums ...), (/ num1 num2)
