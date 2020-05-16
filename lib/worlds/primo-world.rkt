@@ -80,7 +80,7 @@
  run
  []
  (lambda (world)
-   (move-bot (world:primo-robot world) 0.6 #:edges edges)
+   (move-bot (world:primo-robot world) 0.75 #:edges edges)
    (display-robot
     (world:primo-canvas world)
     (world:primo-robot world)))
