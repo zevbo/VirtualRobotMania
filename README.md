@@ -3,7 +3,7 @@
 ### Getting Started
 1. Download DrRacket here: https://download.racket-lang.org/ and go ahead and install it
 2. Go to https://github.com/zevbo/VirtualRobotMania and click on the green button on the upper right that says "clone or download", and then click on the "download ZIP" button that shows up below.
-3. Open up the zip file
+3. Unpack the zip file (double-clicking in it should get that started)
 4. Open DrRacket
 5. In DrRacket, click file -> open (on the top) and navigate to VirtualRobotMania/manias/.
 6. Open up any of the example files in the manias folder
