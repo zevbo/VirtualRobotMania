@@ -122,7 +122,8 @@
          add-p-to-ll rotate-ll
          dist distSq
          slope-of parallel?
-         ray-point-angle-form)
+         ray-point-angle-form
+         angle-between)
 
 (define (point-slope-form p slope)
   (line p (point (+ (point-x p) DELTA) (+ (point-y p) (* DELTA slope)))))
@@ -154,6 +155,10 @@
   (transform-ll (lambda (p0) (add-points p0 p)) ll))
 (define (rotate-ll ll theta)
   (transform-ll (lambda (p) (rotate-point p theta)) ll))
+
+(define (angle-between p1 p2)
+  (atan (- (point-y p2) (point-y p1))
+        (- (point-x p2) (point-x p1))))
 
 (define (slope-of ll)
   (define diff (sub-points (get-p1 ll) (get-p2 ll)))

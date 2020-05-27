@@ -20,17 +20,26 @@
 
 (define my-bot
   (make-robot
-   "Free Shavocado!"
-   #:image-url "https://loveonetoday.com/wp-content/uploads/2017/07/Love-One-Today-how-to-store-avocados-3a.jpg"
+   "Pelosi Mo-beel"
+   #:body-color "pink"
+   #:wheel-color "green"
+   #:image-url "https://pyxis.nymag.com/v1/imgs/dea/e96/43d78070c0f7cff46d506c303850980bb0-nancy-pelosi.rsquare.w700.jpg"
+
    ))
 
 (define (on-tick tick#)
   (cond
-    [(= tick# 0) (set-motors! 1 1)])
+    [(= tick# 0) (set-motors! 0.3 1)]
+    [(< (get-lookahead-dist) 75)  (set-motors! -1 -1)]
+    [(< (get-lookbehind-dist) 75) (set-motors! 1 1)]
+    [else (change-motor-inputs (/ (- (random) 0.45) 3)
+                               (/ (- (random) 0.45) 3))]
+    
+    )
   ;; write stuff here!
   
   )
 
 
-(set-world! my-bot #:width 700)
+(set-world! my-bot #:width 500)
 (void (run on-tick)) ;; Leave this line how it is

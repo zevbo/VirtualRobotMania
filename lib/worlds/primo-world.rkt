@@ -23,7 +23,6 @@
 (define (get-x) (R-robot-x (get-robot)))
 (define (get-y) (R-robot-y (get-robot)))
 
-
 (define DEFAULT_BODY_COLOR "grey")
 (define DEFAULT_WHEEL_COLOR "black")
 (define WORLD_HEIGHT/WORLD_WIDTH (/ 5.0 8))
@@ -51,11 +50,11 @@
 (define (create-edges)
   (define INNER_WIDTH  (* WORLD_WIDTH INNER_SCALE_FACTOR))
   (define INNER_HEIGHT (* WORLD_HEIGHT INNER_SCALE_FACTOR))
-  (define-values (mid-tr mid-br mid-tl mid-bl) (get-corners INNER_WIDTH INNER_HEIGHT))
-  (define required-edges (get-edges WORLD_WIDTH WORLD_HEIGHT #:as-list? #t))
+  (define-list-values (mid-tr mid-br mid-tl mid-bl) (get-corners INNER_WIDTH INNER_HEIGHT))
+  (define required-edges (get-edges WORLD_WIDTH WORLD_HEIGHT))
   (define optional-edges
     (append
-     (get-edges INNER_WIDTH INNER_HEIGHT #:as-list? #t)
+     (get-edges INNER_WIDTH INNER_HEIGHT)
      (list
       (line-seg mid-tr (scale-point 0.5 (point INNER_WIDTH WORLD_HEIGHT)))
       (line-seg mid-tr (scale-point 0.5 (point WORLD_WIDTH INNER_HEIGHT)))
@@ -86,11 +85,11 @@
  []
  (lambda (world)
    (move-bot (world:primo-robot world) 0.75 #:edges edges)
-   (display-robot
+   (overlay-robot
     (world:primo-canvas world)
     (world:primo-robot world)))
  get-world
- [] [])
+ [] [] (lambda (_) #f) [])
 
 (define (set-motors! left% right%)
   (R-set-inputs! (world:primo-robot global-world) left% right%))
@@ -103,29 +102,9 @@
 (define (get-robot-angle)
   (R-robot-angle (get-robot)))
 (define (get-dist angle)
-  (cdr
-   (closest-intersection
-    edges (get-robot)
-    (ray-point-angle-form (R-robot-point (get-robot)) (+ angle (get-robot-angle))))))
+  (get-robot-map-dist edges (get-robot) angle))
 (define (get-lookahead-dist)  (- (get-dist 0) (/ ROBOT_LENGTH 2)))
 (define (get-lookbehind-dist) (- (get-dist pi) (/ ROBOT_LENGTH 2)))
 (define (get-looking-dist angle)
   (get-dist (degrees->radians angle)))
-
-;; EXample
-#|
-(define my-bot (make-robot "simplo"))
-(set-world my-bot)
-(define (on-tick tick#)
-  (cond
-    [(= tick# 0) (set-motors! 1 1)])
-  (change-motor-inputs
-   (/ (- (random) 0.45) 5)
-   (/ (- (random) 0.45) 5))
-  (cond
-    [(< (get-lookahead-dist)  100) (set-motors! -0.8 -0.8)]
-    [(< (get-lookbehind-dist) 100) (set-motors! 0.8 0.8)])
-  )
-(run global-world on-tick)
-|#
                              

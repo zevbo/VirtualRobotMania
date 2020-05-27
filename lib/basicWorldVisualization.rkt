@@ -10,7 +10,7 @@
          create-robot-img
          (struct-out robot)
          simple-bot
-         display-robot
+         overlay-robot overlay-image
          create-run-function)
 
 (define (create-blank-canvas width height)
@@ -27,14 +27,16 @@
    (lambda (edge canvas) (overlay-line-seg canvas edge edge-color))
    (rectangle width height "solid" "white") edges))
 
-(define (display-robot canvas bot)
+(define (overlay-image canvas image angle pos)
   (overlay/offset
-   (rotate (radians->degrees (robot-angle bot)) (robot-image bot))
-   (- 0 (robot-x bot)) (robot-y bot)
+   (rotate (radians->degrees angle) image)
+   (- 0 (G-point-x pos)) (G-point-y pos)
    canvas))
+(define (overlay-robot canvas bot)
+  (overlay-image canvas (robot-image bot) (robot-angle bot) (robot-point bot)))
 
 (define my-bot-image (create-robot-img "magenta" "navy" "THE PELOSI MO-BEEL"
-              #:custom-name-color "white"))
+                                       #:custom-name-color "white"))
 (define my-bot (simple-bot my-bot-image))
 (set-inputs! my-bot 0.2 1)
 
@@ -46,15 +48,17 @@
     (define v (f arg))
     (printf "ending draw:~s~n~n" (- (current-milliseconds) og))
     v))
-  (define-syntax-rule (create-run-function run-func [body-initialize ...] to-draw-f get-world-f
-                                         [body-start ...] [body-end ...])
+(define-syntax-rule (create-run-function run-func [body-initialize ...] to-draw-f get-world-f
+                                         [body-start ...] [body-end ...] stop-f [function-end ...])
   (begin
     (define tick# 0)
     (define (run-func on-tick-f)
       body-initialize ...
       (big-bang (get-world-f)
         [to-draw to-draw-f]
+        [stop-when stop-f]
         [on-tick
          (lambda (world) body-start ... (on-tick-f tick#) body-end ...
            (set! tick# (+ tick# 1)) world)
-         TICK_LENGTH]))))
+         TICK_LENGTH])
+      function-end ...)))
