@@ -1,11 +1,11 @@
 #lang racket
-(require "../basicWorldVisualization.rkt")
-(require "../baseWorldLogic.rkt")
-(require "../robotVisualization.rkt")
-(require "../helpers/canvas-edges.rkt")
-(require "../helpers/edge-helpers.rkt")
-(require "../geo/geo.rkt")
-(require (prefix-in R- "../robot.rkt"))
+(require "../../basicWorldVisualization.rkt")
+(require "../../baseWorldLogic.rkt")
+(require "../../robotVisualization.rkt")
+(require "../../helpers/canvas-edges.rkt")
+(require "../../helpers/edge-helpers.rkt")
+(require "../../geo/geo.rkt")
+(require (prefix-in R- "../../robot.rkt"))
 (provide make-robot set-world!
          run
          set-motors! change-motor-inputs
