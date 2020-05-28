@@ -1,3 +1,5 @@
 *.rkt~
 *.dep
 *.zo
+
+tmp*

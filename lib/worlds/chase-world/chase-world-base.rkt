@@ -14,7 +14,8 @@
          get-looking-dist get-lookahead-dist get-lookbehind-dist angle-to-ball
          num-balls
          get-ball-vx get-ball-vy
-         get-ball-hue get-ball-brightness)
+         get-ball-hue get-ball-brightness get-robot
+         (struct-out ball) get-ball world-width set-world-width! disqualify is-ball-bouncing?)
 
 (define-syntax-rule (mutable-struct name (vars ...) keywords ...)
   (struct name ([vars #:mutable] ...) keywords ...))
@@ -23,7 +24,7 @@
 (define (get-ball-id)
   (set! global-ball-id (+ global-ball-id 1))
   (- global-ball-id 1))
-(mutable-struct ball (id pos vx vy hit?) #:transparent)
+(mutable-struct ball (id pos vx vy bouncing? hit?) #:transparent)
 (define global-world (void))
 (define (get-world) global-world)
 (define (get-robot)
@@ -34,8 +35,8 @@
 
 (define DEFAULT_BODY_COLOR "grey")
 (define DEFAULT_WHEEL_COLOR "black")
-(define WORLD_WIDTH 350)
-(define WORLD_HEIGHT WORLD_WIDTH)
+(define world-width 350)
+(define world-height world-width)
 (define MAX_NUM_BALLS 5)
 (define num-balls MAX_NUM_BALLS)
 (define BALL_RADIUS 10)
@@ -45,6 +46,13 @@
 (define max-vy max-vx)
 (define SECS_PER_TURN 5)
 (define BALL_IMAGE (circle BALL_RADIUS "solid" "black"))
+(define disqualified? #f)
+
+(define (disqualify) (set! disqualified? #t))
+
+(define (set-world-width! width)
+  (set! world-width width)
+  (set! world-height world-width))
 
 (define (make-robot name
                     #:image-url  [image-url  OPTIONAL_DEFAULT]
@@ -64,8 +72,8 @@
   (set!
    global-world
    (world:chase
-    (create-blank-canvas WORLD_WIDTH WORLD_HEIGHT)
-    (get-edges WORLD_WIDTH WORLD_HEIGHT)
+    (create-blank-canvas world-width world-height)
+    (get-edges world-width world-height)
     robot
     (starting-balls))))
 
@@ -93,7 +101,7 @@
          (+ (expt GLOBAL_MAX_VX 2) (expt GLOBAL_MAX_VY 2))))))
 (define (ball-saturation ball) (ball-value ball))
 (define (ball-hue ball)
-  (modulo (exact-floor (* 360 (/ (atan (ball-vy ball) (ball-vx ball)) pi))) 360))
+  (modulo (exact-floor (* 360 (/ (atan (ball-vy ball) (ball-vx ball)) (* 2 pi)))) 360))
 (define (ball-image ball)
   (define-values (r g b) (to-rgb (ball-hue ball) (ball-saturation ball) (ball-value ball)))
   (circle BALL_RADIUS "solid" (make-color r g b))
@@ -106,13 +114,13 @@
   (define randomize-y? (not randomize-x?))
   (define (determine-coord randomize? total-space)
     (if randomize?
-        (double-randomized (/ (- total-space (* BALL_RADIUS 2)) 2))
-        (* (- (random 2) 0.5) total-space 0.8)))
+        (double-randomized (exact-floor (/ (- total-space (* BALL_RADIUS 2)) 2)))
+        (exact-floor (* (- (random 2) 0.5) total-space 0.8))))
   (ball (get-ball-id)
-        (G-point (determine-coord randomize-x? WORLD_WIDTH)
-                 (determine-coord randomize-y? WORLD_HEIGHT))
+        (G-point (determine-coord randomize-x? world-width)
+                 (determine-coord randomize-y? world-height))
         (double-randomized max-vx)
-        (double-randomized max-vy) #f))
+        (double-randomized max-vy) #f #f))
 (define (starting-balls)
   (define (populator current-balls balls-left)
     (define new-ball (random-ball))
@@ -131,11 +139,12 @@
                                (G-scale-point TICK_LENGTH (G-point (ball-vx ball) (ball-vy ball))))))
 (define (update-ball ball)
   (update-ball-pos ball)
+  (set-ball-bouncing?! ball #t)
   (cond
     [(maps-intersect? (ball-edges ball) (robot-edges (get-robot)))
      (set-ball-hit?! ball #t)
      (set! num-balls (- num-balls 1))]
-    [(maps-intersect? (ball-edges ball) (get-all-edges  #:excluded-balls (list ball)))
+    [(maps-intersect? (ball-edges ball) (get-all-edges #:excluded-balls (list ball)))
      (set-ball-vx! ball (* -1 (ball-vx ball)))
      (set-ball-vy! ball (* -1 (ball-vy ball)))
      (update-ball-pos ball)]
@@ -143,7 +152,8 @@
      (set-ball-vx! ball (double-randomized max-vx))
      (set-ball-vy! ball (double-randomized max-vy))
      (set! max-vx (min GLOBAL_MAX_VX (+ max-vx 1)))
-     (set! max-vy (min GLOBAL_MAX_VY (+ max-vy 1)))]))
+     (set! max-vy (min GLOBAL_MAX_VY (+ max-vy 1)))]
+    [else (set-ball-bouncing?! ball #f)]))
 
 (define (get-all-edges #:excluded-balls [excluded-balls (list)] #:robot-edges? [robot-edges? #f])
   (define all-balls
@@ -182,7 +192,8 @@
 (define starting-time 0)
 (create-run-function
  run
- [(define outer-edges (get-all-edges #:excluded-balls (world:chase-balls global-world)))
+ [(set! disqualified? #f)
+  (define outer-edges (get-all-edges #:excluded-balls (world:chase-balls global-world)))
   (set! starting-time (current-milliseconds))]
  (lambda (world)
    (move-bot (world:chase-robot world) 0.75 #:edges outer-edges)
@@ -197,16 +208,19 @@
  [] []
  all-balls-gone?
  [(cond
-    [(all-balls-gone?)
+    [(all-balls-gone?) 
      (define time (exact-floor (/ (- (current-milliseconds) starting-time) 1000)))
      (define minutes (exact-floor (/ time 60)))
      (define seconds (- time (* minutes 60)))
      (printf
       (string-append
-       (cond [(< time 10) "Unbelievable!!"] [(< time 20) "Wow."] [(< time 60) "Not to shabby."]
-             [(< time 120) "Could be better, could be worse."] [else "At least you finished, but there's definitely some room for improvement"])
+       (cond
+         [disqualified? (printf "This round's score is null")]
+         [(< time 10) "Unbelievable!!"] [(< time 20) "Wow."] [(< time 60) "Not to shabby."]
+         [(< time 120) "Could be better, could be worse."] [else "At least you finished, but there's definitely some room for improvement"])
        " You got all the balls in" (if (> minutes 0) (format " ~s minutes and " minutes) "") (format " ~s seconds~n~n" seconds)))
-     (printf "FINAL SCORE: ~s:~s" minutes (if (< seconds 10) (format "0~s" seconds) seconds))]
+     (printf (string-append (if disqualified? "TIME" "FINAL SCORE")": ~s:~s")
+             minutes (if (< seconds 10) (format "0~s" seconds) seconds))]
     [else
      (printf "Awwwwww. You couldn't get all of the balls :(")])])
 
@@ -216,10 +230,11 @@
 (define (get-right%) (R-robot-right% (get-robot)))
 (define (get-vl) (R-robot-vl (get-robot)))
 (define (get-vr) (R-robot-vr (get-robot)))
-(define (get-ball-vx ball#) (ball-vx (get-ball ball#)))
-(define (get-ball-vy ball#) (ball-vy (get-ball ball#)))
+(define (get-ball-vx ball#) (* (ball-vx (get-ball ball#)) TICK_LENGTH))
+(define (get-ball-vy ball#) (* (ball-vy (get-ball ball#)) TICK_LENGTH))
 (define (get-ball-hue ball#) (ball-hue (get-ball ball#)))
 (define (get-ball-brightness ball#) (ball-value (get-ball ball#)))
+(define (is-ball-bouncing? ball#) (ball-bouncing? (get-ball ball#)))
 (define (change-motor-inputs Δleft% Δright%)
   (set-motors! (+ (get-left%) Δleft%) (+ (get-right%) Δright%)))
 (define (get-robot-angle)
