@@ -1,5 +1,5 @@
 #lang racket
-(require "../lib/worlds/primo-world.rkt")
+(require "../lib/worlds/primo-world/primo-world.rkt")
 
 ;; BASICS
 ;; (if trueOrFalse then else)

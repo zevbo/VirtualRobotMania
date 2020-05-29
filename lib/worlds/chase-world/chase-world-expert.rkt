@@ -41,6 +41,6 @@
 ;;     It will only give you the dist to the ball if the ball changed direction or speed that tick. Otherwise, it will give you false
 ;; (get-ball-hue ball#) and (get-ball-brightness ball#) -> get's the given ball's hue (color scale) or brightenss
 ;;     Why are these important? I guess that's the challange....
-;; ($get-ball-vy$ ball#) and ($get-ball-vy$ ball#) -> these get the x or y velocity of a given ball. However, if you use them your score doesn't count
+;; ($get-ball-vx$ ball#) and ($get-ball-vy$ ball#) -> these get the x or y velocity of a given ball. However, if you use them your score doesn't count
 ;;     You may use them for, let's say, experimental reasons :)
 "))

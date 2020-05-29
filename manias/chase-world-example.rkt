@@ -1,6 +1,10 @@
 #lang racket
 (require "../lib/worlds/chase-world/chase-world.rkt")
 
+;; Welcome to the chase world!
+;; Your goal is to program your robot to hit all the balls as quickly as possible
+;; Once you get all the balls, the program will print out how long it took
+
 ;; Need a refresher? There are tons of comments here:
 ;; https://github.com/zevbo/VirtualRobotMania/blob/master/manias/primo-world-example.rkt
 
@@ -11,7 +15,8 @@
 ;; NEW STUFF
 ;; num-balls -> a variable that says the number of balls left
 ;; (angle-to-ball ball#) -> takes a ball# (where ball# is an integer such that: 0 <= ball# < num-balls) and gives you the angle to that ball
-;; (get-ball-vy ball#) and (get-ball-vx ball#) -> get's the given ball's y or x speed
+;; (get-ball-vy ball#) and (get-ball-vx ball#) -> get's the given ball's y or x speed per tick
+;; (help) -> basically prints out everything above this
 
 (define my-bot
   (make-robot
