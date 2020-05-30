@@ -1,5 +1,5 @@
 #lang racket
-(require "../lib/worlds/chase-world/chase-world.rkt")
+(require "../../lib/worlds/chase-world/chase-world.rkt")
 
 ;; Welcome to the chase world!
 ;; Your goal is to program your robot to hit all the balls as quickly as possible
