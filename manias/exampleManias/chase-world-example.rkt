@@ -6,7 +6,7 @@
 ;; Once you get all the balls, the program will print out how long it took
 
 ;; Need a refresher? There are tons of comments here:
-;; https://github.com/zevbo/VirtualRobotMania/blob/master/manias/primo-world-example.rkt
+;; https://github.com/zevbo/VirtualRobotMania/blob/master/manias/exampleManias/primo-world-example.rkt
 
 ;; IMPORTANT REFRESHERS
 ;; (get-looking-dist angle) -> get's the distance from the center of the robot to the nearest obstacle in the direction of the given angle relative to the robot

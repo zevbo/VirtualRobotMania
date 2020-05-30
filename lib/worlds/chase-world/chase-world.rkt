@@ -16,7 +16,7 @@
 ;; Once you get all the balls, the program will print out how long it took
 
 ;; Need a refresher? There are tons of comments here:
-;; https://github.com/zevbo/VirtualRobotMania/blob/master/manias/primo-world-example.rkt
+;; https://github.com/zevbo/VirtualRobotMania/blob/master/manias/exampleManias/primo-world-example.rkt
 
 ;; IMPORTANT REFRESHERS
 ;; (get-looking-dist angle) or (get-looking-dist angle #:no-balls? #t) ->
