@@ -11,7 +11,7 @@
 (mutable-struct robot (image width length x y angle vl vr left% right% M))
 (define (robot-point bot)
   (point (robot-x bot) (robot-y bot)))
-(define DEFAULT_M 2500)
+(define DEFAULT_M 80)
 (define (simple-bot image)
   (robot image ROBOT_WIDTH ROBOT_LENGTH 0 0 0 0 0 0 0 DEFAULT_M))
 

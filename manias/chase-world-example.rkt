@@ -1,19 +1,15 @@
 #lang racket
-(require "chase-world-base.rkt")
-(provide make-robot set-world!
-         run
-         set-motors! change-motor-inputs
-         get-left% get-right% get-robot-angle get-vl get-vr
-         get-looking-dist get-lookahead-dist get-lookbehind-dist angle-to-ball
-         num-balls MAX_NUM_BALLS ball-exists?
-         get-ball-vx get-ball-vy
-         help)
-(set-cut-offs! 13 25 60 120)
-(define (help)
-  (printf "
+(require "../lib/worlds/chase-world/chase-world.rkt")
+;; instead of chase-world.rkt, you can do chase-world-advanced.rkt or chase-world-expert.rkt
+;; Skipping to advanced is reasonable, but I think one should do advanced before
+;;    doing expert
+;; If you are doing one of those, use the (help) function to see what's different
+
 ;; Welcome to the chase world!
 ;; Your goal is to program your robot to hit all the balls as quickly as possible
 ;; Once you get all the balls, the program will print out how long it took
+;; Note: most functions will return #f if you try to retrieve infromation from a
+;;    ball# that you have already captured
 
 ;; Need a refresher? There are tons of comments here:
 ;; https://github.com/zevbo/VirtualRobotMania/blob/master/manias/primo-world-example.rkt
@@ -28,8 +24,25 @@
 ;; NEW STUFF
 ;; num-balls -> a variable that says the number of balls left
 ;; MAX_NUM_BALLS -> total balls in this round (including one's you've gotten)
-;; (ball-exists? ball#) -> tells you if that ball exists/hasn't been gotten yet
 ;; (angle-to-ball ball#) -> takes a ball# (where ball# is an integer such that: 0 <= ball# < num-balls) and gives you the angle to that ball
-;;     If that ball# has already been gotten, it returns #f
-;; (get-ball-vy ball#) and (get-ball-vx ball#) -> get's the given ball's y or x speed
-"))
+;;     if that ball# has already been gotten, it returns #f
+;; (get-ball-vy ball#) and (get-ball-vx ball#) -> get's the given ball's y or x speed per tick
+;; (help) -> basically prints out everything above this
+
+(define my-bot
+  (make-robot
+   "Pelosi Mo-beel"
+   #:body-color "pink"
+   #:wheel-color "green"
+   #:image-url "https://pyxis.nymag.com/v1/imgs/dea/e96/43d78070c0f7cff46d506c303850980bb0-nancy-pelosi.rsquare.w700.jpg"
+   ))
+
+
+(define (on-tick tick#)
+  (cond
+    [(= tick# 0) (set-motors! 1 1)])
+  
+  )
+
+(set-world! my-bot)
+(void (run on-tick))
