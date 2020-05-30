@@ -13,13 +13,14 @@
 (define (get-acceleration m %output k v)
   (- (* m %output) (* k v)))
 (define VEL_ERROR 0.0001)
-(define DEFAULT_BOUNCE_SIZE 0.15)
+(define DEFAULT_BOUNCE_SIZE 0)
 (define (bounce robot #:bounciness [bounciness 1] #:bounce-size [bounce-size DEFAULT_BOUNCE_SIZE])
   (set-vels! robot (* -1 bounciness (robot-vl robot)) (* -1 bounciness (robot-vr robot)))
   (update-pos robot #:dt bounce-size)
   )
 ;; dt starts out as in ticks
 (define (update-pos robot #:edges [edges (list)] #:bounce-size [bounce-size DEFAULT_BOUNCE_SIZE] #:dt [dt:ticks 1])
+  ;; returns if bounced
   (define dt (* dt:ticks TICK_LENGTH))
   (define Δl (* dt (robot-vl robot)))
   (define Δr (* dt (robot-vr robot)))
@@ -44,7 +45,9 @@
      (set-robot-angle! robot (+ (robot-angle robot) Δangle))])
   (cond
     [(map-robot-intersect? edges robot) 
-     (bounce robot #:bounce-size bounce-size)])
+     (bounce robot #:bounce-size bounce-size)
+     #t]
+    [else #f])
   )
 (define (update-vels robot k #:dt [dt:ticks 1])
   (define dt (* dt:ticks TICK_LENGTH))
@@ -52,8 +55,9 @@
   (define Δvr (* dt (get-acceleration (robot-M robot) (robot-right% robot) k (robot-vr robot))))
   (change-vel robot Δvl Δvr))
 (define (move-bot robot k #:edges [edges (list)] #:dt [dt 1])
-  (update-pos  robot #:edges edges #:dt dt)
-  (update-vels robot k #:dt dt))
+  (define bounced? (update-pos  robot #:edges edges #:dt dt))
+  (cond
+   [(not bounced?) (update-vels robot k #:dt dt)]))
 
 #|
 (define my-robot-img 
