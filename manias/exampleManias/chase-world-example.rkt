@@ -74,4 +74,4 @@
   )
 
 (set-world! my-bot)
-;(void (run on-tick))
+(void (run on-tick))
