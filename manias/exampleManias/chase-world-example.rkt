@@ -1,6 +1,8 @@
 #lang racket
 (require "../../lib/worlds/chase-world/chase-world.rkt")
-;; instead of chase-world.rkt, you can do chase-world-advanced.rkt or chase-world-expert.rkt
+;(require "../../lib/worlds/chase-world/chase-world-advanced.rkt")
+;(require "../../lib/worlds/chase-world/chase-world-expert.rkt")
+;; instead of chase-world.rkt, you can use the chase-world-advanced.rkt or chase-world-expert.rkt import lines
 ;; Skipping to advanced is reasonable, but I think one should do advanced before
 ;;    doing expert
 ;; If you are doing one of those, use the (help) function to see what's different
