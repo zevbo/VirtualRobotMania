@@ -8,7 +8,7 @@
          get-left% get-right% get-robot-angle get-vl get-vr
          get-looking-dist get-lookahead-dist get-lookbehind-dist
          num-balls MAX_NUM_BALLS ball-exists? angle-to-ball~
-         get-ball-vx get-ball-vy angle-to-ball
+         get-ball-vx get-ball-vy angle-to-ball normalize-angle
          help)
 (set-world-width! (exact-floor (* world-width 1.2)))
 ;dist (R-robot-point (get-robot)) (ball-pos (get-ball ball#)))

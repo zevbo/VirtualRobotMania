@@ -8,7 +8,7 @@
          get-left% get-right% get-robot-angle get-vl get-vr
          get-looking-dist get-lookahead-dist get-lookbehind-dist get-ball-hue get-ball-brightness
          num-balls MAX_NUM_BALLS ball-exists?
-         $get-ball-vx$ $get-ball-vy$ angle-to-ball~
+         $get-ball-vx$ $get-ball-vy$ angle-to-ball~ normalize-angle
          help)
 (set-world-width! (exact-floor (* world-width 1.2)))
 (set-cut-offs! 15 30 90 180)
