@@ -14,7 +14,7 @@
          get-looking-dist get-lookahead-dist get-lookbehind-dist angle-to-ball
          num-balls MAX_NUM_BALLS
          get-ball-vx get-ball-vy
-         get-ball-hue get-ball-brightness get-robot ball-exists? normalize-angle
+         get-ball-hue get-ball-brightness get-robot ball-exists? normalize-angle angle-to-first-ball
          (struct-out ball) get-ball world-width set-world-width! disqualify is-ball-bouncing? set-cut-offs!)
 
 (define-syntax-rule (mutable-struct name (vars ...) keywords ...)
@@ -203,6 +203,11 @@
      (radians->degrees (- (G-angle-between (R-robot-point (get-robot)) (ball-pos ball))
                           (robot-angle (get-robot))))]
     [else #f]))
+(define (angle-to-first-ball)
+  (define ball# (findf ball-exists? (range MAX_NUM_BALLS)))
+  (if (integer? ball#)
+      (angle-to-ball ball#)
+      #f))
 
 (define (overlay-ball ball canvas)
   (if (ball-hit? ball)

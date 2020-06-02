@@ -6,9 +6,9 @@
          get-left% get-right% get-robot-angle get-vl get-vr
          get-looking-dist get-lookahead-dist get-lookbehind-dist angle-to-ball
          num-balls MAX_NUM_BALLS ball-exists? normalize-angle
-         get-ball-vx get-ball-vy
+         get-ball-vx get-ball-vy angle-to-first-ball
          help)
-(set-cut-offs! 13 25 60 120)
+(set-cut-offs! 15 30 60 120)
 (define (help)
   (printf "
 ;; Welcome to the chase world!
