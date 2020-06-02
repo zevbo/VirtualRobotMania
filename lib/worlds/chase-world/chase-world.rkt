@@ -31,5 +31,6 @@
 ;; (ball-exists? ball#) -> tells you if that ball exists/hasn't been gotten yet
 ;; (angle-to-ball ball#) -> takes a ball# (where ball# is an integer such that: 0 <= ball# < num-balls) and gives you the angle to that ball
 ;;     If that ball# has already been gotten, it returns #f
+;; (angle-to-first-ball) -> calls angle-to-ball with the smallest ball# that exists. Returns #f if no balls are left
 ;; (get-ball-vy ball#) and (get-ball-vx ball#) -> get's the given ball's y or x speed
 "))

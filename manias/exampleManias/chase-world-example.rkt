@@ -54,6 +54,7 @@
 ;;     takes a ball#, an integer such that 0 <= ball# < num-balls 
 ;;     if that ball# is still there, it returns the angle to the ball
 ;;     if that ball# is gone, it returns #f
+;; (angle-to-first-ball) -> calls angle-to-ball with the smallest ball# that exists. Returns #f if no balls are left
 ;; (get-ball-vy ball#) and (get-ball-vx ball#)
 ;;     get's the given ball's y or x speed per tick
 ;; (help)
