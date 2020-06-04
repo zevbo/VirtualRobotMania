@@ -57,6 +57,9 @@
 ;; (angle-to-first-ball) -> calls angle-to-ball with the smallest ball# that exists. Returns #f if no balls are left
 ;; (get-ball-vy ball#) and (get-ball-vx ball#)
 ;;     get's the given ball's y or x speed per tick
+;; (ball-exists? ball#) -> says if that ball hasn't been gotten yet
+;; (normalize-angle angle) -> brings an angle to in between -180 and
+;;   180
 ;; (help)
 ;;     basically prints out everything above this
 
@@ -70,7 +73,8 @@
 
 (define (on-tick tick#)
   (cond
-    [(= tick# 0) (set-motors! 1 1)])
+    [(= tick# 0) (set-motors! 1 1)]
+    )
   
   )
 

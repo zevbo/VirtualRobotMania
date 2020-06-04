@@ -200,8 +200,9 @@
      (raise (format "Attempted to get angle to ball# ~s, but the ball# must be between 0 and ~s" ball# ball# (- MAX_NUM_BALLS 1)))]
     [(ball-exists? ball#)
      (define ball (get-ball ball#))
-     (radians->degrees (- (G-angle-between (R-robot-point (get-robot)) (ball-pos ball))
-                          (robot-angle (get-robot))))]
+     (normalize-angle
+      (radians->degrees (- (G-angle-between (R-robot-point (get-robot)) (ball-pos ball))
+                           (robot-angle (get-robot)))))]
     [else #f]))
 (define (angle-to-first-ball)
   (define ball# (findf ball-exists? (range MAX_NUM_BALLS)))
