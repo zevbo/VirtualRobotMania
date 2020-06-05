@@ -10,8 +10,8 @@
          num-balls MAX_NUM_BALLS ball-exists?
          $get-ball-vx$ $get-ball-vy$ angle-to-ball~ normalize-angle
          help)
-(set-world-width! (exact-floor (* world-width 1.2)))
-(set-cut-offs! 15 30 90 180)
+(set-world-width! (exact-floor (* world-width 1.35)))
+(set-cut-offs! 20 35 60 120)
 (define ($get-ball-vx$ ball#)
   (disqualify)
   (get-ball-vx ball#))

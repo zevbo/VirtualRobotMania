@@ -34,7 +34,7 @@
      ;; El math
      (define w (robot-width robot))
      (define rad (/ (* w Δl) (- Δr Δl)))
-     (define Δangle (/ Δl rad))
+     (define Δangle (/ (- Δr Δl) w)) ;; = Δl / rad
      (define old-angle (- (robot-angle robot) (/ pi 2)))
      (define new-angle (+ Δangle old-angle))
      ;; rm = radius from center of bot

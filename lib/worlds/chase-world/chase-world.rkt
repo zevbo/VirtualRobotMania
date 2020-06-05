@@ -8,7 +8,7 @@
          num-balls MAX_NUM_BALLS ball-exists? normalize-angle
          get-ball-vx get-ball-vy angle-to-first-ball
          help)
-(set-cut-offs! 15 30 60 120)
+(set-cut-offs! 15 25 45 75)
 (define (help)
   (printf "
 ;; Welcome to the chase world!

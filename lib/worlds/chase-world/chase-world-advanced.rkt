@@ -12,7 +12,7 @@
          help)
 (set-world-width! (exact-floor (* world-width 1.2)))
 ;dist (R-robot-point (get-robot)) (ball-pos (get-ball ball#)))
-(set-cut-offs! 15 30 75 140)
+(set-cut-offs! 15 25 55 80)
 (define (angle-to-ball~ ball#)
   (if (or (is-ball-bouncing? ball#) (not (ball-exists? ball#)))
       (angle-to-ball ball#)

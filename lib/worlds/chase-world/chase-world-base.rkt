@@ -30,7 +30,7 @@
 (define (get-balls-left)
   (filter (lambda (ball) (not (ball-hit? ball))) (world:chase-balls global-world)))
 
-(define is-first-tick? #t)
+(define tick# 0)
 (define DEFAULT_BODY_COLOR "grey")
 (define DEFAULT_WHEEL_COLOR "black")
 (define world-width 350)
@@ -162,7 +162,7 @@
      (set-ball-vy! ball (double-randomized max-vy))
      (set! max-vx (min GLOBAL_MAX_VX (+ max-vx 1)))
      (set! max-vy (min GLOBAL_MAX_VY (+ max-vy 1)))]
-    [(not is-first-tick?) (set-ball-bouncing?! ball #f)]))
+    [(> tick# 0) (set-ball-bouncing?! ball #f)]))
 
 (define (get-all-edges #:excluded-balls [excluded-balls (list)] #:robot-edges? [robot-edges? #f])
   (define all-balls
@@ -221,13 +221,12 @@
 (create-run-function
  run
  [(set! disqualified? #f)
-  (set! is-first-tick? #t)
-  (define outer-edges (get-all-edges #:excluded-balls (world:chase-balls global-world)))
-  (set! starting-time (current-milliseconds))]
+  (set! tick# 0)
+  (define outer-edges (get-all-edges #:excluded-balls (world:chase-balls global-world)))]
  (lambda (world)
    (move-bot (world:chase-robot world) 1 #:edges outer-edges)
    (map update-ball (get-balls-left))
-   (set! is-first-tick? #f)
+   (set! tick# (+ tick# 1))
    (foldl
     overlay-ball
     (overlay-robot
@@ -239,7 +238,7 @@
  all-balls-gone?
  [(cond
     [(all-balls-gone?) 
-     (define time (exact-floor (/ (- (current-milliseconds) starting-time) 1000)))
+     (define time (floor (* tick# TICK_LENGTH)))
      (define minutes (exact-floor (/ time 60)))
      (define seconds (- time (* minutes 60)))
      (printf
@@ -249,7 +248,7 @@
          [(< time (vector-ref cut-offs 0)) "Unbelievable!!"] [(< time (vector-ref cut-offs 1)) "Wow."]
          [(< time (vector-ref cut-offs 2)) "Not to shabby."] [(< time (vector-ref cut-offs 3)) "Could be better, could be worse."]
          [else "At least you finished, but there's definitely some room for improvement"])
-       " You got all the balls in" (if (> minutes 0) (format " ~s minutes and " minutes) "") (format " ~s seconds~n~n" seconds)))
+       " You got all the balls in" (if (> minutes 0) (format " ~s minutes and " minutes) "") (format " ~s game seconds~n~n" seconds)))
      (printf (string-append (if disqualified? "TIME" "FINAL SCORE")": ~s:~a")
              minutes (if (< seconds 10) (format "0~s" seconds) seconds))]
     [else
