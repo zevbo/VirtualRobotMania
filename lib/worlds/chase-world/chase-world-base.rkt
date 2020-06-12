@@ -210,6 +210,11 @@
       (angle-to-ball ball#)
       0))
 
+(define-syntax-rule (existor ball# stuff-to-do ...)
+  (cond
+    [(ball-exists? ball#) stuff-to-do ...]
+    [else #f]))
+
 (define (overlay-ball ball canvas)
   (if (ball-hit? ball)
       canvas
@@ -263,11 +268,13 @@
 (define (get-right%) (R-robot-right% (get-robot)))
 (define (get-vl) (* (R-robot-vl (get-robot)) TICK_LENGTH))
 (define (get-vr) (* (R-robot-vr (get-robot)) TICK_LENGTH))
-(define (get-ball-vx ball#) (* (ball-vx (get-ball ball#)) TICK_LENGTH))
-(define (get-ball-vy ball#) (* (ball-vy (get-ball ball#)) TICK_LENGTH))
-(define (get-ball-hue ball#) (ball-hue (get-ball ball#)))
-(define (get-ball-brightness ball#) (ball-value (get-ball ball#)))
-(define (is-ball-bouncing? ball#) (ball-bouncing? (get-ball ball#)))
+
+(define (get-ball-vx ball#) (existor ball# (* (ball-vx (get-ball ball#)) TICK_LENGTH)))
+(define (get-ball-vy ball#) (existor ball# (* (ball-vy (get-ball ball#)) TICK_LENGTH)))
+(define (get-ball-hue ball#) (existor ball# (ball-hue (get-ball ball#))))
+(define (get-ball-brightness ball#) (existor ball# (ball-value (get-ball ball#))))
+(define (is-ball-bouncing? ball#) (existor ball# (ball-bouncing? (get-ball ball#))))
+  
 (define (change-motor-inputs Δleft% Δright%)
   (set-motors! (+ (get-left%) Δleft%) (+ (get-right%) Δright%)))
 (define (get-robot-angle)
