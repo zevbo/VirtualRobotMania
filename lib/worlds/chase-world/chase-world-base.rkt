@@ -208,7 +208,7 @@
   (define ball# (findf ball-exists? (range MAX_NUM_BALLS)))
   (if (integer? ball#)
       (angle-to-ball ball#)
-      #f))
+      0))
 
 (define (overlay-ball ball canvas)
   (if (ball-hit? ball)
