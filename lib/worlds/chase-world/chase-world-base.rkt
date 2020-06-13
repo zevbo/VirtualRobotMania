@@ -15,7 +15,7 @@
          num-balls MAX_NUM_BALLS
          get-ball-vx get-ball-vy
          get-ball-hue get-ball-brightness get-robot ball-exists? normalize-angle angle-to-first-ball
-         (struct-out ball) get-ball world-width set-world-width! disqualify is-ball-bouncing? set-cut-offs!)
+         (struct-out ball) get-ball world-width set-world-width! disqualify is-ball-bouncing? set-cut-offs! set-world-specific-f!)
 
 (define-syntax-rule (mutable-struct name (vars ...) keywords ...)
   (struct name ([vars #:mutable] ...) keywords ...))
@@ -223,6 +223,8 @@
 (define (all-balls-gone? . _)
   (empty? (get-balls-left)))
 (define starting-time 0)
+(define world-specific-f void)
+(define (set-world-specific-f! f) (set! world-specific-f f))
 (create-run-function
  run
  [(set! disqualified? #f)
@@ -232,6 +234,7 @@
    (move-bot (world:chase-robot world) 1 #:edges outer-edges)
    (map update-ball (get-balls-left))
    (set! tick# (+ tick# 1))
+   (world-specific-f)
    (foldl
     overlay-ball
     (overlay-robot
@@ -278,4 +281,4 @@
 (define (change-motor-inputs Δleft% Δright%)
   (set-motors! (+ (get-left%) Δleft%) (+ (get-right%) Δright%)))
 (define (get-robot-angle)
-  (radians->degrees (R-robot-angle (get-robot))))
+  (normalize-angle (radians->degrees (R-robot-angle (get-robot)))))

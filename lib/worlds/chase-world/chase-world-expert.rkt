@@ -23,11 +23,18 @@
   (if (or (is-ball-bouncing? ball#) (not (ball-exists? ball#)))
       (angle-to-ball ball#)
       #t))
+(define (spin-car)
+  (R-set-robot-angle! (get-robot) (* 2 pi (random))))
+(set-world-specific-f!
+ (lambda ()
+   (cond
+     [(= (random 200) 0) (spin-car)])))
 (define (help)
   (printf "
 ;; Welcome to the chase world!
 ;; Your goal is to program your robot to hit all the balls as quickly as possible
 ;; Once you get all the balls, the program will print out how long it took
+;; There's one big catch though. Every few seconds, your robot will turn to a random angle!
 
 ;; Need a refresher? There are tons of comments here:
 ;; https://github.com/zevbo/VirtualRobotMania/blob/master/manias/exampleManias/primo-world-example.rkt

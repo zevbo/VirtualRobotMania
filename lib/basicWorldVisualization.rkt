@@ -52,13 +52,30 @@
                                          [body-start ...] [body-end ...] stop-f [function-end ...])
   (begin
     (define tick# 0)
-    (define (run-func on-tick-f)
+    (define images (list))
+    (define (run-func on-tick-f #:get-images? [get-images? #f] #:save-to [save-to #f])
       body-initialize ...
+      (define (to-draw-f-w/keep-track world)
+        (define img (to-draw-f world))
+        (cond
+          [get-images? (set! images (cons img images))])
+        (cond
+          [(or (not get-images?) (equal? save-to #f))
+           img]
+          [else
+           (rectangle 10 10 "solid" "white")]))
       (big-bang (get-world-f)
-        [to-draw to-draw-f]
+        [to-draw to-draw-f-w/keep-track]
         [stop-when stop-f]
         [on-tick
          (lambda (world) body-start ... (on-tick-f tick#) body-end ...
            (set! tick# (+ tick# 1)) world)
          TICK_LENGTH])
-      function-end ...)))
+      function-end ...
+      (cond
+        [(and get-images? (not (equal? save-to #f)))
+         (map (lambda (img tick#) (save-image img (string-append save-to "tick-" (number->string tick#) ".jpg")))
+              (reverse images)
+              (range (length images)))])
+      (cond
+        [get-images? images]))))
