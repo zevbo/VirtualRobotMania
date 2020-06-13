@@ -8,10 +8,11 @@
          get-left% get-right% get-robot-angle get-vl get-vr
          get-looking-dist get-lookahead-dist get-lookbehind-dist get-ball-hue get-ball-brightness
          num-balls MAX_NUM_BALLS ball-exists?
-         $get-ball-vx$ $get-ball-vy$ angle-to-ball~ normalize-angle
+         $get-ball-vx$ $get-ball-vy$ angle-to-ball~ normalize-angle get-robot-width
          help)
 (set-world-width! (exact-floor (* world-width 1.35)))
 (set-cut-offs! 20 35 60 120)
+(define (get-robot-width) (R-robot-width (get-robot)))
 (define ($get-ball-vx$ ball#)
   (disqualify)
   (get-ball-vx ball#))

@@ -8,7 +8,7 @@
          get-left% get-right% get-robot-angle get-vl get-vr
          get-looking-dist get-lookahead-dist get-lookbehind-dist
          num-balls MAX_NUM_BALLS ball-exists? angle-to-ball~
-         get-ball-vx get-ball-vy normalize-angle
+         get-ball-vx get-ball-vy normalize-angle get-robot-width
          help)
 (set-world-width! (exact-floor (* world-width 1.2)))
 ;dist (R-robot-point (get-robot)) (ball-pos (get-ball ball#)))
@@ -17,6 +17,7 @@
   (if (or (is-ball-bouncing? ball#) (not (ball-exists? ball#)))
       (angle-to-ball ball#)
       #t))
+(define (get-robot-width) (R-robot-width (get-robot)))
 (define (help)
   (printf "
 ;; Welcome to the chase world!
