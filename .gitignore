@@ -3,3 +3,5 @@
 *.zo
 
 tmp*
+
+rust-mania/target/
