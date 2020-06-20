@@ -3,5 +3,5 @@
 *.zo
 
 tmp*
-
+.vscode
 rust-lib/target/
