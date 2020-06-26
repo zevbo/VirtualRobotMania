@@ -14,7 +14,7 @@ use image::{ImageBuffer, Rgb};
 const WIDTH: u32 = 600;
 const HEIGHT: u32 = 600;
 
-pub fn collapse_rgb(rgb : &image::Rgb<u8>) -> u32{
+pub fn collapse_rgb(rgb : &Rgb<u8>) -> u32{
     let r = rgb[0] as u32;
     let g = rgb[1] as u32;
     let b = rgb[2] as u32;
