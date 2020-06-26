@@ -1,5 +1,6 @@
 pub mod image_test;
 pub mod display_image;
+pub mod image_helpers;
 
 #[cfg(test)]
 mod tests {
