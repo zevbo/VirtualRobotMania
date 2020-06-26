@@ -4,6 +4,8 @@
 *.jpg
 *.png
 
+*/chaseCompetition/*
+*/localManias/*
 tmp*
 .vscode
-rust-lib/target/
+*/target/*
