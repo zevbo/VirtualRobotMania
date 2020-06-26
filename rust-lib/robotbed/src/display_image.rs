@@ -2,15 +2,16 @@ extern crate throw;
 extern crate core;
 use image::{ImageBuffer, Rgb, Pixel};
 use core::ops::Deref;
+use crate::aliases::{ImgBuf, ImgPxl};
 
 // Trying to change this so that the second ImageBuffer type can be anything that impl: Deref<Target = [Rgb<u8>::Subpixel]
 //    but it says "ambiguous assosicated type"
 
-pub fn display_image<Container: Deref<Target = [u8]>>(img_buf : ImageBuffer<Rgb<u8>,Container>){
+pub fn display_image(img_buf : ImgBuf){
     displayer(|| {img_buf});
 }
 
-pub fn displayer<Container: Deref<Target = [u8]>, F>(get_img: F) where F: FnOnce() -> ImageBuffer<Rgb<u8>,Container> {
+pub fn displayer<F>(get_img: F) where F: FnOnce() -> ImgBuf {
 
     let (buffer, image_width, image_height) = image_buffer_to_buffer(get_img());
 
@@ -36,14 +37,14 @@ pub fn displayer<Container: Deref<Target = [u8]>, F>(get_img: F) where F: FnOnce
     }
 }
 
-fn collapse_rgb(rgb : &Rgb<u8>) -> u32 {
+fn collapse_rgb(rgb : &ImgPxl) -> u32 {
     let r = rgb[0] as u32;
     let g = rgb[1] as u32;
     let b = rgb[2] as u32;
     return (r << 16) | (g << 8) | b;
 }
 
-fn image_buffer_to_buffer<Container: Deref<Target = [u8]>>(img_buf : ImageBuffer<Rgb<u8>, Container>) -> (Vec<u32>, usize, usize){
+fn image_buffer_to_buffer(img_buf : ImgBuf) -> (Vec<u32>, usize, usize){
     let image_width  = img_buf.width()  as usize;
     let image_height = img_buf.height() as usize;
     let pixels = img_buf.pixels();

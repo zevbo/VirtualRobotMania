@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 simulator = {path = "../simulator"}
+geo = {path = "../geo"}
 nalgebra = "0.21.0"
 ncollide2d = "0.23.0"
 nphysics2d = "0.16.0"
