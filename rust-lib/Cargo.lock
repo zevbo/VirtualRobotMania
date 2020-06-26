@@ -413,7 +413,7 @@ dependencies = [
  "approx",
  "generic-array",
  "matrixmultiply",
- "num-complex",
+ "num-complex 0.2.4",
  "num-rational 0.2.4",
  "num-traits",
  "rand 0.7.3",
@@ -488,12 +488,46 @@ dependencies = [
 ]
 
 [[package]]
+name = "num"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab3e176191bc4faad357e3122c4747aa098ac880e88b168f106386128736cf4a"
+dependencies = [
+ "num-bigint",
+ "num-complex 0.3.0",
+ "num-integer",
+ "num-iter",
+ "num-rational 0.3.0",
+ "num-traits",
+]
+
+[[package]]
+name = "num-bigint"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7f3fc75e3697059fb1bc465e3d8cca6cf92f56854f201158b3f9c77d5a3cfa0"
+dependencies = [
+ "autocfg",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
 name = "num-complex"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6b19411a9719e753aff12e5187b74d60d3dc449ec3f4dc21e3989c3f554bc95"
 dependencies = [
  "autocfg",
+ "num-traits",
+]
+
+[[package]]
+name = "num-complex"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b05ad05bd8977050b171b3f6b48175fea6e0565b7981059b486075e1026a9fb5"
+dependencies = [
  "num-traits",
 ]
 
@@ -536,6 +570,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a5b4d7360f362cfb50dde8143501e6940b22f644be75a4cc90b2d81968908138"
 dependencies = [
  "autocfg",
+ "num-bigint",
  "num-integer",
  "num-traits",
 ]
@@ -818,8 +853,10 @@ dependencies = [
  "nalgebra",
  "ncollide2d",
  "nphysics2d",
+ "num 0.3.0",
  "show-image",
  "simulator",
+ "throw",
 ]
 
 [[package]]
@@ -864,7 +901,7 @@ dependencies = [
  "bitflags 0.7.0",
  "lazy_static 0.2.11",
  "libc",
- "num",
+ "num 0.1.42",
  "rand 0.3.23",
  "sdl2-sys 0.31.0",
 ]
@@ -969,7 +1006,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb931b1367faadea6b1ab1c306a860ec17aaa5fa39f367d0c744e69d971a1fb2"
 dependencies = [
  "approx",
- "num-complex",
+ "num-complex 0.2.4",
  "num-traits",
  "paste",
 ]
@@ -1071,6 +1108,12 @@ dependencies = [
  "remove_dir_all",
  "winapi",
 ]
+
+[[package]]
+name = "throw"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ed011a2531182d1cbe134f1e48c0d348f0b47f95c6340874bff7bb3a1e10f75"
 
 [[package]]
 name = "tiff"
