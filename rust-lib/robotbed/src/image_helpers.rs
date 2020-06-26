@@ -1,6 +1,6 @@
 extern crate core;
 
-use image::{ImageBuffer, Rgb};
+use image::{ImageBuffer, Rgb, open};
 use image::imageops::FilterType;
 use core::ops::Deref;
 
@@ -16,4 +16,8 @@ pub fn scale_down<Container: Deref<Target = [u8]>>(img_buf: ImageBuffer<Rgb<u8>,
     let width  = (img_buf.width() as f32 * scale_factor) as u32;
     let height = (img_buf.width() as f32 * scale_factor) as u32;
     return resize(img_buf, width, height);
+}
+
+pub fn download_img(link: &str) -> ImageBuffer<Rgb<u8>, std::vec::Vec<u8>>{
+    return open(link).unwrap().into_rgb()
 }
