@@ -1,4 +1,4 @@
-use crate::geo;
+use crate::purePt;
 use crate::point::Point;
 
 #[cfg(test)]
@@ -16,6 +16,6 @@ mod tests {
     }
     #[test]
     fn mul1() {
-        assert_eq!(geo::scale_point(5.3, p10), Point::new(5.3, 0.0));
+        assert_eq!(purePt::scale_point(5.3, p10), Point::new(5.3, 0.0));
     }
 }

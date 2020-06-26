@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate throw;
+
 mod image_test;
 mod display_image;
 mod image_helpers;

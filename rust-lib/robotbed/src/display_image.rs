@@ -50,7 +50,7 @@ fn image_buffer_to_buffer(img_buf : ImgBuf) -> (Vec<u32>, usize, usize){
     let pixels = img_buf.pixels();
     let mut buffer = Vec::new();
     for pixel in pixels{
-        buffer.push(collapse_rgb(&pixel.to_rgb()));
+        buffer.push(collapse_rgb(&pixel.to_rgba()));
     }
     return (buffer, image_width, image_height);
 
