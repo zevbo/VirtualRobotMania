@@ -52,14 +52,6 @@ fn collapse_rgb(rgb: &ImgPxl) -> u32 {
     let b = rgb[2] as u32;
     return (r << 16) | (g << 8) | b;
 }
-
-fn im_buff_f_to_buffer<F>(get_img: &F) -> (Vec<u32>, usize, usize) 
-where
-    F: FnOnce() -> ImgBuf,
-{
-    return image_buffer_to_buffer(get_img());
-}
-
 fn image_buffer_to_buffer(img_buf: ImgBuf) -> (Vec<u32>, usize, usize) {
     let image_width = img_buf.width() as usize;
     let image_height = img_buf.height() as usize;
