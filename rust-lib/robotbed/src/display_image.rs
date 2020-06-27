@@ -8,7 +8,7 @@ use crate::aliases::{ImgBuf, ImgPxl};
 // Trying to change this so that the second ImageBuffer type can be anything that impl: Deref<Target = [Rgb<u8>::Subpixel]
 //    but it says "ambiguous assosicated type"
 
-pub fn display_image(img_buf: ImgBuf) {
+pub fn display_static_image(img_buf: ImgBuf) {
     displayer(|| img_buf.clone());
 }
 
@@ -50,13 +50,6 @@ fn collapse_rgb(rgb: &ImgPxl) -> u32 {
     let g = rgb[1] as u32;
     let b = rgb[2] as u32;
     return (r << 16) | (g << 8) | b;
-}
-
-fn im_buff_f_to_buffer<F>(get_img: &F) -> (Vec<u32>, usize, usize)
-where
-    F: FnOnce() -> ImgBuf,
-{
-    return image_buffer_to_buffer(get_img());
 }
 
 fn image_buffer_to_buffer(img_buf: ImgBuf) -> (Vec<u32>, usize, usize) {

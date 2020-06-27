@@ -1,9 +1,8 @@
 extern crate nalgebra as na;
 
 use crate::display_image;
-use crate::image_test;
-use crate::image_helpers::{scale_down, download_img, rotate_overlay};
-use image::{ImageBuffer};
+use crate::image_helpers::{download_img, rotate_overlay, scale_down};
+use image::ImageBuffer;
 
 const WIDTH: u32 = 600;
 const HEIGHT: u32 = 600;
@@ -18,7 +17,7 @@ pub fn display_img() {
     let mut imgbuf = ImageBuffer::new(WIDTH, HEIGHT);
     println!("new imbuf");
     //image::imageops::overlay(&mut imgbuf, &on_top, 400, 120);
-    let mut tester = ||{rotate_overlay(&mut imgbuf, &on_top, 400, 120, 0.1 * core::f32::consts::PI)};
+    let mut tester = || rotate_overlay(&mut imgbuf, &on_top, 400, 120, 0.1 * core::f32::consts::PI);
     tester();
     tester();
     tester();
@@ -26,6 +25,5 @@ pub fn display_img() {
     tester();
     tester();
     println!("overlayed");
-    display_image::display_image(imgbuf);
-    
+    display_image::display_static_image(imgbuf);
 }
