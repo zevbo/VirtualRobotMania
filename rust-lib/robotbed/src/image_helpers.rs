@@ -73,7 +73,6 @@ pub fn rotate_overlay(bot: &mut ImgBuf, top: &ImgBuf, x_shift: i32, y_shift: i32
     ) as i32;
     // We will run through all of the xs and ys in the bounding rectangle of the final displayed image
     // Then we will only overlay pixels that when transformed back on to the original canvas, are in frame
-    let _scale = 100000;
     let sin = angle.sin();
     let cos = angle.cos();
     let start = Instant::now();
