@@ -17,7 +17,7 @@ pub fn rotate_pt_quick(p: Point, sin: f32, cos: f32) -> Point {
 pub fn rotate_pt_around(p: Point, angle: f32, p_around: Point) -> Point {
     return rotate_pt(p - p_around, angle) + p_around;
 }
-pub fn rotate_pt_around_quick(p: Point, angle: f32, p_around: Point, sin: f32, cos: f32) -> Point {
+pub fn rotate_pt_around_quick(p: Point, p_around: Point, sin: f32, cos: f32) -> Point {
     return rotate_pt_quick(p - p_around, sin, cos) + p_around;
 }
 pub fn mag_sq(p: Point) -> f32 {

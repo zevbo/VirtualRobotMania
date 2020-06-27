@@ -4,9 +4,11 @@ use crate::aliases::ImgBuf;
 use geo::point::Point;
 use geo::pure_pt;
 use image::imageops::FilterType;
-use image::{open, ImageBuffer, Rgb};
+//use image::{open, ImageBuffer, Rgb};
+use image::open;
 use std::cmp;
-use std::time::{Duration, Instant};
+//use std::time::Duration;
+use std::time::Instant;
 
 const GLOBAL_FILTER_TYPE: FilterType = FilterType::CatmullRom;
 
