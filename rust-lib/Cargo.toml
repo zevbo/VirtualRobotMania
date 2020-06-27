@@ -3,5 +3,6 @@
 members = [
     "robotbed",
     "simulator",
-    "racket-lib"
+    "racket-lib",
+    "testing"
 ]

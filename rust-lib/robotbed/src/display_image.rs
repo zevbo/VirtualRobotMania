@@ -9,11 +9,10 @@ use crate::aliases::{ImgBuf, ImgPxl};
 //    but it says "ambiguous assosicated type"
 
 pub fn display_image(img_buf: ImgBuf) {
-    displayer(|| img_buf);
+    displayer(|| img_buf.clone());
 }
 
-pub fn displayer<F: Fn() -> ImgBuf>(get_img: F)
-{
+pub fn displayer<F: Fn() -> ImgBuf>(get_img: F) {
     let (_buffer, image_width, image_height) = image_buffer_to_buffer(get_img());
 
     let mut window = match minifb::Window::new(
@@ -35,7 +34,7 @@ pub fn displayer<F: Fn() -> ImgBuf>(get_img: F)
     while window.is_open() && !window.is_key_down(minifb::Key::Escape) {
         // We unwrap here as we want this code to exit if it fails. Real applications may want to handle this in a different way
         let (buffer, curr_image_width, curr_image_height) = image_buffer_to_buffer(get_img());
-        if (curr_image_width == image_width) & (curr_image_height == image_height){
+        if (curr_image_width == image_width) & (curr_image_height == image_height) {
             window
                 .update_with_buffer(&buffer, image_width, image_height)
                 .unwrap();
@@ -53,7 +52,7 @@ fn collapse_rgb(rgb: &ImgPxl) -> u32 {
     return (r << 16) | (g << 8) | b;
 }
 
-fn im_buff_f_to_buffer<F>(get_img: &F) -> (Vec<u32>, usize, usize) 
+fn im_buff_f_to_buffer<F>(get_img: &F) -> (Vec<u32>, usize, usize)
 where
     F: FnOnce() -> ImgBuf,
 {
