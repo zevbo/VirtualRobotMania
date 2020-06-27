@@ -1,13 +1,16 @@
-use std::ops::{Add, Sub};
+use crate::pure_pt;
 use std::marker::Copy;
-use crate::purePt;
+use std::ops::{Add, Sub};
 
 #[derive(PartialEq, Copy, Clone)]
-pub struct Point{pub x:f32, pub y:f32}
+pub struct Point {
+    pub x: f32,
+    pub y: f32,
+}
 
 impl Point {
     pub fn new(x: f32, y: f32) -> Point {
-        return Point{x, y};
+        return Point { x, y };
     }
 }
 
@@ -22,6 +25,6 @@ impl Sub for Point {
     type Output = Point;
 
     fn sub(self, other: Point) -> Point {
-        return self + purePt::scale_pt(-1.0, other);
+        return self + pure_pt::scale_pt(-1.0, other);
     }
 }

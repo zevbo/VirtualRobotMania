@@ -1,2 +1,2 @@
-pub mod purePt;
 pub mod point;
+pub mod pure_pt;
