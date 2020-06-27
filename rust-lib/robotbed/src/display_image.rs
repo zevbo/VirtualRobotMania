@@ -5,15 +5,23 @@ use image::Pixel;
 //use core::ops::Deref;
 use crate::aliases::{ImgBuf, ImgPxl};
 
-// Trying to change this so that the second ImageBuffer type can be anything that impl: Deref<Target = [Rgb<u8>::Subpixel]
-//    but it says "ambiguous assosicated type"
-
+#[allow(dead_code)]
 pub fn display_static_image(img_buf: ImgBuf) {
-    displayer(|| img_buf.clone());
+    displayer(&mut || img_buf.clone());
 }
 
-pub fn displayer<F: Fn() -> ImgBuf>(get_img: F) {
-    let (_buffer, image_width, image_height) = image_buffer_to_buffer(get_img());
+pub fn display_with_tick<F: Fn(u64) -> ImgBuf>(f: F) {
+    let mut i: u64 = 0;
+    let mut get_img = || {
+        i = i + 1;
+        return f(i);
+    };
+    displayer(&mut get_img);
+}
+
+pub fn displayer<F: FnMut() -> ImgBuf>(get_img: &mut F) {
+    let img = get_img();
+    let (_buffer, image_width, image_height) = image_buffer_to_buffer(img);
 
     let mut window = match minifb::Window::new(
         "Test",

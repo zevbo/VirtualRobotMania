@@ -14,19 +14,18 @@ pub fn display_img() {
     println!("downloaded!");
     let on_top = scale_down(on_top_big, 0.3);
     println!("scaled!");
-    let mut imgbuf = ImageBuffer::new(WIDTH, HEIGHT);
-    println!("new imbuf");
     //image::imageops::overlay(&mut imgbuf, &on_top, 400, 120);
-    let mut tester =
-        |x: f32| rotate_overlay(&mut imgbuf, &on_top, 400, 120, x * core::f32::consts::PI);
-    let mut count = 0.;
-    loop {
-        count = count + 0.05;
-        tester(count);
-        if count > 1. {
-            break;
-        }
-    }
+    let f = |tick: u64| {
+        let mut imgbuf = ImageBuffer::new(WIDTH, HEIGHT);
+        rotate_overlay(
+            &mut imgbuf,
+            &on_top,
+            400,
+            120,
+            (tick as f32) * 0.1 * core::f32::consts::PI,
+        );
+        return imgbuf;
+    };
     println!("overlayed");
-    display_image::display_static_image(imgbuf);
+    display_image::display_with_tick(f);
 }
