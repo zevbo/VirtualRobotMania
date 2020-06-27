@@ -1,6 +1,7 @@
 extern crate nalgebra as na;
 
 use crate::display_image;
+use crate::image_test;
 use crate::image_helpers::{scale_down, download_img, rotate_overlay};
 use image::{ImageBuffer};
 

@@ -12,11 +12,9 @@ pub fn display_image(img_buf: ImgBuf) {
     displayer(|| img_buf);
 }
 
-pub fn displayer<F>(get_img: F)
-where
-    F: FnOnce() -> ImgBuf,
+pub fn displayer<F: Fn() -> ImgBuf>(get_img: F)
 {
-    let (buffer, image_width, image_height) = image_buffer_to_buffer(get_img());
+    let (_buffer, image_width, image_height) = image_buffer_to_buffer(get_img());
 
     let mut window = match minifb::Window::new(
         "Test",
@@ -36,9 +34,15 @@ where
 
     while window.is_open() && !window.is_key_down(minifb::Key::Escape) {
         // We unwrap here as we want this code to exit if it fails. Real applications may want to handle this in a different way
-        window
-            .update_with_buffer(&buffer, image_width, image_height)
-            .unwrap();
+        let (buffer, curr_image_width, curr_image_height) = image_buffer_to_buffer(get_img());
+        if (curr_image_width == image_width) & (curr_image_height == image_height){
+            window
+                .update_with_buffer(&buffer, image_width, image_height)
+                .unwrap();
+        } else {
+            println!("Attempted to display image with dimensions {:?}x{:?} on a canvas with dimensions {:?}x{:?}",
+        curr_image_width, curr_image_height, image_width, image_height)
+        }
     }
 }
 
@@ -47,6 +51,13 @@ fn collapse_rgb(rgb: &ImgPxl) -> u32 {
     let g = rgb[1] as u32;
     let b = rgb[2] as u32;
     return (r << 16) | (g << 8) | b;
+}
+
+fn im_buff_f_to_buffer<F>(get_img: &F) -> (Vec<u32>, usize, usize) 
+where
+    F: FnOnce() -> ImgBuf,
+{
+    return image_buffer_to_buffer(get_img());
 }
 
 fn image_buffer_to_buffer(img_buf: ImgBuf) -> (Vec<u32>, usize, usize) {
