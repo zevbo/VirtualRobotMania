@@ -17,7 +17,13 @@ pub fn display_img() {
     let mut imgbuf = ImageBuffer::new(WIDTH, HEIGHT);
     println!("new imbuf");
     //image::imageops::overlay(&mut imgbuf, &on_top, 400, 120);
-    rotate_overlay(&mut imgbuf, &on_top, 400, 120, 1.0/4.0 * core::f32::consts::PI);
+    let mut tester = ||{rotate_overlay(&mut imgbuf, &on_top, 400, 120, 0.1 * core::f32::consts::PI)};
+    tester();
+    tester();
+    tester();
+    tester();
+    tester();
+    tester();
     println!("overlayed");
     display_image::display_image(imgbuf);
     
