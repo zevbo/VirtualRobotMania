@@ -10,7 +10,7 @@ const HEIGHT: u32 = 600;
 pub fn display_img() {
     // a default (black) image containing Rgb values
     println!("downloading image...");
-    let on_top_big = download_img("/Users/goobjar/Downloads/pelosi.JPEG");
+    let on_top_big = download_img("../pelosi.jpeg");
     println!("downloaded!");
     let on_top = scale_down(on_top_big, 0.1);
     println!("scaled!");
