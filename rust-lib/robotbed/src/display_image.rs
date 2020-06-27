@@ -9,7 +9,7 @@ use crate::aliases::{ImgBuf, ImgPxl};
 //    but it says "ambiguous assosicated type"
 
 pub fn display_image(img_buf: ImgBuf) {
-    displayer(|| img_buf);
+    //displayer(|| img_buf);
 }
 
 pub fn displayer<F: Fn() -> ImgBuf>(get_img: F)
