@@ -6,9 +6,10 @@ use display_engine::Item;
 
 fn main() {
     let img1 = image_helpers::download_img(
-        "https://www.gstatic.com/tv/thumb/persons/573960/573960_v9_ba.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Official_photo_of_Speaker_Nancy_Pelosi_in_2019.jpg/960px-Official_photo_of_Speaker_Nancy_Pelosi_in_2019.jpg",
     );
-    let img2 = image_helpers::download_img("https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.forbes.com%2Fsites%2Fkenrapoza%2F2020%2F06%2F25%2Fnancy-pelosi-just-protected-the-wto-from-trump-other-democrats%2F&psig=AOvVaw1BV0BeRBSy8X7UfhwmuksN&ust=1593465872767000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCPji1Iy5peoCFQAAAAAdAAAAABAS");
+    let img2 = image_helpers::download_img(
+        "https://upload.wikimedia.org/wikipedia/commons/4/44/Nancy_Pelosi_1993_congressional_photo.jpg");
     let images = vec![img1, img2];
     let sender = display_engine::start_game_thread(images);
     let mut rotation = 0.0;
