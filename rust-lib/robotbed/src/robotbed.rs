@@ -146,7 +146,6 @@ impl Robotbed {
                         &mut self.force_generators,
                     );
         self.run_callback();
-        let img_to_display = self.create_image();
         }
     }
 
@@ -157,7 +156,7 @@ impl Robotbed {
         };
     }
 
-    fn overlay_collider(&self, canvas: &mut ImgBuf, handle: DefaultColliderHandle){
+    fn collider_display_info(&self, handle: DefaultColliderHandle) -> (ImgBuf, f32, f32, f32){
         let collider_op = self.colliders.get(handle);
         match collider_op {
             Some(collider) => {
@@ -166,22 +165,18 @@ impl Robotbed {
                 let rotation = 0.0; // pos.rotation.into_inner().re;
                 let vec = pos.translation.vector;
                 let img = self.get_collider_image(handle);
-                rotate_overlay(canvas, &img, vec.x as i32, vec.y as i32, rotation);
-            }
-            None => ()
+                return (img, vec.x, vec.y, rotation);
+            },
+            None => return (ImgBuf::new(0, 0), 0.0, 0.0, 0.0),
         }
+
     }
 
-    fn create_background(&self) -> ImgBuf{
-        return ImgBuf::new(self.width, self.height);
-    }
-
-    fn create_image(&self) -> ImgBuf {
-        let mut canvas = self.create_background();
+    fn send_image(&self) {
+        let mut info = Vec::new();
         for (handle, _collider) in self.colliders.iter(){
-            self.overlay_collider(&mut canvas, handle);
+            info.push(self.collider_display_info(handle));
         }
-        return canvas;
     }
 
 } 
