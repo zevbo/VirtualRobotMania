@@ -1,12 +1,3 @@
-/*
-mod aliases;
-mod display_image;
-mod image_helpers;
-mod image_test;
-*/
-
-// using sprites by 0x72: https://0x72.itch.io/16x16-industrial-tileset
-
 use core::f32::consts::PI;
 
 use tetra::graphics::{self, Color, DrawParams, Texture};
@@ -68,11 +59,3 @@ fn main() -> tetra::Result {
         .build()?
         .run(GameState::new)
 }
-
-/*
-fn main() {
-    if false {
-        image_test::display_img();
-    }
-}
-*/
