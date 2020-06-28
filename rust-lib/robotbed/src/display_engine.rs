@@ -58,7 +58,10 @@ pub fn start_game_thread(images: Vec<ImgBuf>) -> Sender<Vec<Item>> {
             .iter()
             .map(|img: &ImgBuf| {
                 let img = img.clone();
-                return Texture::from_file_data(ctx, img.into_raw().as_slice()).unwrap();
+                let width = img.width() as i32;
+                let height = img.height() as i32;
+                let raw = img.into_raw();
+                return Texture::from_rgba(ctx, width, height, raw.as_slice()).unwrap();
             })
             .collect::<Vec<_>>();
         return Ok(GameState {
