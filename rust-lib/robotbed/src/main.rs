@@ -8,9 +8,8 @@ mod image_test;
 // using sprites by 0x72: https://0x72.itch.io/16x16-industrial-tileset
 
 use core::f32::consts::PI;
-use std::time::Duration;
 
-use tetra::graphics::{self, Color, DrawParams, Rectangle, Texture};
+use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
