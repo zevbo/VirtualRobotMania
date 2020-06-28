@@ -1081,6 +1081,10 @@ dependencies = [
 [[package]]
 name = "simulator"
 version = "0.1.0"
+dependencies = [
+ "ncollide2d",
+ "nphysics2d",
+]
 
 [[package]]
 name = "slab"

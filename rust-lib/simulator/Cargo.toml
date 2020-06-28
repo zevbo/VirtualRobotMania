@@ -11,3 +11,5 @@ crate_type = ["lib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ncollide2d = "0.23.0"
+nphysics2d = "0.16.0"

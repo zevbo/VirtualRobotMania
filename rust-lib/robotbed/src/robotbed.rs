@@ -9,6 +9,7 @@ use std::ptr::null;
 use ncollide2d::shape::Shape;
 use ncollide2d::shape::ConvexPolyhedron;
 use std::collections::HashMap;
+use simulator::aliases::{MechWorld, GeoWorld, Bodies, Colliders, Constraints, ForceGens, ColliderHandle};
 
 // not sure every one of these should be default
 // just going with that for le momento
@@ -17,15 +18,14 @@ pub struct ColliderImage{image: ImgBuf, handle: DefaultColliderHandle}
 pub struct Robotbed{
     width: u32,
     height: u32,
-    mechanical_world : DefaultMechanicalWorld<f32>, 
-    geometrical_world : DefaultGeometricalWorld<f32>, 
-    bodies : DefaultBodySet<f32>, 
-    colliders : DefaultColliderSet<f32>, 
-    joint_constraints : DefaultJointConstraintSet<f32>, 
-    force_generators : DefaultForceGeneratorSet<f32>, // I'm not sure if f32 makes sense here
-    collider_images : HashMap<DefaultColliderHandle, ImgBuf>,
-    callback : fn(DefaultMechanicalWorld<f32>, DefaultGeometricalWorld<f32>, DefaultBodySet<f32>, DefaultColliderSet<f32>,
-        DefaultJointConstraintSet<f32>,  DefaultForceGeneratorSet<f32>) -> ()
+    mechanical_world : MechWorld, 
+    geometrical_world : GeoWorld, 
+    bodies : Bodies, 
+    colliders : Colliders, 
+    constraints : Constraints, 
+    force_generators : ForceGens, // I'm not sure if f32 makes sense here
+    collider_images : HashMap<ColliderHandle, ImgBuf>,
+    callback : fn(&MechWorld, &GeoWorld, &Bodies, &Colliders, &Constraints, &ForceGens) -> ()
 }
 
 pub enum ImgFit{
@@ -110,13 +110,13 @@ fn scale_image(image : ImgBuf, width : u32, height : u32, fit : ImgFit) -> ImgBu
 impl Robotbed {
 
     pub fn new(width: u32, height: u32,
-        mechanical_world : DefaultMechanicalWorld<f32>, 
-        geometrical_world : DefaultGeometricalWorld<f32>, 
-        bodies : DefaultBodySet<f32>, 
-        colliders : DefaultColliderSet<f32>, 
-        joint_constraints : DefaultJointConstraintSet<f32>, 
-        force_generators : DefaultForceGeneratorSet<f32>) -> Robotbed{
-            return Robotbed{width, height, mechanical_world, geometrical_world, bodies, colliders, joint_constraints, force_generators, 
+        mechanical_world : MechWorld, 
+        geometrical_world : GeoWorld, 
+        bodies : Bodies, 
+        colliders : Colliders, 
+        constraints : Constraints, 
+        force_generators : ForceGens) -> Robotbed{
+            return Robotbed{width, height, mechanical_world, geometrical_world, bodies, colliders, constraints, force_generators, 
                 collider_images: HashMap::new(), callback: |_,_,_,_,_,_|{}};
     }
 
@@ -131,6 +131,10 @@ impl Robotbed {
         }
     }
 
+    pub fn run_callback(&self){
+        (self.callback)(&self.mechanical_world, &self.geometrical_world, &self.bodies, &self.colliders, &self.constraints, &self.force_generators)
+    }
+
     pub fn run(&mut self){
         loop {
             //handle_input_events();
@@ -138,10 +142,10 @@ impl Robotbed {
                         &mut self.geometrical_world,
                         &mut self.bodies,
                         &mut self.colliders,
-                        &mut self.joint_constraints,
+                        &mut self.constraints,
                         &mut self.force_generators,
                     );
-            callback(self.mechanical_world, self.geometrical_world, self.bodies, self.colliders, self.joint_constraints, self.force_generators)
+        self.run_callback();
         }
     }
 
