@@ -12,7 +12,7 @@ pub fn display_img() {
     println!("downloading image...");
     let on_top_big = download_img("../pelosi.jpeg");
     println!("downloaded!");
-    let on_top = scale_down(on_top_big, 0.3);
+    let on_top = scale_down(on_top_big, 0.1);
     println!("scaled!");
     //image::imageops::overlay(&mut imgbuf, &on_top, 400, 120);
     let f = |tick: u64| {
