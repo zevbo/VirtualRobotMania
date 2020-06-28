@@ -5,8 +5,8 @@ use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
-const ARENA_HEIGHT: f32 = 1000.;
-const ARENA_WIDTH: f32 = 1000.;
+const ARENA_HEIGHT: i32 = 1000;
+const ARENA_WIDTH: i32 = 1000;
 
 pub struct Item {
     pub position: (f32, f32), // coordinates. x and y go to the right and up respectively
@@ -40,7 +40,10 @@ impl State for GameState {
                 ctx,
                 texture,
                 DrawParams::new()
-                    .position(Vec2::new(x - ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0 - y))
+                    .position(Vec2::new(
+                        x - ARENA_WIDTH as f32 / 2.0,
+                        ARENA_HEIGHT as f32 / 2.0 - y,
+                    ))
                     .origin(Vec2::new(width / 2.0, height / 2.0))
                     .rotation(item.rotation)
                     .scale(scale),
@@ -71,7 +74,7 @@ pub fn start_game_thread(images: Vec<ImgBuf>) -> Sender<Vec<Item>> {
         });
     };
     let _join_handle = thread::spawn(move || {
-        ContextBuilder::new("Virtual robot arena", 1000, 1000)
+        ContextBuilder::new("Virtual robot arena", ARENA_WIDTH, ARENA_HEIGHT)
             .quit_on_escape(true)
             .build()?
             .run(new_gamestate)

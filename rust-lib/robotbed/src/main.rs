@@ -17,13 +17,13 @@ fn main() {
         rotation += 0.01;
         let items = vec![
             Item {
-                position: (-400., 0.),
-                scale: (0.2, 0.2),
+                position: (0., 0.),
+                scale: (1., 1.),
                 rotation,
                 image_id: 0,
             },
             Item {
-                position: (400., 0.),
+                position: (0., 0.),
                 scale: (0.2, 0.2),
                 rotation: -rotation,
                 image_id: 1,
