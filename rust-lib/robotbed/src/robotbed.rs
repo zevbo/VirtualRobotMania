@@ -146,6 +146,7 @@ impl Robotbed {
                         &mut self.force_generators,
                     );
         self.run_callback();
+        let img_to_display = self.create_image();
         }
     }
 
