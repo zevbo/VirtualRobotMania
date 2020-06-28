@@ -1,3 +1,4 @@
+pub mod aliases;
 pub mod display_engine;
 pub mod image_helpers;
 //use core::f32::consts::PI;

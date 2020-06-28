@@ -9,13 +9,13 @@ const ARENA_HEIGHT: f32 = 1000.;
 const ARENA_WIDTH: f32 = 1000.;
 
 pub struct Item {
-    position: (f32, f32), // coordinates. x and y go to the right and up respectively
-    scale: (f32, f32),    // (1.,1.) is the identity
-    rotation: f32,        // in radians
-    image_id: usize,
+    pub position: (f32, f32), // coordinates. x and y go to the right and up respectively
+    pub scale: (f32, f32),    // (1.,1.) is the identity
+    pub rotation: f32,        // in radians
+    pub image_id: usize,
 }
 
-pub struct GameState {
+struct GameState {
     textures: Vec<Texture>,
     items: Vec<Item>,
     receiver: Receiver<Vec<Item>>,
