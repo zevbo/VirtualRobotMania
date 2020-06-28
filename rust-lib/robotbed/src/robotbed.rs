@@ -1,26 +1,29 @@
 use nphysics2d::world::{DefaultMechanicalWorld, DefaultGeometricalWorld};
-use nphysics2d::object::{DefaultBodySet, DefaultColliderSet, DefaultBodyHandle, DefaultColliderHandle};
+use nphysics2d::object::{DefaultBodySet, DefaultColliderSet, DefaultBodyHandle, DefaultColliderHandle, Collider};
 use nphysics2d::joint::{DefaultJointConstraintSet};
 use nphysics2d::force_generator::{DefaultForceGeneratorSet};
 use image::ImageBuffer;
 use crate::aliases::ImgBuf;
-use crate::image_helpers::{resize, scale_img};
+use crate::image_helpers::{resize, scale_img, rotate_overlay};
 use std::ptr::null;
+use ncollide2d::shape::Shape;
+use ncollide2d::shape::ConvexPolyhedron;
+use std::collections::HashMap;
 
 // not sure every one of these should be default
 // just going with that for le momento
 // also these types should almost certianly be gotten from aliasses from the simulator package
-pub struct BodyImage{image: ImgBuf, handle: DefaultBodyHandle}
 pub struct ColliderImage{image: ImgBuf, handle: DefaultColliderHandle}
 pub struct Robotbed{
+    width: u32,
+    height: u32,
     mechanical_world : DefaultMechanicalWorld<f32>, 
     geometrical_world : DefaultGeometricalWorld<f32>, 
     bodies : DefaultBodySet<f32>, 
     colliders : DefaultColliderSet<f32>, 
     joint_constraints : DefaultJointConstraintSet<f32>, 
     force_generators : DefaultForceGeneratorSet<f32>, // I'm not sure if f32 makes sense here
-    body_images : Vec<BodyImage>,
-    collider_images : Vec<ColliderImage>,
+    collider_images : HashMap<DefaultColliderHandle, ImgBuf>,
 }
 
 pub enum ImgFit{
@@ -43,11 +46,25 @@ pub enum ImgFit{
 fn min(n1 : f32, n2 : f32) -> f32{return if n1 < n2 {n1} else {n2};}
 fn max(n1 : f32, n2 : f32) -> f32{return if n1 > n2 {n1} else {n2};}
 
+fn unpack<'a, T>(opt: std::option::Option<&'a T>, default: &'a T) -> &'a T {
+    match opt {
+        Some(val) => return val,
+        None => default,
+    }
+}
+
+// I dunno what dyn means, but it get's mad at me if I don't
+fn width_and_height(_shape : &dyn Shape<f32>) -> (f32, f32){
+    // choosing to do this with ConvexPolyhedron, might be wrong 
+    // don't know how to do this yet. For the moment we should just use None
+    return (0.0, 0.0);
+}
+
 fn scale_image(image : ImgBuf, width : u32, height : u32, fit : ImgFit) -> ImgBuf{
     let fl_width = width as f32;
     let fl_height = height as f32;
-    let im_width = width as f32;
-    let im_height = height as f32;
+    let im_width = image.width() as f32;
+    let im_height = image.height() as f32;
     let new_scale =
         match fit {
             ImgFit::ScaleWidth => fl_width / im_width,
@@ -79,27 +96,86 @@ fn scale_image(image : ImgBuf, width : u32, height : u32, fit : ImgFit) -> ImgBu
                 (im_height * (1.0 - height_pad)).floor() as u32),
             _ => (0, 0),
         };
-    if new_scale == 0.0{
+    if new_scale != 0.0{
         return scale_img(image, new_scale);
-    } else {
+    } else if new_width != 0 {
         return resize(image, new_width, new_height);
+    } else {
+        return image.clone();
     }
 }
 
 impl Robotbed {
 
-    pub fn new(mechanical_world : DefaultMechanicalWorld<f32>, 
+    pub fn new(width: u32, height: u32,
+        mechanical_world : DefaultMechanicalWorld<f32>, 
         geometrical_world : DefaultGeometricalWorld<f32>, 
         bodies : DefaultBodySet<f32>, 
         colliders : DefaultColliderSet<f32>, 
         joint_constraints : DefaultJointConstraintSet<f32>, 
         force_generators : DefaultForceGeneratorSet<f32>) -> Robotbed{
-            return Robotbed{mechanical_world, geometrical_world, bodies, colliders, joint_constraints, force_generators, 
-                body_images: Vec::new(), collider_images: Vec::new()};
+            return Robotbed{width, height, mechanical_world, geometrical_world, bodies, colliders, joint_constraints, force_generators, 
+                collider_images: HashMap::new()};
     }
 
-    /*pub fn set_body_image(&self, handle, image : ImgBuf, fit : ImageFit){
+    pub fn set_collider_image(&mut self, handle : DefaultColliderHandle, image : ImgBuf){
+        let collider_op = self.colliders.get(handle);
+        match collider_op {
+            Some(collider) => {
+                let (width, height) = width_and_height(collider.shape());
+                //let scaled_img = scale_image(image, width as u32, height as u32, ImgFit::None);
+                self.collider_images.insert(handle, image); ()},
+            None => ()
+        }
+    }
 
-    }*/
+    pub fn run(&mut self){
+        loop {
+            //handle_input_events();
+            self.mechanical_world.step(
+                        &mut self.geometrical_world,
+                        &mut self.bodies,
+                        &mut self.colliders,
+                        &mut self.joint_constraints,
+                        &mut self.force_generators,
+                    );
+            //handle_physics_events();
+            //render_scene();
+        }
+    }
+
+    fn get_collider_image(&self, handle : DefaultColliderHandle) -> ImgBuf{
+        match self.collider_images.get(&handle){
+            Some(collider_img) => return collider_img.clone(), //not sure if there's a way to get around this clone
+            None => return ImgBuf::new(0, 0),
+        };
+    }
+
+    fn overlay_collider(&self, canvas: &mut ImgBuf, handle: DefaultColliderHandle){
+        let collider_op = self.colliders.get(handle);
+        match collider_op {
+            Some(collider) => {
+                let pos = *collider.position();
+                // currently not using rotation b/c we don't know how it is represented
+                let rotation = 0.0; // pos.rotation.into_inner().re;
+                let vec = pos.translation.vector;
+                let img = self.get_collider_image(handle);
+                rotate_overlay(canvas, &img, vec.x as i32, vec.y as i32, rotation);
+            }
+            None => ()
+        }
+    }
+
+    fn create_background(&self) -> ImgBuf{
+        return ImgBuf::new(self.width, self.height);
+    }
+
+    fn create_image(&self) -> ImgBuf {
+        let mut canvas = self.create_background();
+        for (handle, _collider) in self.colliders.iter(){
+            self.overlay_collider(&mut canvas, handle);
+        }
+        return canvas;
+    }
 
 } 
