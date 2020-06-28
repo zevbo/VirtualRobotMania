@@ -45,13 +45,15 @@ impl State for GameState {
 
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(1., 1., 1.));
+        let width = Texture::width(&self.image) as f32;
+        let height = Texture::height(&self.image) as f32;
 
         graphics::draw(
             ctx,
             &self.image,
             DrawParams::new()
                 .position(Vec2::new(500.0, 500.0))
-                .origin(Vec2::new(8.0, 8.0))
+                .origin(Vec2::new(width / 2.0, height / 2.0))
                 .rotation(self.rotation * PI)
                 .scale(Vec2::new(0.2, 0.2)),
         );
