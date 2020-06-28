@@ -24,7 +24,8 @@ pub struct Robotbed{
     colliders : Colliders, 
     constraints : Constraints, 
     force_generators : ForceGens, // I'm not sure if f32 makes sense here
-    collider_images : HashMap<ColliderHandle, ImgBuf>,
+    collider_images : HashMap<(ColliderHandle, String), ImgBuf>,
+    collider_img_names : HashMap<ColliderHandle, String>,
     callback : fn(&MechWorld, &GeoWorld, &Bodies, &Colliders, &Constraints, &ForceGens) -> ()
 }
 
@@ -48,7 +49,7 @@ pub enum ImgFit{
 fn min(n1 : f32, n2 : f32) -> f32{return if n1 < n2 {n1} else {n2};}
 fn max(n1 : f32, n2 : f32) -> f32{return if n1 > n2 {n1} else {n2};}
 
-fn unpack<'a, T>(opt: std::option::Option<&'a T>, default: &'a T) -> &'a T {
+fn unpack_def<'a, T>(opt: std::option::Option<&'a T>, default: &'a T) -> &'a T {
     match opt {
         Some(val) => return val,
         None => default,
@@ -117,17 +118,21 @@ impl Robotbed {
         constraints : Constraints, 
         force_generators : ForceGens) -> Robotbed{
             return Robotbed{width, height, mechanical_world, geometrical_world, bodies, colliders, constraints, force_generators, 
-                collider_images: HashMap::new(), callback: |_,_,_,_,_,_|{}};
+                collider_images: HashMap::new(), collider_img_names: HashMap::new(), callback: |_,_,_,_,_,_|{}};
     }
 
-    pub fn set_collider_image(&mut self, handle : DefaultColliderHandle, image : ImgBuf){
-        let collider_op = self.colliders.get(handle);
-        match collider_op {
-            Some(collider) => {
-                let (width, height) = width_and_height(collider.shape());
-                //let scaled_img = scale_image(image, width as u32, height as u32, ImgFit::None);
-                self.collider_images.insert(handle, image); ()},
-            None => ()
+    pub fn add_collider_image(&mut self, handle : DefaultColliderHandle, image : ImgBuf, img_name : String){
+        let collider = self.colliders.get(handle).unwrap();
+        let (width, height) = width_and_height(collider.shape());
+        //let scaled_img = scale_image(image, width as u32, height as u32, ImgFit::None);
+        self.collider_images.insert((handle, img_name), image);
+    }
+
+    pub fn set_collider_image(&mut self, handle : DefaultColliderHandle, img_name : String){
+        if self.collider_images.contains_key(&(handle, img_name.clone())){
+            self.collider_img_names.insert(handle, img_name);
+        } else {
+            println!("INTERNAL ERROR: collider {:?} has no image named {:?}", handle, img_name);
         }
     }
 
@@ -150,10 +155,8 @@ impl Robotbed {
     }
 
     fn get_collider_image(&self, handle : DefaultColliderHandle) -> ImgBuf{
-        match self.collider_images.get(&handle){
-            Some(collider_img) => return collider_img.clone(), //not sure if there's a way to get around this clone
-            None => return ImgBuf::new(0, 0),
-        };
+        let name = self.collider_img_names.get(&handle).unwrap().clone();
+        return self.collider_images.get(&(handle, name)).unwrap().clone();
     }
 
     fn collider_display_info(&self, handle: DefaultColliderHandle) -> (ImgBuf, f32, f32, f32){
