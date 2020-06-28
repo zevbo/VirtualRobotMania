@@ -24,6 +24,8 @@ pub struct Robotbed{
     joint_constraints : DefaultJointConstraintSet<f32>, 
     force_generators : DefaultForceGeneratorSet<f32>, // I'm not sure if f32 makes sense here
     collider_images : HashMap<DefaultColliderHandle, ImgBuf>,
+    callback : fn(DefaultMechanicalWorld<f32>, DefaultGeometricalWorld<f32>, DefaultBodySet<f32>, DefaultColliderSet<f32>,
+        DefaultJointConstraintSet<f32>,  DefaultForceGeneratorSet<f32>) -> ()
 }
 
 pub enum ImgFit{
@@ -115,7 +117,7 @@ impl Robotbed {
         joint_constraints : DefaultJointConstraintSet<f32>, 
         force_generators : DefaultForceGeneratorSet<f32>) -> Robotbed{
             return Robotbed{width, height, mechanical_world, geometrical_world, bodies, colliders, joint_constraints, force_generators, 
-                collider_images: HashMap::new()};
+                collider_images: HashMap::new(), callback: |_,_,_,_,_,_|{}};
     }
 
     pub fn set_collider_image(&mut self, handle : DefaultColliderHandle, image : ImgBuf){
@@ -139,8 +141,7 @@ impl Robotbed {
                         &mut self.joint_constraints,
                         &mut self.force_generators,
                     );
-            //handle_physics_events();
-            //render_scene();
+            callback(self.mechanical_world, self.geometrical_world, self.bodies, self.colliders, self.joint_constraints, self.force_generators)
         }
     }
 
