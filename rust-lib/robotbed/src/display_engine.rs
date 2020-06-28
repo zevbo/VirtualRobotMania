@@ -16,24 +16,29 @@ pub struct Item {
 }
 
 pub struct GameState {
-    images: Vec<Texture>,
+    textures: Vec<Texture>,
     items: Vec<Item>,
     receiver: Receiver<Vec<Item>>,
 }
 
 impl State for GameState {
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
+        // Grab any items that have been sent, and slam them in to the game state
+        for items in self.receiver.try_iter() {
+            self.items = items;
+        }
+        // Walk through the items, and draw each one
         for item in &self.items {
-            let image = &self.images[item.image_id];
+            let texture = &self.textures[item.image_id];
             graphics::clear(ctx, Color::rgb(1., 1., 1.));
-            let width = Texture::width(image) as f32;
-            let height = Texture::height(image) as f32;
+            let width = Texture::width(texture) as f32;
+            let height = Texture::height(texture) as f32;
             let (x, y) = item.position;
             let (sx, sy) = item.scale;
             let scale = Vec2::new(sx, sy);
             graphics::draw(
                 ctx,
-                image,
+                texture,
                 DrawParams::new()
                     .position(Vec2::new(x - ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0 - y))
                     .origin(Vec2::new(width / 2.0, height / 2.0))
@@ -47,12 +52,19 @@ impl State for GameState {
 }
 
 pub fn start_game_thread(images: Vec<ImgBuf>) -> Sender<Vec<Item>> {
-    let (s, r): (Sender<Vec<Item>>, Receiver<Vec<Item>>) = channel();
-    let new_gamestate = |_ctx: &mut Context| {
+    let (sender, receiver): (Sender<Vec<Item>>, Receiver<Vec<Item>>) = channel();
+    let new_gamestate = move |ctx: &mut Context| {
+        let textures: Vec<Texture> = images
+            .iter()
+            .map(|img: &ImgBuf| {
+                let img = img.clone();
+                return Texture::from_file_data(ctx, img.into_raw().as_slice()).unwrap();
+            })
+            .collect::<Vec<_>>();
         return Ok(GameState {
-            images: Vec::new(),
+            textures,
             items: Vec::new(),
-            receiver: r,
+            receiver,
         });
     };
     let _join_handle = thread::spawn(move || {
@@ -61,5 +73,5 @@ pub fn start_game_thread(images: Vec<ImgBuf>) -> Sender<Vec<Item>> {
             .build()?
             .run(new_gamestate)
     });
-    return s;
+    return sender;
 }
