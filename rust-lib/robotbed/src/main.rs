@@ -1,6 +1,7 @@
 pub mod aliases;
 pub mod display_engine;
 pub mod image_helpers;
+pub mod robotbed;
 use display_engine::Item;
 
 // "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Official_photo_of_Speaker_Nancy_Pelosi_in_2019.jpg/960px-Official_photo_of_Speaker_Nancy_Pelosi_in_2019.jpg",

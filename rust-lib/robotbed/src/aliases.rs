@@ -1,4 +1,5 @@
 use image::{ImageBuffer, Rgba};
+use crate::robotbed::Robotbed;
 
 extern crate nphysics2d;
 
@@ -14,6 +15,7 @@ pub type Colliders = DefaultColliderSet<f32>;
 pub type Constraints = DefaultJointConstraintSet<f32>;
 pub type ForceGens = DefaultForceGeneratorSet<f32>;
 pub type ColliderHandle = DefaultColliderHandle;
+pub type CallbackF<Data> = fn(&Robotbed<Data>) -> ();
 
 pub type ImgN = u8; // In our images the number type T for the Rgb<T> pixels
 pub type ImgCnt = Vec<ImgN>; // Container type for our images
