@@ -11,6 +11,7 @@ use ncollide2d::shape::ConvexPolyhedron;
 use std::collections::HashMap;
 use crate::display_engine::{Item, start_game_thread};
 use nalgebra::Vector2;
+use std::time::{Duration, Instant};
 
 // not sure every one of these should be default
 // just going with that for le momento
@@ -230,6 +231,7 @@ impl<Data> Robotbed<Data> {
         }
         loop {
             //handle_input_events();
+            let start = Instant::now();
             self.run_callback_start();
             self.nphysics_world.mechanical_world.step(
                         &mut self.nphysics_world.geometrical_world,
@@ -239,8 +241,16 @@ impl<Data> Robotbed<Data> {
                         &mut self.nphysics_world.force_generators,
                     );
             self.run_callback_end();
+            println!("ESTAMOS AQUIIIII, 223");
             sender.send(self.get_items()).unwrap();
-            std::thread::sleep(std::time::Duration::from_millis(16));
+            // this allows for us to wait less if the callbacks take more time
+            pub fn sleep(start : Instant, millis : u128){
+                while Instant::now().duration_since(start).as_millis() < millis{
+                    ();
+                }
+            }
+            sleep(start, 20);
+            //std::thread::sleep(std::time::Duration::from_millis(5));
         }
     }
 
