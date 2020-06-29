@@ -5,6 +5,7 @@ use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
+#[derive(Copy, Clone)]
 pub struct Item {
     pub position: (f32, f32), // coordinates. x and y go to the right and up respectively
     pub scale: (f32, f32),    // (1.,1.) is the identity
