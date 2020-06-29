@@ -10,11 +10,11 @@ use ncollide2d::shape::Shape;
 use ncollide2d::shape::ConvexPolyhedron;
 use std::collections::HashMap;
 use simulator::aliases::{MechWorld, GeoWorld, Bodies, Colliders, Constraints, ForceGens, ColliderHandle};
+use crate::display_engine::{Item};
 
 // not sure every one of these should be default
 // just going with that for le momento
 // also these types should almost certianly be gotten from aliasses from the simulator package
-pub struct ColliderImage{image: ImgBuf, handle: DefaultColliderHandle}
 pub struct Robotbed{
     width: u32,
     height: u32,
@@ -24,8 +24,10 @@ pub struct Robotbed{
     colliders : Colliders, 
     constraints : Constraints, 
     force_generators : ForceGens, // I'm not sure if f32 makes sense here
-    collider_images : HashMap<(ColliderHandle, String), ImgBuf>,
+    collider_items : HashMap<ColliderHandle, Item>,
+    collider_images : HashMap<(ColliderHandle, String), usize>,
     collider_img_names : HashMap<ColliderHandle, String>,
+    curr_img_id : usize,
     callback : fn(&MechWorld, &GeoWorld, &Bodies, &Colliders, &Constraints, &ForceGens) -> ()
 }
 
@@ -118,14 +120,21 @@ impl Robotbed {
         constraints : Constraints, 
         force_generators : ForceGens) -> Robotbed{
             return Robotbed{width, height, mechanical_world, geometrical_world, bodies, colliders, constraints, force_generators, 
-                collider_images: HashMap::new(), collider_img_names: HashMap::new(), callback: |_,_,_,_,_,_|{}};
+                collider_items: HashMap::new(), collider_images: HashMap::new(), 
+                collider_img_names: HashMap::new(), curr_img_id: 0, callback: |_,_,_,_,_,_|{}};
+    }
+
+    pub fn make_collider_item(&mut self, handle : DefaultColliderHandle){
+        let item = Item{position:(0.,0.), scale:(1.,1.), rotation:0., image_id: 0};
+        self.collider_items.insert(handle, item);
+        self.update_collider_item(handle);
     }
 
     pub fn add_collider_image(&mut self, handle : DefaultColliderHandle, image : ImgBuf, img_name : String){
         let collider = self.colliders.get(handle).unwrap();
         let (width, height) = width_and_height(collider.shape());
         //let scaled_img = scale_image(image, width as u32, height as u32, ImgFit::None);
-        self.collider_images.insert((handle, img_name), image);
+        self.collider_images.insert((handle, img_name), self.curr_img_id);
     }
 
     pub fn set_collider_image(&mut self, handle : DefaultColliderHandle, img_name : String){
@@ -141,6 +150,13 @@ impl Robotbed {
     }
 
     pub fn run(&mut self){
+        let mut handles = Vec::new();
+        for (handle, _collider) in self.colliders.iter(){
+            handles.push(handle);
+        }
+        for handle in handles {
+            self.make_collider_item(handle);
+        }
         loop {
             //handle_input_events();
             self.mechanical_world.step(
@@ -154,32 +170,22 @@ impl Robotbed {
         }
     }
 
-    fn get_collider_image(&self, handle : DefaultColliderHandle) -> ImgBuf{
+    fn get_collider_image_id(&self, handle : DefaultColliderHandle) -> usize{
         let name = self.collider_img_names.get(&handle).unwrap().clone();
-        return self.collider_images.get(&(handle, name)).unwrap().clone();
+        return *self.collider_images.get(&(handle, name)).unwrap();
     }
 
-    fn collider_display_info(&self, handle: DefaultColliderHandle) -> (ImgBuf, f32, f32, f32){
-        let collider_op = self.colliders.get(handle);
-        match collider_op {
-            Some(collider) => {
-                let pos = *collider.position();
-                // currently not using rotation b/c we don't know how it is represented
-                let rotation = 0.0; // pos.rotation.into_inner().re;
-                let vec = pos.translation.vector;
-                let img = self.get_collider_image(handle);
-                return (img, vec.x, vec.y, rotation);
-            },
-            None => return (ImgBuf::new(0, 0), 0.0, 0.0, 0.0),
-        }
-
-    }
-
-    fn send_image(&self) {
-        let mut info = Vec::new();
-        for (handle, _collider) in self.colliders.iter(){
-            info.push(self.collider_display_info(handle));
-        }
+    fn update_collider_item(&mut self, handle: DefaultColliderHandle){
+        let collider = self.colliders.get(handle).unwrap();
+        let pos = *collider.position();
+        // currently not using rotation b/c we don't know how it is represented
+        let rotation = 0.0; // pos.rotation.into_inner().re;
+        let vec = pos.translation.vector;
+        let img_id = self.get_collider_image_id(handle);
+        let mut item = *self.collider_items.get(&handle).unwrap();
+        item.position = (vec.x, vec.y);
+        item.rotation = rotation;
+        item.image_id = img_id;
     }
 
 } 

@@ -8,6 +8,7 @@ use tetra::{Context, ContextBuilder, State};
 const ARENA_HEIGHT: f32 = 1000.;
 const ARENA_WIDTH: f32 = 1000.;
 
+#[derive(Copy,Clone)]
 pub struct Item {
     pub position: (f32, f32), // coordinates. x and y go to the right and up respectively
     pub scale: (f32, f32),    // (1.,1.) is the identity
