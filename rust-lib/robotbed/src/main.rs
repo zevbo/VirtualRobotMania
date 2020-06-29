@@ -41,7 +41,10 @@ fn main() {
                 image_id: 0,
             },
         ];
-        sender.send(items).unwrap();
-        std::thread::sleep(std::time::Duration::from_millis(16));
+        let send_result = sender.send(items);
+        match send_result {
+            Ok(()) => std::thread::sleep(std::time::Duration::from_millis(16)),
+            Err(_) => break,
+        }
     }
 }
