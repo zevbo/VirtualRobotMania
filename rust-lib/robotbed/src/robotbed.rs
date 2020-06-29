@@ -3,13 +3,12 @@ use nphysics2d::object::{DefaultBodySet, DefaultColliderSet, DefaultBodyHandle, 
 use nphysics2d::joint::{DefaultJointConstraintSet};
 use nphysics2d::force_generator::{DefaultForceGeneratorSet};
 use image::ImageBuffer;
-use crate::aliases::ImgBuf;
+use crate::aliases::{ImgBuf, MechWorld, GeoWorld, Bodies, Colliders, Constraints, ForceGens, ColliderHandle};
 use crate::image_helpers::{resize, scale_img, rotate_overlay};
 use std::ptr::null;
 use ncollide2d::shape::Shape;
 use ncollide2d::shape::ConvexPolyhedron;
 use std::collections::HashMap;
-use simulator::aliases::{MechWorld, GeoWorld, Bodies, Colliders, Constraints, ForceGens, ColliderHandle};
 use crate::display_engine::{Item, start_game_thread};
 
 // not sure every one of these should be default
