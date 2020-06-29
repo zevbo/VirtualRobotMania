@@ -5,6 +5,7 @@ use nphysics2d::math::{Velocity, Inertia};
 use crate::ncollideHelper;
 use robotbed::image_helpers;
 use robotbed::robotbed::{NPhysicsWorld, Robotbed};
+use robotbed::display_engine;
 
 // CG = collision group
 const CG_ROBOTS: usize = 1;
@@ -46,8 +47,8 @@ pub struct WorldData{
 
 const ROBOT_WIDTH: f32 = 50.;
 const ROBOT_LENGTH: f32 = 75.;
-const WORLD_WIDTH: u32 = 400;
-const WORLD_HEIGHT: u32 = 400;
+const WORLD_WIDTH: i32 = 400;
+const WORLD_HEIGHT: i32 = 400;
 
 fn new_nphysics_world() -> NPhysicsWorld{
     let mut nphysics_world = NPhysicsWorld::new_empty();
@@ -61,8 +62,12 @@ pub fn new_robotbed(robot_img_path: &str) -> Robotbed<WorldData>{
     let robotBodyHandle = nphysics_world.bodies.insert(robot.make_body());
     let robotColliderHandle = nphysics_world.colliders.insert(robot.make_collider(robotBodyHandle));
     let world_data = WorldData{robot};
-    let mut robotbed = genSimulator::make_robotbed(nphysics_world, world_data, WORLD_WIDTH, WORLD_HEIGHT);
+    let mut robotbed = genSimulator::make_robotbed(nphysics_world, world_data);
     robotbed.add_collider_image(robotColliderHandle, img, String::from("main"));
     robotbed.set_collider_image(robotColliderHandle, String::from("main"));
     return robotbed;
+}
+
+pub fn run_robotbed(robotbed : Robotbed<WorldData>){
+    robotbed::display_engine::run_robotbed(robotbed, WORLD_WIDTH, WORLD_HEIGHT)
 }

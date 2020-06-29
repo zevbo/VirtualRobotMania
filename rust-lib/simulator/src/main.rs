@@ -5,5 +5,5 @@ pub mod ncollideHelper;
 
 fn main(){
     let mut robotbed = shootWorldSimulator::new_robotbed("../../test-robot.png");
-    robotbed.run();
+    //robotbed.run();
 }
