@@ -5,8 +5,8 @@ use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
-const ARENA_HEIGHT: i32 = 1000;
-const ARENA_WIDTH: i32 = 1000;
+const ARENA_WIDTH: i32 = 2000;
+const ARENA_HEIGHT: i32 = 2000;
 
 pub struct Item {
     pub position: (f32, f32), // coordinates. x and y go to the right and up respectively
@@ -27,10 +27,10 @@ impl State for GameState {
         for items in self.receiver.try_iter() {
             self.items = items;
         }
+        graphics::clear(ctx, Color::rgb(1., 1., 1.));
         // Walk through the items, and draw each one
         for item in &self.items {
             let texture = &self.textures[item.image_id];
-            graphics::clear(ctx, Color::rgb(1., 1., 1.));
             let width = Texture::width(texture) as f32;
             let height = Texture::height(texture) as f32;
             let (x, y) = item.position;
@@ -40,13 +40,17 @@ impl State for GameState {
                 ctx,
                 texture,
                 DrawParams::new()
+                    .position(Vec2::new(x, y))
+                    /*
                     .position(Vec2::new(
-                        x - ARENA_WIDTH as f32 / 2.0,
-                        ARENA_HEIGHT as f32 / 2.0 - y,
+                        x - ARENA_WIDTH as f32 / 2.,
+                        ARENA_HEIGHT as f32 / 2. - y,
                     ))
+                    */
+                    .scale(scale)
+                    //.origin(Vec2::new(0., 0.))
                     .origin(Vec2::new(width / 2.0, height / 2.0))
-                    .rotation(item.rotation)
-                    .scale(scale),
+                    .rotation(item.rotation),
             );
         }
 

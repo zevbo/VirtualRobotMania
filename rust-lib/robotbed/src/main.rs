@@ -9,24 +9,31 @@ use display_engine::Item;
 
 fn main() {
     let img1 = image_helpers::download_img("../pelosi.jpeg");
-    let img2 = image_helpers::download_img("../pelosi.jpeg");
-    let images = vec![img1, img2];
+    let img2 = image_helpers::download_img("../clap.jpeg");
+    let img3 = image_helpers::download_img("../pelosi-blue.jpg");
+    let images = vec![img1, img2, img3];
     let sender = display_engine::start_game_thread(images);
     let mut rotation = 0.0;
     loop {
-        rotation += 0.01;
+        rotation += 0.05;
         let items = vec![
             Item {
-                position: (0., 0.),
-                scale: (1., 1.),
+                position: (500., 0.),
+                scale: (0.1, 0.1),
                 rotation,
                 image_id: 0,
             },
             Item {
                 position: (0., 0.),
-                scale: (0.2, 0.2),
+                scale: (0.4, 0.4),
                 rotation: -rotation,
                 image_id: 1,
+            },
+            Item {
+                position: (1000., 1000.),
+                scale: (0.15, 0.15),
+                rotation: rotation,
+                image_id: 2,
             },
         ];
         sender.send(items).unwrap();
