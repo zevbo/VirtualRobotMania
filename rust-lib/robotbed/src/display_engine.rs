@@ -4,6 +4,7 @@ use std::thread;
 use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
+use crate::robotbed::Robotbed;
 
 #[derive(Copy, Clone)]
 pub struct Item {
@@ -13,23 +14,21 @@ pub struct Item {
     pub image_id: usize,
 }
 
-struct GameState {
+struct GameState<Data> {
+    robotbed: Robotbed<Data>,
     textures: Vec<Texture>,
-    items: Vec<Item>,
-    receiver: Receiver<Vec<Item>>,
     arena_height: i32,
     arena_width: i32,
 }
 
-impl State for GameState {
+impl<Data> State for GameState<Data> {
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         // Grab any items that have been sent, and slam them in to the game state
-        for items in self.receiver.try_iter() {
-            self.items = items;
-        }
+        self.robotbed.run_tick();
+        
         graphics::clear(ctx, Color::rgb(1., 1., 1.));
         // Walk through the items, and draw each one
-        for item in &self.items {
+        for item in &self.robotbed.get_items() {
             let texture = &self.textures[item.image_id];
             let width = Texture::width(texture) as f32;
             let height = Texture::height(texture) as f32;
@@ -54,14 +53,12 @@ impl State for GameState {
     }
 }
 
-pub fn start_game_thread(
-    images: Vec<ImgBuf>,
+pub fn run_robotbed<Data>(
+    robotbed: Robotbed<Data>,
     arena_width: i32,
-    arena_height: i32,
-) -> Sender<Vec<Item>> {
-    let (sender, receiver): (Sender<Vec<Item>>, Receiver<Vec<Item>>) = channel();
+    arena_height: i32){
     let new_gamestate = move |ctx: &mut Context| {
-        let textures: Vec<Texture> = images
+        let textures: Vec<Texture> = robotbed.collider_images
             .iter()
             .map(|img: &ImgBuf| {
                 let img = img.clone();
@@ -72,18 +69,16 @@ pub fn start_game_thread(
             })
             .collect::<Vec<_>>();
         return Ok(GameState {
+            robotbed,
             textures,
-            items: Vec::new(),
-            receiver,
             arena_height,
             arena_width,
         });
     };
-    let _join_handle = thread::spawn(move || {
+    let run = || {
         ContextBuilder::new("Virtual robot arena", arena_width, arena_height)
             .quit_on_escape(true)
             .build()?
-            .run(new_gamestate)
-    });
-    return sender;
+            .run(new_gamestate)};
+    run();
 }

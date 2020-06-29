@@ -9,7 +9,7 @@ use std::ptr::null;
 use ncollide2d::shape::Shape;
 use ncollide2d::shape::ConvexPolyhedron;
 use std::collections::HashMap;
-use crate::display_engine::{Item, start_game_thread};
+use crate::display_engine::{Item};
 use nalgebra::Vector2;
 use std::time::{Duration, Instant};
 
@@ -37,10 +37,8 @@ impl NPhysicsWorld{
     }
 }
 pub struct Robotbed<Data>{
-    width: u32,
-    height: u32,
-    nphysics_world : NPhysicsWorld, // I'm not sure if f32 makes sense here
-    collider_images : Vec<ImgBuf>,
+    pub nphysics_world : NPhysicsWorld, // I'm not sure if f32 makes sense here
+    pub collider_images : Vec<ImgBuf>,
     collider_items : HashMap<ColliderHandle, Item>,
     collider_image_ids : HashMap<(ColliderHandle, String), usize>,
     collider_img_names : HashMap<ColliderHandle, String>,
@@ -176,9 +174,9 @@ fn scale_collider_image(image : ImgBuf, width : u32, height : u32, fit : ImgFit)
 
 impl<Data> Robotbed<Data> {
 
-    pub fn new(width: u32, height: u32, data : Data,
+    pub fn new(data : Data,
        nphysics_world : NPhysicsWorld) -> Robotbed<Data>{
-            return Robotbed{width, height, nphysics_world, 
+            return Robotbed{nphysics_world, 
                 collider_images: Vec::new(), collider_items: HashMap::new(), collider_image_ids: HashMap::new(), 
                 collider_img_names: HashMap::new(), curr_img_id: 0, callback_start: |_|{}, callback_end: |_|{}, data};
     }
@@ -212,7 +210,7 @@ impl<Data> Robotbed<Data> {
     fn run_callback_start(&self){(self.callback_start)(self);}
     fn run_callback_end  (&self){(self.callback_end)(self);}
 
-    fn get_items(&self) -> Vec<Item>{
+    pub fn get_items(&self) -> Vec<Item>{
         let mut items = Vec::new();
         for (handle, _collider) in self.nphysics_world.colliders.iter(){
             items.push(*self.collider_items.get(&handle).unwrap());
@@ -220,37 +218,34 @@ impl<Data> Robotbed<Data> {
         return items;
     }
 
-    pub fn run(&mut self){
-        let sender = start_game_thread(self.collider_images.clone(), self.width as i32, self.height as i32);
+    pub fn run_tick(&mut self){
+        //handle_input_events();
+        let start = Instant::now();
+        self.run_callback_start();
+        self.nphysics_world.mechanical_world.step(
+                    &mut self.nphysics_world.geometrical_world,
+                    &mut self.nphysics_world.bodies,
+                    &mut self.nphysics_world.colliders,
+                    &mut self.nphysics_world.constraints,
+                    &mut self.nphysics_world.force_generators,
+                );
+        self.run_callback_end();
+        // this allows for us to wait less if the callbacks take more time
+        pub fn sleep(start : Instant, millis : u128){
+            while Instant::now().duration_since(start).as_millis() < millis{
+                ();
+            }
+        }
+        sleep(start, 20);
+    }
+
+    pub fn setup_items(&mut self){
         let mut handles = Vec::new();
         for (handle, _collider) in self.nphysics_world.colliders.iter(){
             handles.push(handle);
         }
         for handle in handles {
             self.make_collider_item(handle);
-        }
-        loop {
-            //handle_input_events();
-            let start = Instant::now();
-            self.run_callback_start();
-            self.nphysics_world.mechanical_world.step(
-                        &mut self.nphysics_world.geometrical_world,
-                        &mut self.nphysics_world.bodies,
-                        &mut self.nphysics_world.colliders,
-                        &mut self.nphysics_world.constraints,
-                        &mut self.nphysics_world.force_generators,
-                    );
-            self.run_callback_end();
-            println!("ESTAMOS AQUIIIII, 223");
-            sender.send(self.get_items()).unwrap();
-            // this allows for us to wait less if the callbacks take more time
-            pub fn sleep(start : Instant, millis : u128){
-                while Instant::now().duration_since(start).as_millis() < millis{
-                    ();
-                }
-            }
-            sleep(start, 20);
-            //std::thread::sleep(std::time::Duration::from_millis(5));
         }
     }
 
