@@ -161,7 +161,7 @@ impl Robotbed {
     }
 
     pub fn run(&mut self){
-        let sender = start_game_thread(self.collider_images.clone());
+        let sender = start_game_thread(self.collider_images.clone(), self.width as i32, self.height as i32);
         let mut handles = Vec::new();
         for (handle, _collider) in self.colliders.iter(){
             handles.push(handle);
