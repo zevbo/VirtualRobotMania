@@ -40,15 +40,11 @@ impl State for GameState {
                 ctx,
                 texture,
                 DrawParams::new()
-                    .position(Vec2::new(x, y))
-                    /*
                     .position(Vec2::new(
-                        x - ARENA_WIDTH as f32 / 2.,
+                        x + ARENA_WIDTH as f32 / 2.,
                         ARENA_HEIGHT as f32 / 2. - y,
                     ))
-                    */
                     .scale(scale)
-                    //.origin(Vec2::new(0., 0.))
                     .origin(Vec2::new(width / 2.0, height / 2.0))
                     .rotation(item.rotation),
             );

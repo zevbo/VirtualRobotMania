@@ -19,7 +19,7 @@ fn main() {
         let items = vec![
             Item {
                 position: (500., 0.),
-                scale: (0.1, 0.1),
+                scale: (0.2, 0.2),
                 rotation,
                 image_id: 0,
             },
@@ -31,9 +31,9 @@ fn main() {
             },
             Item {
                 position: (1000., 1000.),
-                scale: (0.15, 0.15),
+                scale: (0.3, 0.3),
                 rotation: rotation,
-                image_id: 2,
+                image_id: 1,
             },
         ];
         sender.send(items).unwrap();
