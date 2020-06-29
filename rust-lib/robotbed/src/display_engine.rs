@@ -5,10 +5,7 @@ use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
-const ARENA_HEIGHT: i32 = 1000;
-const ARENA_WIDTH: i32 = 1000;
-
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 pub struct Item {
     pub position: (f32, f32), // coordinates. x and y go to the right and up respectively
     pub scale: (f32, f32),    // (1.,1.) is the identity
@@ -20,6 +17,8 @@ struct GameState {
     textures: Vec<Texture>,
     items: Vec<Item>,
     receiver: Receiver<Vec<Item>>,
+    arena_height: i32,
+    arena_width: i32,
 }
 
 impl State for GameState {
@@ -28,10 +27,10 @@ impl State for GameState {
         for items in self.receiver.try_iter() {
             self.items = items;
         }
+        graphics::clear(ctx, Color::rgb(1., 1., 1.));
         // Walk through the items, and draw each one
         for item in &self.items {
             let texture = &self.textures[item.image_id];
-            graphics::clear(ctx, Color::rgb(1., 1., 1.));
             let width = Texture::width(texture) as f32;
             let height = Texture::height(texture) as f32;
             let (x, y) = item.position;
@@ -42,12 +41,12 @@ impl State for GameState {
                 texture,
                 DrawParams::new()
                     .position(Vec2::new(
-                        x - ARENA_WIDTH as f32 / 2.0,
-                        ARENA_HEIGHT as f32 / 2.0 - y,
+                        x + self.arena_width as f32 / 2.,
+                        self.arena_height as f32 / 2. - y,
                     ))
+                    .scale(scale)
                     .origin(Vec2::new(width / 2.0, height / 2.0))
-                    .rotation(item.rotation)
-                    .scale(scale),
+                    .rotation(item.rotation),
             );
         }
 
@@ -55,7 +54,11 @@ impl State for GameState {
     }
 }
 
-pub fn start_game_thread(images: Vec<ImgBuf>) -> Sender<Vec<Item>> {
+pub fn start_game_thread(
+    images: Vec<ImgBuf>,
+    arena_width: i32,
+    arena_height: i32,
+) -> Sender<Vec<Item>> {
     let (sender, receiver): (Sender<Vec<Item>>, Receiver<Vec<Item>>) = channel();
     let new_gamestate = move |ctx: &mut Context| {
         let textures: Vec<Texture> = images
@@ -72,10 +75,12 @@ pub fn start_game_thread(images: Vec<ImgBuf>) -> Sender<Vec<Item>> {
             textures,
             items: Vec::new(),
             receiver,
+            arena_height,
+            arena_width,
         });
     };
     let _join_handle = thread::spawn(move || {
-        ContextBuilder::new("Virtual robot arena", ARENA_WIDTH, ARENA_HEIGHT)
+        ContextBuilder::new("Virtual robot arena", arena_width, arena_height)
             .quit_on_escape(true)
             .build()?
             .run(new_gamestate)
