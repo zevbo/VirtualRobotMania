@@ -10,7 +10,7 @@ use ncollide2d::shape::Shape;
 use ncollide2d::shape::ConvexPolyhedron;
 use std::collections::HashMap;
 use simulator::aliases::{MechWorld, GeoWorld, Bodies, Colliders, Constraints, ForceGens, ColliderHandle};
-use crate::display_engine::{Item};
+use crate::display_engine::{Item, start_game_thread};
 
 // not sure every one of these should be default
 // just going with that for le momento
@@ -24,8 +24,9 @@ pub struct Robotbed{
     colliders : Colliders, 
     constraints : Constraints, 
     force_generators : ForceGens, // I'm not sure if f32 makes sense here
+    collider_images : Vec<ImgBuf>,
     collider_items : HashMap<ColliderHandle, Item>,
-    collider_images : HashMap<(ColliderHandle, String), usize>,
+    collider_image_ids : HashMap<(ColliderHandle, String), usize>,
     collider_img_names : HashMap<ColliderHandle, String>,
     curr_img_id : usize,
     callback : fn(&MechWorld, &GeoWorld, &Bodies, &Colliders, &Constraints, &ForceGens) -> ()
@@ -120,7 +121,7 @@ impl Robotbed {
         constraints : Constraints, 
         force_generators : ForceGens) -> Robotbed{
             return Robotbed{width, height, mechanical_world, geometrical_world, bodies, colliders, constraints, force_generators, 
-                collider_items: HashMap::new(), collider_images: HashMap::new(), 
+                collider_images: Vec::new(), collider_items: HashMap::new(), collider_image_ids: HashMap::new(), 
                 collider_img_names: HashMap::new(), curr_img_id: 0, callback: |_,_,_,_,_,_|{}};
     }
 
@@ -134,11 +135,13 @@ impl Robotbed {
         let collider = self.colliders.get(handle).unwrap();
         let (width, height) = width_and_height(collider.shape());
         //let scaled_img = scale_image(image, width as u32, height as u32, ImgFit::None);
-        self.collider_images.insert((handle, img_name), self.curr_img_id);
+        self.collider_image_ids.insert((handle, img_name), self.curr_img_id);
+        self.collider_images.push(image);
+        self.curr_img_id += 1;
     }
 
     pub fn set_collider_image(&mut self, handle : DefaultColliderHandle, img_name : String){
-        if self.collider_images.contains_key(&(handle, img_name.clone())){
+        if self.collider_image_ids.contains_key(&(handle, img_name.clone())){
             self.collider_img_names.insert(handle, img_name);
         } else {
             println!("INTERNAL ERROR: collider {:?} has no image named {:?}", handle, img_name);
@@ -149,7 +152,16 @@ impl Robotbed {
         (self.callback)(&self.mechanical_world, &self.geometrical_world, &self.bodies, &self.colliders, &self.constraints, &self.force_generators)
     }
 
+    pub fn get_items(&self) -> Vec<Item>{
+        let mut items = Vec::new();
+        for (handle, _collider) in self.colliders.iter(){
+            items.push(*self.collider_items.get(&handle).unwrap());
+        }
+        return items;
+    }
+
     pub fn run(&mut self){
+        let sender = start_game_thread(self.collider_images.clone());
         let mut handles = Vec::new();
         for (handle, _collider) in self.colliders.iter(){
             handles.push(handle);
@@ -166,13 +178,15 @@ impl Robotbed {
                         &mut self.constraints,
                         &mut self.force_generators,
                     );
-        self.run_callback();
+            self.run_callback();
+            sender.send(self.get_items()).unwrap();
+            std::thread::sleep(std::time::Duration::from_millis(16));
         }
     }
 
     fn get_collider_image_id(&self, handle : DefaultColliderHandle) -> usize{
         let name = self.collider_img_names.get(&handle).unwrap().clone();
-        return *self.collider_images.get(&(handle, name)).unwrap();
+        return *self.collider_image_ids.get(&(handle, name)).unwrap();
     }
 
     fn update_collider_item(&mut self, handle: DefaultColliderHandle){
