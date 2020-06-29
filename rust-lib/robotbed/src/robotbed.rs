@@ -46,7 +46,7 @@ pub struct Robotbed<Data>{
     curr_img_id : usize,
     callback_start : CallbackF<Data>,
     callback_end : CallbackF<Data>,
-    data_f : fn() -> Data,
+    data : Data,
 }
 
 pub enum ImgFit{
@@ -175,11 +175,11 @@ fn scale_collider_image(image : ImgBuf, width : u32, height : u32, fit : ImgFit)
 
 impl<Data> Robotbed<Data> {
 
-    pub fn new(width: u32, height: u32, data_f : fn() -> Data,
+    pub fn new(width: u32, height: u32, data : Data,
        nphysics_world : NPhysicsWorld) -> Robotbed<Data>{
             return Robotbed{width, height, nphysics_world, 
                 collider_images: Vec::new(), collider_items: HashMap::new(), collider_image_ids: HashMap::new(), 
-                collider_img_names: HashMap::new(), curr_img_id: 0, callback_start: |_|{}, callback_end: |_|{}, data_f};
+                collider_img_names: HashMap::new(), curr_img_id: 0, callback_start: |_|{}, callback_end: |_|{}, data};
     }
 
     fn make_collider_item(&mut self, handle : DefaultColliderHandle){

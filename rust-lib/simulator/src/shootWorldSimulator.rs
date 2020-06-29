@@ -1,10 +1,10 @@
 use crate::genSimulator;
 use ncollide2d::{pipeline::CollisionGroups, shape::{ShapeHandle, Ball, ConvexPolygon}};
-use nphysics2d::object::{DefaultBodyPartHandle, Collider, ColliderDesc, RigidBodyDesc, RigidBody, DefaultColliderHandle};
+use nphysics2d::object::{DefaultBodyHandle, BodyPartHandle, Collider, ColliderDesc, RigidBodyDesc, RigidBody, DefaultColliderHandle};
 use nphysics2d::math::{Velocity, Inertia};
 use crate::ncollideHelper;
 use robotbed::image_helpers;
-use robotbed::robotbed::NPhysicsWorld;
+use robotbed::robotbed::{NPhysicsWorld, Robotbed};
 
 // CG = collision group
 const CG_ROBOTS: usize = 1;
@@ -31,38 +31,38 @@ impl Robot{
             .mass(1.2)
             .build();
     }
-    pub fn make_collider(&self, robotBodyHandle : DefaultBodyPartHandle) -> Collider<f32, DefaultColliderHandle>{
+    pub fn make_collider(&self, robotBodyHandle : DefaultBodyHandle) -> Collider<f32, DefaultColliderHandle>{
         let shape = ncollideHelper::rectangle_shape(ROBOT_WIDTH, ROBOT_LENGTH);
         return ColliderDesc::new(shape)
             .collision_groups(CollisionGroups::new()
                 .with_membership(&[CG_ROBOTS])
                 .with_whitelist(&[CG_WALLS]))
-            .build(robotBodyHandle);
+            .build(BodyPartHandle(robotBodyHandle, 0));
     }
 }
-struct WorldData{
+pub struct WorldData{
     robot : Robot,
-}
-struct World{
-    world_data : WorldData,
-    nphysics_world : NPhysicsWorld,
 }
 
 const ROBOT_WIDTH: f32 = 50.;
 const ROBOT_LENGTH: f32 = 75.;
+const WORLD_WIDTH: u32 = 400;
+const WORLD_HEIGHT: u32 = 400;
 
 fn new_nphysics_world() -> NPhysicsWorld{
     let mut nphysics_world = NPhysicsWorld::new_empty();
     return nphysics_world;
 }
 
-impl World{
-    pub fn new(robot_img_path: &str) -> World{
-        let img = image_helpers::download_img(robot_img_path);
-        let robot = Robot::new(3);
-        let mut nphysics_world = new_nphysics_world();
-        let handle = nphysics_world.bodies.insert(robot.make_body());
-        let world_data = WorldData{robot};
-        return World{world_data, nphysics_world};
-    }
+pub fn new_robotbed(robot_img_path: &str) -> Robotbed<WorldData>{
+    let img = image_helpers::download_img(robot_img_path);
+    let robot = Robot::new(3);
+    let mut nphysics_world = new_nphysics_world();
+    let robotBodyHandle = nphysics_world.bodies.insert(robot.make_body());
+    let robotColliderHandle = nphysics_world.colliders.insert(robot.make_collider(robotBodyHandle));
+    let world_data = WorldData{robot};
+    let mut robotbed = genSimulator::make_robotbed(nphysics_world, world_data, WORLD_WIDTH, WORLD_HEIGHT);
+    robotbed.add_collider_image(robotColliderHandle, img, String::from("main"));
+    robotbed.set_collider_image(robotColliderHandle, String::from("main"));
+    return robotbed;
 }
