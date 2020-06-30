@@ -30,7 +30,7 @@ impl<Data> State for GameState<Data> {
         // Walk through the items, and draw each one
         for item in &self.robotbed.get_items() {
             let texture = &self.textures[item.image_id];
-            let width = Texture::width(texture) as f32;
+            let width  = Texture::width(texture) as f32;
             let height = Texture::height(texture) as f32;
             let (x, y) = item.position;
             let (sx, sy) = item.scale;
@@ -40,8 +40,8 @@ impl<Data> State for GameState<Data> {
                 texture,
                 DrawParams::new()
                     .position(Vec2::new(
-                        x + self.arena_width as f32 / 2.,
-                        self.arena_height as f32 / 2. - y,
+                        x * self.robotbed.scale_factor + self.arena_width as f32 / 2.,
+                        self.arena_height as f32 / 2. - y * self.robotbed.scale_factor,
                     ))
                     .scale(scale)
                     .origin(Vec2::new(width / 2.0, height / 2.0))
@@ -57,12 +57,14 @@ pub fn run_robotbed<Data>(
     robotbed: Robotbed<Data>,
     arena_width: i32,
     arena_height: i32){
+    let real_arena_width  = (arena_width  as f32 * robotbed.scale_factor) as i32;
+    let real_arena_height = (arena_height as f32 * robotbed.scale_factor) as i32;
     let new_gamestate = move |ctx: &mut Context| {
         let textures: Vec<Texture> = robotbed.collider_images
             .iter()
             .map(|img: &ImgBuf| {
                 let img = img.clone();
-                let width = img.width() as i32;
+                let width  = img.width() as i32;
                 let height = img.height() as i32;
                 let raw = img.into_raw();
                 return Texture::from_rgba(ctx, width, height, raw.as_slice()).unwrap();
@@ -71,12 +73,12 @@ pub fn run_robotbed<Data>(
         return Ok(GameState {
             robotbed,
             textures,
-            arena_height,
-            arena_width,
+            arena_width: real_arena_height,
+            arena_height: real_arena_width
         });
     };
     let run = || {
-        ContextBuilder::new("Virtual robot arena", arena_width, arena_height)
+        ContextBuilder::new("Virtual robot arena", real_arena_width, real_arena_height)
             .quit_on_escape(true)
             .build()?
             .run(new_gamestate)};

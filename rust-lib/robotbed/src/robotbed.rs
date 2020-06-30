@@ -45,6 +45,7 @@ pub struct Robotbed<Data>{
     curr_img_id : usize,
     callback_start : CallbackF<Data>,
     callback_end : CallbackF<Data>,
+    pub scale_factor : f32,
     data : Data,
 }
 
@@ -175,10 +176,10 @@ fn scale_collider_image(image : ImgBuf, width : u32, height : u32, fit : ImgFit)
 impl<Data> Robotbed<Data> {
 
     pub fn new(data : Data,
-       nphysics_world : NPhysicsWorld) -> Robotbed<Data>{
+       nphysics_world : NPhysicsWorld, scale_factor : f32) -> Robotbed<Data>{
             return Robotbed{nphysics_world, 
                 collider_images: Vec::new(), collider_items: HashMap::new(), collider_image_ids: HashMap::new(), 
-                collider_img_names: HashMap::new(), curr_img_id: 0, callback_start: |_|{}, callback_end: |_|{}, data};
+                collider_img_names: HashMap::new(), curr_img_id: 0, callback_start: |_|{}, callback_end: |_|{}, scale_factor, data};
     }
 
     fn make_collider_item(&mut self, handle : DefaultColliderHandle){
@@ -191,8 +192,9 @@ impl<Data> Robotbed<Data> {
         let collider = self.nphysics_world.colliders.get(handle).unwrap();
         let (width, height) = width_and_height(collider.shape());
         //let scaled_img = scale_image(image, width as u32, height as u32, ImgFit::None);
+        let scaled_img = crate::image_helpers::scale_img(image, self.scale_factor);
         self.collider_image_ids.insert((handle, img_name), self.curr_img_id);
-        self.collider_images.push(image);
+        self.collider_images.push(scaled_img);
         self.curr_img_id += 1;
     }
 
@@ -221,6 +223,7 @@ impl<Data> Robotbed<Data> {
     pub fn run_tick(&mut self){
         //handle_input_events();
         let start = Instant::now();
+        self.update_collider_items();
         self.run_callback_start();
         self.nphysics_world.mechanical_world.step(
                     &mut self.nphysics_world.geometrical_world,
@@ -236,7 +239,18 @@ impl<Data> Robotbed<Data> {
                 ();
             }
         }
-        sleep(start, 20);
+        //println!("next");
+        sleep(start, 10);
+    }
+
+    pub fn update_collider_items(&mut self){
+        let mut handles = Vec::new();
+        for (handle, _collider) in self.nphysics_world.colliders.iter(){
+            handles.push(handle);
+        }
+        for handle in handles {
+            self.update_collider_item(handle);
+        }
     }
 
     pub fn setup_items(&mut self){
@@ -260,11 +274,9 @@ impl<Data> Robotbed<Data> {
         // currently not using rotation b/c we don't know how it is represented
         let rotation = 0.0; // pos.rotation.into_inner().re;
         let vec = pos.translation.vector;
-        let img_id = self.get_collider_image_id(handle);
-        let mut item = *self.collider_items.get(&handle).unwrap();
-        item.position = (vec.x, vec.y);
-        item.rotation = rotation;
-        item.image_id = img_id;
+        let image_id = self.get_collider_image_id(handle);
+        let item = Item{position:(vec.x,vec.y), scale:(1.,1.), rotation, image_id};
+        self.collider_items.insert(handle, item);
     }
 
 } 
