@@ -272,7 +272,8 @@ impl<Data> Robotbed<Data> {
         let collider = self.nphysics_world.colliders.get(handle).unwrap();
         let pos = *collider.position();
         // currently not using rotation b/c we don't know how it is represented
-        let rotation = 0.0; // pos.rotation.into_inner().re;
+        let comp = pos.rotation.into_inner();
+        let rotation = comp.im.atan2(comp.re);
         let vec = pos.translation.vector;
         let image_id = self.get_collider_image_id(handle);
         let item = Item{position:(vec.x,vec.y), scale:(1.,1.), rotation, image_id};
