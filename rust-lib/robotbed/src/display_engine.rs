@@ -45,7 +45,7 @@ impl<Data> State for GameState<Data> {
                     ))
                     .scale(scale)
                     .origin(Vec2::new(width / 2.0, height / 2.0))
-                    .rotation(item.rotation),
+                    .rotation(-1. * item.rotation),
             );
         }
 

@@ -46,7 +46,7 @@ pub struct Robotbed<Data>{
     callback_start : CallbackF<Data>,
     callback_end : CallbackF<Data>,
     pub scale_factor : f32,
-    data : Data,
+    pub data : Data,
 }
 
 pub enum ImgFit{
