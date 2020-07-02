@@ -974,6 +974,9 @@ dependencies = [
 [[package]]
 name = "racket-lib"
 version = "0.1.0"
+dependencies = [
+ "simulator",
+]
 
 [[package]]
 name = "rand"
@@ -1153,7 +1156,6 @@ dependencies = [
  "ncollide2d",
  "nphysics2d",
  "num 0.3.0",
- "simulator",
  "tetra",
  "throw",
  "timer",
@@ -1329,8 +1331,11 @@ dependencies = [
 name = "simulator"
 version = "0.1.0"
 dependencies = [
+ "image",
+ "nalgebra",
  "ncollide2d",
  "nphysics2d",
+ "robotbed",
 ]
 
 [[package]]

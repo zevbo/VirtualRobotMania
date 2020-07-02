@@ -13,7 +13,7 @@
          get-left% get-right% get-robot-angle get-vl get-vr
          get-looking-dist get-lookahead-dist get-lookbehind-dist angle-to-ball
          num-balls MAX_NUM_BALLS
-         get-ball-vx get-ball-vy
+         get-ball-vx get-ball-vy create-robot-img
          get-ball-hue get-ball-brightness get-robot ball-exists? normalize-angle angle-to-first-ball
          (struct-out ball) get-ball world-width set-world-width! disqualify is-ball-bouncing? set-cut-offs! set-world-specific-f!)
 
@@ -77,13 +77,7 @@
     robot
     (starting-balls))))
 
-(define (normalize-angle angle)
-  (define int-angle (floor angle))
-  (define norm-int-angle (- (modulo (+ int-angle 180) 360) 180))
-  (define real-angle (+ norm-int-angle (- angle (floor angle))))
-  (if (> real-angle 180)
-      (- real-angle 36)
-      real-angle))
+(define (normalize-angle angle) (G-normalize-angle:deg angle))
 
 (define (to-rgb h s v)
   (define c (* v s))

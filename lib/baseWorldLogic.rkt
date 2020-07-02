@@ -44,7 +44,7 @@
      (change-pos robot Δx Δy)
      (set-robot-angle! robot (+ (robot-angle robot) Δangle))])
   (cond
-    [(map-robot-intersect? edges robot) 
+    [(map-robot-intersect? edges robot)
      (bounce robot #:bounce-size bounce-size)
      #t]
     [else #f])

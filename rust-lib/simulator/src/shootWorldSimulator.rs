@@ -17,10 +17,11 @@ const CG_ROBOTS: usize = 1;
 const CG_BALLS: usize = 2;
 const CG_WALLS: usize = 3;
 
+#[derive (Copy, Clone)]
 pub struct Robot{
     pub balls_left : u32,
     pub left_input : f32,
-    pub right_input : f32
+    pub right_input : f32,
 }
 
 impl Robot{
@@ -50,6 +51,7 @@ impl Robot{
                 .with_whitelist(&[CG_WALLS, CG_ROBOTS]))
             //.margin(0.0001)
             .density(1.)
+            .material(MaterialHandle::new(BasicMaterial::new(0.9, 0.3)))
             .build(BodyPartHandle(robotBodyHandle, 0));
     }
 }
@@ -81,7 +83,7 @@ fn add_wall_data(robotbed : &mut Robotbed<WorldData>, body_handle : DefaultBodyH
         ColliderDesc::new(shape)
         .translation(center)
         .rotation(angle)
-        .material(MaterialHandle::new(BasicMaterial::new(1., 0.)))
+        .material(MaterialHandle::new(BasicMaterial::new(0.9, 0.3)))
         .collision_groups(CollisionGroups::new()
             .with_membership(&[CG_WALLS])
             .with_whitelist(&[CG_BALLS, CG_ROBOTS]))
@@ -93,39 +95,45 @@ fn add_wall_data(robotbed : &mut Robotbed<WorldData>, body_handle : DefaultBodyH
 }
 
 pub struct WorldData{
-    pub robot : Robot,
+    pub robots : Vec<Robot>,
 }
 
-const ROBOT_WIDTH: f32 = 66.;
-const ROBOT_LENGTH: f32 = 100.;
-const WORLD_WIDTH: i32 = 600;
-const WORLD_HEIGHT: i32 = 600;
-const DISPLAY_SCALE_FACTOR: f32 = 1.2;
+const ROBOT_WIDTH: f32 = 266.;
+const ROBOT_LENGTH: f32 = 400.;
+const WORLD_WIDTH: i32 = 2000;
+const WORLD_HEIGHT: i32 = 2000;
+const DISPLAY_SCALE_FACTOR: f32 = 0.3;
 
 fn new_nphysics_world() -> NPhysicsWorld{
     let nphysics_world = NPhysicsWorld::new_empty();
     return nphysics_world;
 }
 
-pub fn add_robot(rb : &mut Robotbed<WorldData>, img : ImgBuf, translation : Vector2<f32>){
-    let robot_body_handle = rb.nphysics_world.bodies.insert(rb.data.robot.make_body(translation));
-    let robot_collider_handle = rb.nphysics_world.colliders.insert(rb.data.robot.make_collider(robot_body_handle));
+pub fn add_robot(rb : &mut Robotbed<WorldData>, img : ImgBuf, translation : Vector2<f32>, robot_i : usize){
+    let robot = rb.data.robots[robot_i];
+    let robot_body_handle = rb.nphysics_world.bodies.insert(robot.make_body(translation));
+    let robot_collider_handle = rb.nphysics_world.colliders.insert(robot.make_collider(robot_body_handle));
     rb.add_collider_image(robot_collider_handle, img, String::from("main"));
     rb.set_collider_image(robot_collider_handle, String::from("main"));
 }
 
 pub fn new_robotbed(robot_img_path: &str) -> Robotbed<WorldData>{
-    return new_robotbed_img(image_helpers::download_img(robot_img_path));
+    return new_robotbed_img(image_helpers::scale_img(image_helpers::download_img(robot_img_path), 4.));
 }
 
 pub fn new_robotbed_img(img: ImgBuf) -> Robotbed<WorldData>{
     println!("{:?},{:?}", img.width(), img.height());
-    let robot = Robot::new(3);
+    let mut robots = Vec::new();
+    let robot1 = Robot::new(3);
+    let robot2 = Robot::new(3);
+    robots.push(robot1);
+    robots.push(robot2);
     let mut nphysics_world = new_nphysics_world();
-    let world_data = WorldData{robot};
+    let world_data = WorldData{robots};
     let mut robotbed = genSimulator::make_robotbed(nphysics_world, world_data, DISPLAY_SCALE_FACTOR);
-    add_robot(&mut robotbed, img.clone(), Vector2::new(100.,0.));
-    add_robot(&mut robotbed, img.clone(), Vector2::new(-100.,0.));
+    add_robot(&mut robotbed, img.clone(), Vector2::new(300.,0.), 0);
+    add_robot(&mut robotbed, img.clone(), Vector2::new(-300.,0.), 1);
+    
     //add_wall_data(&mut robotbed, Vector2::new(WORLD_WIDTH as f32/2.0,0.), 100., 10., 1.57);
     make_walls(&mut robotbed);
     return robotbed;
