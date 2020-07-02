@@ -1,0 +1,5 @@
+(library
+ (name ocaml_sim)
+ (libraries core ctypes)
+ (preprocess
+  (pps ppx_jane)))

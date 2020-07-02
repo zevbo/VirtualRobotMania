@@ -9,3 +9,6 @@
 tmp*
 .vscode
 target/
+_build/
+*~
+.merlin
