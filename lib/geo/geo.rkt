@@ -121,7 +121,7 @@
          add-points sub-points scale-point rotate-point mid-point
          add-p-to-ll rotate-ll
          dist distSq
-         slope-of parallel?
+         slope-of angle-of parallel?
          ray-point-angle-form
          angle-between
          normalize-angle:rad normalize-angle:deg)

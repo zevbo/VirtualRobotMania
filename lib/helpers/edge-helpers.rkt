@@ -4,12 +4,21 @@
 (require "../geo/geo.rkt")
 (provide map-robot-intersections map-robot-intersect? maps-intersections maps-intersect?
          robot-edges
-         map-ll-intersections closest-intersection get-robot-map-dist)
+         map-ll-intersections closest-intersection get-robot-map-dist maps-intersecting-lls)
 
 (define (robot-edges robot)
   (get-edges (robot-length robot) (robot-width robot)
              #:rotate (robot-angle robot) #:shift-by (robot-point robot)))
 ;; eventually must be corrected to use line-segments
+(define (maps-intersecting-lls map1 map2)
+  (foldl append (list)
+   (map
+    (lambda (map1-edge)
+      (map
+       (lambda (map2-edge)(cons map1-edge map2-edge))
+       (filter (lambda (map2-edge) (not (equal? (intersection map1-edge map2-edge) (void))))
+               map2)))
+    map1)))
 (define (maps-intersections map1 map2)
   (flatten
    (map
