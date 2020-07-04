@@ -9,30 +9,30 @@
 (require 2htdp/image)
 (provide
  run internal-make-robot set-world!
- get-#robot get-#shoot-robot get-all-edges
- set-motors! change-motor-inputs
+ get-#robot get-#dodgeball-robot get-all-edges
+ set-motors! change-motor-inputs level-diffs
  get-left% get-right% get-robot-angle get-vl get-vr
  shoot angle-to-other-bot dist-to-other-bot
- set-radian-mode set-degree-mode get-cooldown-time
+ set-radian-mode set-degree-mode get-cooldown-time detailed-explanation
  get-looking-dist get-lookahead-dist get-lookbehind-dist num-balls-left
  front-left-close? front-right-close? back-left-close? back-right-close? relative-angle-of-other-bot
  angles-to-neutral-balls
- (struct-out world:shoot) (struct-out ball)
+ (struct-out world:dodgeball) (struct-out ball)
  get-world get-#robot ball-edges
  (rename-out [normalize-user-angle normalize-angle]))
 
-(struct world:shoot (canvas edges robot1 robot2 [balls #:mutable]))
+(struct world:dodgeball (canvas edges robot1 robot2 [balls #:mutable]))
 (struct ball (id pos vx vy type) #:mutable #:transparent)
-(struct shoot-robot (robot on-tick lives balls-left last-fire name level og-image) #:mutable)
+(struct dodgeball-robot (robot on-tick lives balls-left last-fire name level og-image) #:mutable)
 (define global-world (void))
 (define (get-world) global-world)
-(define (get-shoot-robot-1) (world:shoot-robot1 (get-world)))
-(define (get-shoot-robot-2) (world:shoot-robot2 (get-world)))
-(define (get-#shoot-robot n) (if (= n 1) (get-shoot-robot-1) (get-shoot-robot-2)))
-(define (get-#robot n) (shoot-robot-robot (get-#shoot-robot n)))
+(define (get-dodgeball-robot-1) (world:dodgeball-robot1 (get-world)))
+(define (get-dodgeball-robot-2) (world:dodgeball-robot2 (get-world)))
+(define (get-#dodgeball-robot n) (if (= n 1) (get-dodgeball-robot-1) (get-dodgeball-robot-2)))
+(define (get-#robot n) (dodgeball-robot-robot (get-#dodgeball-robot n)))
 (define robot#-on 0) ;; this is highly jenk, but fuck it
 (define (get-robot) (get-#robot robot#-on))
-(define (get-shoot-robot) (get-#shoot-robot robot#-on))
+(define (get-dodgeball-robot) (get-#dodgeball-robot robot#-on))
 (define (get-other-robot)
   (if (equal? (get-#robot 1) (get-robot)) (get-#robot 2) (get-#robot 1)))
 
@@ -67,24 +67,80 @@
 (define COOLDOWN (make-mode-val 20 25 30))
 (define (get-mode-val-level level mode-val)
   (hash-ref mode-val level))
-(define (get-mode-val shoot-robot mode-val)
-  (hash-ref mode-val (shoot-robot-level shoot-robot)))
+(define (get-mode-val dodgeball-robot mode-val)
+  (hash-ref mode-val (dodgeball-robot-level dodgeball-robot)))
+
+(define (detailed-explanation)
+  (printf "
+; Rules:
+; You will start either in the bottom left or top right (there is a little randomness in the starting y position)
+; As long as you aren't in your cooldown period (whose length depends on your mode) and you have at least one ball left,
+;   you can shoot from the front of your robot.
+; When you fire a ball it will come out as your color (red or green depending on where you start). If you get hit by a
+;   ball of the other players color, you will lose a life and become more transparent.
+; If you hit a black (or neutral ball) and you have fewer balls than your ball capacity, you will pick up that ball.
+; You are hit by a ball if the bounding box of your robot intersects the bounding box of the ball. Note: if the ball is completely
+;   inside of your robot, you can neither pick it up nor be hit by it, until it hits the edge.
+; Every tick, there is some chance (depending on your level) that a ball you just fired will become neutral, and turn black
+; When you become fully transparent, that means you have no more lives left and the other robot wins
+
+; Past functions:
+; (set-motors! n1 n2) -> sets the force being put into each side of the robot. 1 is the max, and -1 is the min for each side
+; (change-motor-inputs n1 n2) -> changes the force being put into each of the robot by the give amount
+;     for example: if before the motors were set to (0.6, 0.3), and you call (change-motor-inputs -0.1 0.4), the motors will
+;     become set to (0.5, 0.7)
+; (get-looking-dist angle) -> sees how far you can look in the direction of the given angle until there is an object,
+;    which could be a ball, wall or another robot. It is measured from the center of the robot, 0 is looking directly
+;    forward, and positive angles are towards the left.
+; (get-lookahead-dist), (get-lookbehind-dist) -> the same as get-looking-dist except they are measured
+;    from the front and back of the robot respectively, and obviously the angles are always 0 and 180 degrees respectively
+; (get-left%), (get-right%) -> gets the input (ie: force) to the left or right motors
+; (get-robot-angle) -> get's the global angle of the robot. Again, turning leftwards is positive.
+;    The magnitude of this angle can be larger than 180
+; (get-vl), (get-vr) -> get's the speed (in pixels per tick) of the left and right wheel of your robot
+; (normalize-angle angle) -> takes an angle outside of the range [-180, 180) and returns the coresponding angle in that range
+
+; New functions
+; (shoot) -> shoots a ball forward. The speed is effected by the speed of your robot
+; (angles-to-neutral-balls) -> returns a list of the angles to all the neutral balls (neutral balls = balls you can pick up)
+;    if a ball is straight ahead, it will say 0.
+; (get-cooldown-time) -> returns how many ticks until you can shoot again. 0 if you can shoot now
+; (num-balls-left) -> returns the number of balls you have left
+; (front-left-close?), (front-right-close?), (back-left-close?), (back-right-close?) -> 
+;    tells you if any given corner is very close (within 15) of a wall 
+; (angle-to-other-bot) -> returns the angle to the other bot. Leftwards is positive, and 0 is directly
+;    in front of you
+; (relative-angle-of-other-bot) -> tells you the relative angle of the other robot. So, if they are
+;    coming directly twoards you, it is 180 or -180. Precisely, it is their angle - your angle.
+; (dist-to-other-bot) -> returns the distance in pixels to the other robot
+; (set-degree-mode), (set-radian-mode) -> makes it so that all of your angles (both that you give to
+;     get from functions) are in the mode that you choose. Make sure to write this in on-tick"))
+(define (level-diffs)
+  (define (print-mode-val name mode-val)
+    (printf "~a| regular: ~s, advanced: ~s~n" name (hash-ref mode-val 'normal) (hash-ref mode-val 'advanced)))
+  (print-mode-val "starting lives" STARTING_LIVES)
+  (print-mode-val "ball capacity" BALL_CAPACITY)
+  (print-mode-val "starting balls" STARTING_BALLS)
+  (print-mode-val "cooldown (in ticks)" COOLDOWN)
+  (define (convert mode) (floor (/ 1 (hash-ref neutralize-chance mode))))
+  (print-mode-val "average active life span of balls (in ticks)" 
+    (make-mode-val (convert 'normal) (convert 'advanced) (convert 'expert))))
 
 (define (set-degree-mode) (set! angle-mode 'degrees))
 (define (set-radian-mode) (set! angle-mode 'radians))
 
 (define extra-image-space (* 4 BALL_RADIUS))
 (define (set-to-og-image robot#)
-  (define shoot-robot (get-#shoot-robot robot#))
-  (define robot (shoot-robot-robot shoot-robot))
-  (R-set-robot-image! robot (shoot-robot-og-image shoot-robot))
+  (define dodgeball-robot (get-#dodgeball-robot robot#))
+  (define robot (dodgeball-robot-robot dodgeball-robot))
+  (R-set-robot-image! robot (dodgeball-robot-og-image dodgeball-robot))
   )
 (define (display-balls-of robot#)
-  (define shoot-robot (get-#shoot-robot robot#))
-  (define robot (shoot-robot-robot shoot-robot))
-  (define robot-image (shoot-robot-og-image shoot-robot))
-  (define num-balls (shoot-robot-balls-left shoot-robot))
-  (define capacity (get-mode-val shoot-robot BALL_CAPACITY))
+  (define dodgeball-robot (get-#dodgeball-robot robot#))
+  (define robot (dodgeball-robot-robot dodgeball-robot))
+  (define robot-image (dodgeball-robot-og-image dodgeball-robot))
+  (define num-balls (dodgeball-robot-balls-left dodgeball-robot))
+  (define capacity (get-mode-val dodgeball-robot BALL_CAPACITY))
   (define spacing (/ (image-width robot-image) capacity))
   (define new-robot-image
     (foldl
@@ -99,10 +155,10 @@
   (R-set-robot-image! robot new-robot-image))
 
 (define (edit-robot-image robot#)
-  (define lives-left (shoot-robot-lives (get-#shoot-robot robot#)))
-  (define start-lives (get-mode-val (get-#shoot-robot robot#) STARTING_LIVES))
+  (define lives-left (dodgeball-robot-lives (get-#dodgeball-robot robot#)))
+  (define start-lives (get-mode-val (get-#dodgeball-robot robot#) STARTING_LIVES))
   (define alpha-diff (floor (* (/ (- start-lives lives-left) (* 0.5 start-lives (+ 1 start-lives))) 255)))
-  (define img (shoot-robot-og-image (get-#shoot-robot robot#)))
+  (define img (dodgeball-robot-og-image (get-#dodgeball-robot robot#)))
   (define color-list (image->color-list img))
   (define new-color-list
     (map
@@ -111,7 +167,7 @@
           [(color red green blue alpha) 
           (color red green blue (inexact->exact (floor (max (- alpha alpha-diff) 0.0))))]))
       color-list))
-  (set-shoot-robot-og-image! (get-#shoot-robot robot#) 
+  (set-dodgeball-robot-og-image! (get-#dodgeball-robot robot#) 
                              (color-list->bitmap new-color-list (image-width img) (image-height img))))
 
 (define (internal-make-robot level name on-tick
@@ -129,7 +185,7 @@
    "solid" "transparent")))
   (define bot (simple-bot robot-image))
   ;(R-set-robot-angle! bot (/ pi 2))
-  (shoot-robot 
+  (dodgeball-robot 
     bot 
     on-tick 
     (get-mode-val-level level STARTING_LIVES)
@@ -140,21 +196,21 @@
 (define START_WIDTH .75)
 (define START_HEIGHT .7)
 (define HEIGHT_VARIATION .05)
-(define (set-world! shoot-bot1 shoot-bot2)
+(define (set-world! dodgeball-bot1 dodgeball-bot2)
   (cond
-    [(equal? shoot-bot1 shoot-bot2)
+    [(equal? dodgeball-bot1 dodgeball-bot2)
      "Jacob... what do you think you're doing???????????"]
     [else
      (define (start-height) (* (+ START_HEIGHT (* (- (random) 0.5) HEIGHT_VARIATION 2)) WORLD_HEIGHT))
-     (R-set-pos! (shoot-robot-robot shoot-bot1) (* -1/2 START_WIDTH WORLD_WIDTH) (* -1/2 (start-height)))
-     (R-set-pos! (shoot-robot-robot shoot-bot2) (*  1/2 START_WIDTH WORLD_WIDTH) (*  1/2 (start-height)))
-     (R-set-robot-angle! (shoot-robot-robot shoot-bot2) pi)
+     (R-set-pos! (dodgeball-robot-robot dodgeball-bot1) (* -1/2 START_WIDTH WORLD_WIDTH) (* -1/2 (start-height)))
+     (R-set-pos! (dodgeball-robot-robot dodgeball-bot2) (*  1/2 START_WIDTH WORLD_WIDTH) (*  1/2 (start-height)))
+     (R-set-robot-angle! (dodgeball-robot-robot dodgeball-bot2) pi)
      (set!
       global-world
-      (world:shoot
+      (world:dodgeball
        (create-blank-canvas WORLD_WIDTH WORLD_HEIGHT)
        (get-edges WORLD_WIDTH WORLD_HEIGHT)
-       shoot-bot1 shoot-bot2
+       dodgeball-bot1 dodgeball-bot2
        (list)))]))
 
 (define (ball-edges ball)
@@ -166,7 +222,7 @@
     (ball-pos ball)
     (G-scale-point TICK_LENGTH (G-point (ball-vx ball) (ball-vy ball))))))
 (define ball-k 0.01)
-(define neutrelize-chance (make-mode-val 0.02 0.03 0.04))
+(define neutralize-chance (make-mode-val 0.02 0.03 0.04))
 (define (que-remove-ball id)
   (set! ball-ids-to-remove (cons id ball-ids-to-remove)))
 (define (update-ball ball)
@@ -174,9 +230,10 @@
   (cond
     [(and
       (number? (ball-type ball))
-      (< (random) (get-mode-val (get-#shoot-robot (ball-type ball)) neutrelize-chance))) 
+      (< (random) (get-mode-val (get-#dodgeball-robot (ball-type ball)) neutralize-chance))) 
      (set-ball-type! ball 'neut)])
-  (cond 
+  (cond
+    [(out-of-field? (ball-point ball)) (delete-ball (ball-id ball))]
     [(maps-intersect? (ball-edges ball) (get-all-edges #:excluded-ball-types (list 'neut 1 2)))
      (define intersection-lls
        (first (maps-intersecting-lls (ball-edges ball) (get-all-edges #:excluded-ball-types (list 'neut 1 2)))))
@@ -195,29 +252,29 @@
           (maps-intersect? (robot-edges (get-#robot (- 3 (ball-type ball))))
                            (ball-edges ball)))
      (define robot# (- 3 (ball-type ball)))
-     (define shoot-bot (get-#shoot-robot robot#))
-     (set-shoot-robot-lives! shoot-bot (- (shoot-robot-lives shoot-bot) 1))
+     (define dodgeball-bot (get-#dodgeball-robot robot#))
+     (set-dodgeball-robot-lives! dodgeball-bot (- (dodgeball-robot-lives dodgeball-bot) 1))
      (remove-ball (ball-id ball))
      (edit-robot-image robot#)
      (cond
-      [(> (shoot-robot-lives shoot-bot) 0) 
+      [(> (dodgeball-robot-lives dodgeball-bot) 0) 
         (teleport-bot# robot#)
         (display-balls-of robot#)]
       [else (set-to-og-image robot#)])
      ]
     [(symbol? (ball-type ball))
      (define (not-full? robot#)
-       (define robot (get-#shoot-robot robot#))
-       (< (shoot-robot-balls-left robot) (get-mode-val robot BALL_CAPACITY)))
+       (define robot (get-#dodgeball-robot robot#))
+       (< (dodgeball-robot-balls-left robot) (get-mode-val robot BALL_CAPACITY)))
      (define intersect-1? (and (not-full? 1) (maps-intersect? (robot-edges (get-#robot 1)) (ball-edges ball))))
      (define intersect-2? (and (not-full? 2) (maps-intersect? (robot-edges (get-#robot 2)) (ball-edges ball))))
      (cond
        [(or intersect-1? intersect-2?)
         (define robot# (if intersect-1? 1 2))
-        (define robot (get-#shoot-robot robot#))
-        (set-shoot-robot-balls-left!
+        (define robot (get-#dodgeball-robot robot#))
+        (set-dodgeball-robot-balls-left!
          robot
-         (+ (shoot-robot-balls-left robot) 1))
+         (+ (dodgeball-robot-balls-left robot) 1))
         (que-remove-ball (ball-id ball))
         (display-balls-of robot#)])]))
 
@@ -255,17 +312,17 @@
   (define all-balls
     (filter
      (lambda (ball) (not (memv (ball-type ball) excluded-ball-types)))
-     (world:shoot-balls global-world)))
+     (world:dodgeball-balls global-world)))
   (define all-ball-edges (foldl append (list) (map ball-edges all-balls)))
   (define bot1-edges (if robot-edges-1? (robot-edges (get-#robot 1)) (list)))
   (define bot2-edges (if robot-edges-2? (robot-edges (get-#robot 2)) (list)))
-  (append all-ball-edges bot1-edges bot2-edges (world:shoot-edges global-world)))
+  (append all-ball-edges bot1-edges bot2-edges (world:dodgeball-edges global-world)))
 
 (define (remove-ball r-ball-id)
-  (set-world:shoot-balls!
+  (set-world:dodgeball-balls!
    (get-world)
    (filter (lambda (ball) (not (= (ball-id ball) r-ball-id)))
-           (world:shoot-balls (get-world)))))
+           (world:dodgeball-balls (get-world)))))
 
 (define (ball-type->image ball-type)
   (match ball-type
@@ -285,7 +342,10 @@
   (set! n (inexact->exact n))
   (random (- 0 n) n))
 (define (get-cooldown-time)
-  (max 0 (- (+ (get-mode-val (get-shoot-robot) COOLDOWN) (shoot-robot-last-fire (get-shoot-robot))) tick#)))
+  (max 0 (- (+ (get-mode-val (get-dodgeball-robot) COOLDOWN) (dodgeball-robot-last-fire (get-dodgeball-robot))) tick#)))
+(define (out-of-field? point)
+  (or (> (abs (G-point-x point)) (/ WORLD_WIDTH 2)
+      (> (abs (G-point-y point)) (/ WORLDHEIGHT 2)))))
 (define (add-random-ball)
   (define pos (G-point (double-randomized (floor (- (/ WORLD_WIDTH  2) BALL_RADIUS)))
                        (double-randomized (floor (- (/ WORLD_HEIGHT 2) BALL_RADIUS)))))
@@ -297,13 +357,13 @@
 (define (shoot)
   (cond
     [(and
-      (> (shoot-robot-balls-left (get-shoot-robot)) 0)
+      (> (dodgeball-robot-balls-left (get-dodgeball-robot)) 0)
       (= (get-cooldown-time) 0)
-     (set-shoot-robot-balls-left!
-      (get-shoot-robot)
-      (- (shoot-robot-balls-left (get-shoot-robot)) 1)))
+     (set-dodgeball-robot-balls-left!
+      (get-dodgeball-robot)
+      (- (dodgeball-robot-balls-left (get-dodgeball-robot)) 1)))
      (set! last-shot-tick tick#)
-     (set-shoot-robot-last-fire! (get-shoot-robot) tick#)
+     (set-dodgeball-robot-last-fire! (get-dodgeball-robot) tick#)
      (define angle (R-robot-angle (get-robot)))
      (define r-pos (G-point (R-robot-x (get-robot)) (R-robot-y (get-robot))))
      (define type (if (equal? (get-robot) (get-#robot 1)) 1 2))
@@ -321,9 +381,9 @@
      (add-ball shot-ball)
      (display-balls-of robot#-on)]))
 (define (add-ball ball)
-  (set-world:shoot-balls!
+  (set-world:dodgeball-balls!
       (get-world)
-      (cons ball (world:shoot-balls (get-world)))))
+      (cons ball (world:dodgeball-balls (get-world)))))
 (define (angle-to-other-bot)
   (define radians-angle
     (-
@@ -374,9 +434,11 @@
                                                    (R-robot-angle (get-robot))))))
    (filter
     (lambda (ball) (equal? (ball-type ball) 'neut))
-    (world:shoot-balls (get-world)))))
+    (world:dodgeball-balls (get-world)))))
 (define (num-balls-left)
-  (shoot-robot-balls-left (get-shoot-robot)))
+  (dodgeball-robot-balls-left (get-dodgeball-robot)))
+(define (ball-capacity)
+  (get-mode-val (get-dodgeball-robot) BALL_CAPACITY))
 (define (get-left%)  (R-robot-left%  (get-robot)))
 (define (get-right%) (R-robot-right% (get-robot)))
 (define (get-vl) (* (R-robot-vl (get-robot)) TICK_LENGTH))
@@ -417,12 +479,12 @@
    (move-bot (get-#robot 1) k #:edges walls)
    (move-bot (get-#robot 2) k #:edges walls)
    (print-time-diff "move bot")
-   (map update-ball (world:shoot-balls (get-world)))
+   (map update-ball (world:dodgeball-balls (get-world)))
    (print-time-diff "ball update")
    (set! robot#-on 1)
-   ((shoot-robot-on-tick (world:shoot-robot1 (get-world))) tick#)
+   ((dodgeball-robot-on-tick (world:dodgeball-robot1 (get-world))) tick#)
    (set! robot#-on 2)
-   ((shoot-robot-on-tick (world:shoot-robot2 (get-world))) tick#)
+   ((dodgeball-robot-on-tick (world:dodgeball-robot2 (get-world))) tick#)
    (print-time-diff "on-tick")
    (set! tick# (+ tick# 1))
    (cond
@@ -435,8 +497,8 @@
       (overlay-robot
        (foldl
         overlay-ball
-        (world:shoot-canvas world)
-        (world:shoot-balls world))
+        (world:dodgeball-canvas world)
+        (world:dodgeball-balls world))
        (get-#robot 1))
       (get-#robot 2)))
    (print-time-diff "image-display")
@@ -446,14 +508,14 @@
  get-world
  [] []
  (lambda (world)
-   (or (= (shoot-robot-lives (get-#shoot-robot 1)) 0)
-       (= (shoot-robot-lives (get-#shoot-robot 2)) 0)))
- [(define r1? (= (shoot-robot-lives (get-#shoot-robot 1)) 0))
-  (define r2? (= (shoot-robot-lives (get-#shoot-robot 2)) 0))
+   (or (= (dodgeball-robot-lives (get-#dodgeball-robot 1)) 0)
+       (= (dodgeball-robot-lives (get-#dodgeball-robot 2)) 0)))
+ [(define r1? (= (dodgeball-robot-lives (get-#dodgeball-robot 1)) 0))
+  (define r2? (= (dodgeball-robot-lives (get-#dodgeball-robot 2)) 0))
   (cond
     [(or r1? r2?) 
-    (define bot (get-#shoot-robot (if r1? 2 1)))
+    (define bot (get-#dodgeball-robot (if r1? 2 1)))
     (printf "With ~s of ~s lives left, ~a wins!~n"
-    (shoot-robot-lives bot) (get-mode-val bot STARTING_LIVES) (shoot-robot-name bot))]
+    (dodgeball-robot-lives bot) (get-mode-val bot STARTING_LIVES) (dodgeball-robot-name bot))]
     [else (printf ":(~n")])])
 (define-syntax-rule (run) (internal-run (lambda (_) (void))))

@@ -1,5 +1,5 @@
 #lang racket
-(require "shoot-bot-boi.rkt")
+(require "bot-boi.rkt")
 (require "eager-shooter.rkt")
 (require "the-dagger.rkt")
 (require "pelosi-mobeel.rkt")

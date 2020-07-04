@@ -1,5 +1,5 @@
 #lang racket
-(require "../shoot-world.rkt" "le-code.rkt")
+(require "../dodgeball-world.rkt" "le-code.rkt")
 (provide eager-shooter)
 
 

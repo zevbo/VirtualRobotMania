@@ -1,5 +1,5 @@
 #lang racket
-(require "../shoot-world.rkt")
+(require "../dodgeball-world.rkt")
 (provide leto << >> -*- cond: set!! set-motors set_motors!)
 
 (define-syntax-rule (leto a ... (b ...))
