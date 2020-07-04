@@ -18,7 +18,7 @@
  front-left-close? front-right-close? back-left-close? back-right-close? relative-angle-of-other-bot
  angles-to-neutral-balls
  (struct-out world:dodgeball) (struct-out ball)
- get-world get-#robot ball-edges
+ get-world get-#robot ball-edges other-bot-shooting? other-bot-level
  (rename-out [normalize-user-angle normalize-angle]))
 
 (struct world:dodgeball (canvas edges robot1 robot2 [balls #:mutable]))
@@ -33,8 +33,10 @@
 (define robot#-on 0) ;; this is highly jenk, but fuck it
 (define (get-robot) (get-#robot robot#-on))
 (define (get-dodgeball-robot) (get-#dodgeball-robot robot#-on))
+(define (get-other-dodgeball-robot)
+  (if (equal? (get-#dodgeball-robot 1) (get-robot)) (get-#dodgeball-robot 2) (get-#robot 1)))
 (define (get-other-robot)
-  (if (equal? (get-#robot 1) (get-robot)) (get-#robot 2) (get-#robot 1)))
+  (get-#dodgeball-robot (get-other-dodgeball-robot)))
 
 (define global-ball-id -1)
 (define (get-ball-id)
@@ -113,6 +115,8 @@
 ; (relative-angle-of-other-bot) -> tells you the relative angle of the other robot. So, if they are
 ;    coming directly twoards you, it is 180 or -180. Precisely, it is their angle - your angle.
 ; (dist-to-other-bot) -> returns the distance in pixels to the other robot
+; (other-bot-shooting?) -> tells you if the other bot shot last tick
+; (other-bot-level) -> returns the level of the other robot. Possible values are: 'normal, 'advanced and 'expert
 ; (set-degree-mode), (set-radian-mode) -> makes it so that all of your angles (both that you give to
 ;     get from functions) are in the mode that you choose. Make sure to write this in on-tick"))
 (define (level-diffs)
@@ -397,6 +401,10 @@
 (define (relative-angle-of-other-bot)
   (radians->user-angle
     (G-normalize-angle:rad (- (R-robot-angle (get-other-robot)) (R-robot-angle (get-other-robot))))))
+(define (other-bot-shooting?)
+  (= (dodgeball-robot-last-fire (get-other-dodgeball-bot)) (- tick# 1)))
+(define (other-bot-level)
+  (dodgeball-robot-level (get-other-dodgeball-robot)))
 
 (define (normalize-user-angle user-angle)
   (if (equal? angle-mode 'radians)

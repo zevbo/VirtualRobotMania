@@ -28,7 +28,7 @@
 ; (num-balls-left) -> returns the number of balls you have left
 ; (front-left-close?), (front-right-close?), (back-left-close?), (back-right-close?) -> 
 ;      tells you if any given corner is very close (within 15) of a wall 
-; (angle-to-other-bot), (relative-angle-of-other-bot), (dist-to-other-bot)
+; (angle-to-other-bot), (relative-angle-of-other-bot), (dist-to-other-bot), (other-bot-shooting?), (other-bot-level)
 ; (set-degree-mode), (set-radian-mode)
 
 ; for a more detailed explanation, write (detailed-explanation)
