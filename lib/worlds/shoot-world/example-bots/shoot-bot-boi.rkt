@@ -11,17 +11,11 @@
   (cond:
     [(not (or (front-left-close?) (front-right-close?)))  (set-motors -1.5 1)]
     [(or (back-left-close?) (back-right-close?))  (set-motors 1.5 -1)]
-    ;[(= (num-balls-left) 0)
-    ; (define angles (angles-to-neutral-balls))
-    ; (define goal-angle 
-    ;    (foldl (lambda (a1 a2) (if (> (get-looking-dist a1) (get-looking-dist a2)) a2 a1))
-    ;            (first angles) (rest angles)))
-    ; (set-motors! (- 1 (* neut-ball-p goal-angle)) (+ 1 (* neut-ball-p goal-angle)))]
     [(or (> (abs angle) 0.2) (> (dist-to-other-bot) 200))
      (set_motors! -2 2)
      (shoot)]
     [(= (modulo tick# 50) 0) (set! p (+ (/ (random) 4) 0.35))]
-    [#f (set_motors! (- -2 (* -2 p angle)) (+ 2 (* p angle)))] 
+    [#f (set_motors! (-*- (* -2 (- -2 p angle))) (+ 2 (* p angle)))] 
     )
   )
 
