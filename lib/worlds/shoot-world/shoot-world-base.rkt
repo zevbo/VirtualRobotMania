@@ -10,7 +10,9 @@
 (provide
  run internal-make-robot set-world!
  get-#robot get-#shoot-robot get-all-edges
- set-motors! shoot angle-to-other-bot dist-to-other-bot
+ set-motors! change-motor-inputs
+ get-left% get-right% get-robot-angle get-vl get-vr
+ shoot angle-to-other-bot dist-to-other-bot
  set-radian-mode set-degree-mode get-cooldown-time
  get-looking-dist get-lookahead-dist get-lookbehind-dist num-balls-left
  front-left-close? front-right-close? back-left-close? back-right-close? relative-angle-of-other-bot
@@ -136,14 +138,16 @@
     robot-image))
 
 (define START_WIDTH .75)
-(define START_HEIGHT .75)
+(define START_HEIGHT .7)
+(define HEIGHT_VARIATION .05)
 (define (set-world! shoot-bot1 shoot-bot2)
   (cond
     [(equal? shoot-bot1 shoot-bot2)
      "Jacob... what do you think you're doing???????????"]
     [else
-     (R-set-pos! (shoot-robot-robot shoot-bot1) (* -1/2 START_WIDTH WORLD_WIDTH) (* -1/2 START_HEIGHT WORLD_HEIGHT))
-     (R-set-pos! (shoot-robot-robot shoot-bot2) (*  1/2 START_WIDTH WORLD_WIDTH) (*  1/2 START_HEIGHT WORLD_HEIGHT))
+     (define (start-height) (* (+ START_HEIGHT (* (- (random) 0.5) HEIGHT_VARIATION 2)) WORLD_HEIGHT))
+     (R-set-pos! (shoot-robot-robot shoot-bot1) (* -1/2 START_WIDTH WORLD_WIDTH) (* -1/2 (start-height)))
+     (R-set-pos! (shoot-robot-robot shoot-bot2) (*  1/2 START_WIDTH WORLD_WIDTH) (*  1/2 (start-height)))
      (R-set-robot-angle! (shoot-robot-robot shoot-bot2) pi)
      (set!
       global-world
@@ -373,6 +377,14 @@
     (world:shoot-balls (get-world)))))
 (define (num-balls-left)
   (shoot-robot-balls-left (get-shoot-robot)))
+(define (get-left%)  (R-robot-left%  (get-robot)))
+(define (get-right%) (R-robot-right% (get-robot)))
+(define (get-vl) (* (R-robot-vl (get-robot)) TICK_LENGTH))
+(define (get-vr) (* (R-robot-vr (get-robot)) TICK_LENGTH))
+(define (change-motor-inputs Δleft% Δright%)
+  (set-motors! (+ (get-left%) Δleft%) (+ (get-right%) Δright%)))
+(define (get-robot-angle)
+  (radians->user-angle (R-robot-angle (get-robot))))
   
 
 (define ticks-per-new-ball 500)
