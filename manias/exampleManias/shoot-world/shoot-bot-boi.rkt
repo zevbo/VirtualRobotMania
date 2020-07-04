@@ -31,8 +31,8 @@
 (define bot-boi
   (make-robot
    "Bot Boi" on-tick
-   #:body-color "black"
-   #:wheel-color "red"
+   #:body-color "darkgreen"
+   #:wheel-color "grey"
    #:image-url "https://i.ytimg.com/vi/g5XLpXVbJKo/maxresdefault.jpg"
    #:name-color "white"
    ))

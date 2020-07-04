@@ -72,6 +72,11 @@
 (define (set-radian-mode) (set! angle-mode 'radians))
 
 (define extra-image-space (* 4 BALL_RADIUS))
+(define (set-to-og-image robot#)
+  (define shoot-robot (get-#shoot-robot robot#))
+  (define robot (shoot-robot-robot shoot-robot))
+  (R-set-robot-image! robot (shoot-robot-og-image shoot-robot))
+  )
 (define (display-balls-of robot#)
   (define shoot-robot (get-#shoot-robot robot#))
   (define robot (shoot-robot-robot shoot-robot))
@@ -157,7 +162,7 @@
     (ball-pos ball)
     (G-scale-point TICK_LENGTH (G-point (ball-vx ball) (ball-vy ball))))))
 (define ball-k 0.01)
-(define neutrelize-chance (make-mode-val 0.04 0.06 0.09))
+(define neutrelize-chance (make-mode-val 0.02 0.03 0.04))
 (define (que-remove-ball id)
   (set! ball-ids-to-remove (cons id ball-ids-to-remove)))
 (define (update-ball ball)
@@ -188,10 +193,13 @@
      (define robot# (- 3 (ball-type ball)))
      (define shoot-bot (get-#shoot-robot robot#))
      (set-shoot-robot-lives! shoot-bot (- (shoot-robot-lives shoot-bot) 1))
-     (que-remove-ball (ball-id ball))
-     (teleport-bot# robot#)
+     (remove-ball (ball-id ball))
      (edit-robot-image robot#)
-     (display-balls-of robot#)
+     (cond
+      [(> (shoot-robot-lives shoot-bot) 0) 
+        (teleport-bot# robot#)
+        (display-balls-of robot#)]
+      [else (set-to-og-image robot#)])
      ]
     [(symbol? (ball-type ball))
      (define (not-full? robot#)
@@ -303,8 +311,8 @@
        (G-add-points r-pos
                      (G-rotate-point (G-point (* .5 (R-robot-length (get-robot))) 0) angle)))
      (define shot-ball (ball (get-ball-id) pos
-                             (+ (* (+ ball-vi robot-v) (cos angle)) (* perp-v (sin angle)))
-                             (+ (* (+ ball-vi robot-v) (sin angle)) (* perp-v (cos angle)))
+                             (+ (* (+ ball-vi robot-v) (cos angle)) (* perp-v (cos (+ angle (/ pi 2)))))
+                             (+ (* (+ ball-vi robot-v) (sin angle)) (* perp-v (sin (+ angle (/ pi 2)))))
                              type))
      (add-ball shot-ball)
      (display-balls-of robot#-on)]))

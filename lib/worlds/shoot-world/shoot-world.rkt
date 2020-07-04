@@ -6,6 +6,7 @@
  set-radian-mode set-degree-mode get-cooldown-time
  get-looking-dist get-lookahead-dist get-lookbehind-dist num-balls-left
  front-left-close? front-right-close? back-left-close? back-right-close?
+ relative-angle-of-other-bot
  normalize-angle angles-to-neutral-balls)
 
  (define-syntax-rule (make-robot args ...)
