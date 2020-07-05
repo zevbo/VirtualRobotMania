@@ -1,5 +1,7 @@
 # Dodgeball World
 
+<img src="./images/img1.png" width=300 align="right">
+
 Welcome to Dodgeball World! This is the first ever Virtual Robotics
 1-vs-1 competiton!  Here you will be tasked with creating a robot that
 can shoot balls at your opponent, better than your opponent can shoot
@@ -9,7 +11,6 @@ them at you.
 
 You can control the position of your ro just like the
 
-<img src="./images/img1.png" width=300>
 <img src="./images/img2.png" width=300>
 <img src="./images/img3.png" width=300>
 
