@@ -1,11 +1,11 @@
 # Dodgeball World
 
-Welcome to the dodgeball world! The first ever VRC 1 vs 1 competiton
+Welcome to the dodgeball world! The first ever Virtual Robotics 1-vs-1
+competiton!  Here you will be tasked with creating a robot that can
+shoot balls at your opponent, better than your opponent can shoot them
+at you!
 
-Here you will be tasked with creating a robot that can shoot balls at
-your opponent -- better than your opponent can shoot them at you!
-
-Every time you get hit your robot will fade away just a bit. Last
+Every time you get hit your robot will fade away just a bit.  The last
 robot standing wins!
 
 ## Rules
