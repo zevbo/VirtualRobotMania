@@ -31,10 +31,10 @@ little randomness in the starting position.
 
 ## Functions you know and love
 
-The controls are the same as the last competition: your bot has left
-and right motors that you can control independently.  Indeed, there
-are a bunch of functions that you already know that still work in this
-new game.
+The controls are almost the same as the last competition: your bot has
+left and right motors that you can control independently.  Indeed,
+there are a bunch of functions that you already know that still work
+in this new game.
 
 ### Motor control
 
