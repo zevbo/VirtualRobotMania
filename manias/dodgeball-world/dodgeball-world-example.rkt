@@ -17,9 +17,12 @@
 ; Above you can choose either the regular or advanced chase-world. Both of these worlds have
 ;   the exact smame functions. For more info on the differneces, run the function (level-diffs)
 
+
+
 ; QUICK RULES/EXPLANATIONS
-#|
-|#
+; for a more detailed explanation, write (detailed-explanation), uncomment the third to last line, or go to the following link:
+;    https://github.com/zevbo/VirtualRobotMania/tree/master/manias/dodgeball-world
+
 ; Past functions:
 ; (set-motors! n1 n2), (change-motor-inputs n1 n2), (get-looking-dist angle), (get-lookahead-dist angle), (get-lookbehind-dist angle)
 ; (get-left%), (get-right%), (get-robot-angle), (get-vl), (get-vr), (normalize-angle angle)
@@ -34,7 +37,8 @@
 ; (angle-to-other-bot), (relative-angle-of-other-bot), (dist-to-other-bot), (other-bot-shooting?), (other-bot-level)
 ; (set-degree-mode), (set-radian-mode)
 
-; for a more detailed explanation, write (detailed-explanation) or uncomment the third to last line
+; for a more detailed explanation, write (detailed-explanation), uncomment the third to last line, or go to the following link:
+;    https://github.com/zevbo/VirtualRobotMania/tree/master/manias/dodgeball-world
 (define (on-tick tick#)
   (set-radian-mode) ;; make sure to have this line in on-tick
   (define angle (angle-to-other-bot))

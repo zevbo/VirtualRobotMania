@@ -78,14 +78,17 @@
 ; As long as you aren't in your cooldown period (mode on that later) and you have at least one ball left,
 ;   you can shoot from the front of your robot with the (shoot) function.
 ; When you fire a ball it will come out as your color (red or green depending on where you start). If you get hit by a
-;   ball of the other players color, you will lose a life and become more transparent.
+;   ball of the other players color, you will lose a life, become more transparent and teleport to a random spot on the board.
 ; Every tick, there is some chance (depending on your level) that a ball you just fired will become neutral, and turn black
 ; If you hit a black (or neutral ball) and you have fewer balls than your ball capacity, you will pick up that ball.
 ; You are hit by a ball if the bounding box of your robot intersects the bounding box of the ball. Note: if the ball is completely
 ;   inside of your robot, you can neither pick it up nor be hit by it, until it hits the edge.
 ; Remember how whenever you get hit you lose a life and become more transparent? Well, when you become fully transparent, 
 ;   that means you have no more lives left and the other robot wins
-; Last note: you will start either in the bottom left or top right (there is a little randomness in the starting y position)
+; A few more notes: 
+;   1. you will start either in the bottom left or top right (there is a little randomness in the starting y position)
+;   2. If no one shoots for 250 ticks, both robots will be randomly teleported
+;   3. On average once every 350 ticks, a neutral ball will be spawned at a random point on the map
 
 
 ; Past functions:
@@ -465,7 +468,7 @@
   (radians->user-angle (R-robot-angle (get-robot))))
   
 
-(define ticks-per-new-ball 500)
+(define ticks-per-new-ball 350)
 (define printing-interval 35)
 (define ball-ids-to-remove (list))
 (create-run-function
