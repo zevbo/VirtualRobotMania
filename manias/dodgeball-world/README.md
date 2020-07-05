@@ -9,7 +9,8 @@ them at you.
 
 You can control the position of your ro just like the
 
-![Image 1](./images/img1.png | width=100)
+<img src="./images/img1.png" width=100>
+
 
 ![Image 2](./images/img2.png | width=100)
 
