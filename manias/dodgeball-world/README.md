@@ -1,6 +1,6 @@
 # Dodgeball World
 
-<img src="./images/img1.png" width=300 align="right">
+<img src="./images/img1.png" width="50%" align="right">
 
 Welcome to Dodgeball World! This is the first ever Virtual Robotics
 1-vs-1 competiton!  Here you will be tasked with creating a robot that
