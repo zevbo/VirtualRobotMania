@@ -1,12 +1,15 @@
 #lang racket
+;; COPY THIS CODE INTO ANOTHER FILE IF YOU ARE USING GITHUB
+;; COPY THIS CODE INTO ANOTHER FILE IF YOU ARE USING GITHUB
+;; COPY THIS CODE INTO ANOTHER FILE IF YOU ARE USING GITHUB
 (require "../../lib/worlds/dodgeball-world/example-bots/example-bots.rkt")
 
 ;; Welcome to the dodgeball world! The first ever VRC 1 vs 1 competiton
 
 ;; Here you will be tasked with creating a robot that can shoot balls at
-;;   your opponent better than it can shoot them at you!
+;;   your opponent-- better than your opponent can shoot them at you!
 
-;; Whenever you get hit your robot will start to fade away. Last robot
+;; Every time you get hit your robot will fade away just a bit. Last robot
 ;;   standing wins!
 
 (require "../../lib/worlds/dodgeball-world/dodgeball-world.rkt")
@@ -31,7 +34,7 @@
 ; (angle-to-other-bot), (relative-angle-of-other-bot), (dist-to-other-bot), (other-bot-shooting?), (other-bot-level)
 ; (set-degree-mode), (set-radian-mode)
 
-; for a more detailed explanation, write (detailed-explanation)
+; for a more detailed explanation, write (detailed-explanation) or uncomment the third to last line
 (define (on-tick tick#)
   (set-radian-mode) ;; make sure to have this line in on-tick
   (define angle (angle-to-other-bot))
@@ -49,8 +52,8 @@
    #:image-url "https://i.pinimg.com/originals/02/0d/08/020d08c863f0742e40a11585c26f2f21.png"
    #:name-color "black"
    ))
+  
 
-(set-world! pelosi-mobeel eager-shooter)
-(run)
-(set-world! bot-boi the-dagger)
+; (detailed-explanation)
+(set-world! my-bot bot-boi)
 (run)
