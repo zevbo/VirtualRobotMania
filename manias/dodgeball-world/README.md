@@ -9,8 +9,8 @@ them at you.
 
 ## Rules
 
-You can control how your bot moves in the same way as in the previous
-manias.
+The basic controls are basically the same as in the last competition:
+your bot has left and right motors that you can control independently.
 
 Every time you get hit your robot will fade away just a bit.  The last
 robot standing wins.
