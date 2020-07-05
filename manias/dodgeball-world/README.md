@@ -123,10 +123,8 @@ to this game
   does, is say how much left you have to turn to be facing the other
   bot.
 
-- `(relative-angle-of-other-bot)` tells you the relative angle of the
-  other robot. So, if they are coming directly towards you, it is 180
-  or -180.  More precisely, it's the difference their angle - your
-  angle. # TODO: I just don't understand this one.
+- `(get-other-robot-angle)`, which is like `(get-robot-angle)`, but it
+  gives the answer for the opposing bot.
 
 - `(dist-to-other-bot)` returns the distance in pixels to the other
   robot
