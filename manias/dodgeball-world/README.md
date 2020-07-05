@@ -9,11 +9,11 @@ them at you.
 
 You can control the position of your ro just like the
 
-![Image 1](./images/img1.png)
+![Image 1](./images/img1.png | width=100)
 
-![Image 2](./images/img2.png)
+![Image 2](./images/img2.png | width=100)
 
-![Image 3](./images/img3.png)
+![Image 3](./images/img3.png | width=100)
 
 Every time you get hit your robot will fade away just a bit.  The last
 robot standing wins.
