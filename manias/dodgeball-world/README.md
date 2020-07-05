@@ -125,5 +125,12 @@ Note that any specs that depend on your level can be found by runnning
 
 ## Advanced levels
 
-Are you studying computer science?
-Is the normal difficulty.
+Are you studying computer science?  Do you think you're too cool for
+"normal" mode?  Then you should try out advanced mode!  You can do it
+by commenting-out the first of these lines, and uncommenting the
+second.
+
+```racket
+(require "../../lib/worlds/dodgeball-world/dodgeball-world.rkt")
+;(require "../../lib/worlds/dodgeball-world/dodgeball--advanced.rkt")
+```
