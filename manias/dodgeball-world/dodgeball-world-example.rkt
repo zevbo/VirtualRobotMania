@@ -14,18 +14,24 @@
 
 (require "../../lib/worlds/dodgeball-world/dodgeball-world.rkt")
 ;(require "../../lib/worlds/dodgeball-world/dodgeball--advanced.rkt")
-; Above you can choose either the regular or advanced chase-world. Both of these worlds have
-;   the exact smame functions. For more info on the differneces, run the function (level-diffs)
+; Above you can choose either the regular or advanced chase-world.
+;   Both of these worlds have the exact same functions. For more
+;   info on the differneces, run the function (level-diffs)
 
 
-
-; QUICK RULES/EXPLANATIONS
-; for a more detailed explanation, write (detailed-explanation), uncomment the third to last line, or go to the following link:
+; QUICKSTART
+;
+; for a more detailed explanation, go to the following link:
 ;    https://github.com/zevbo/VirtualRobotMania/tree/master/manias/dodgeball-world
 
 ; Past functions:
-; (set-motors! n1 n2), (change-motor-inputs n1 n2), (get-looking-dist angle), (get-lookahead-dist angle), (get-lookbehind-dist angle)
-; (get-left%), (get-right%), (get-robot-angle), (get-vl), (get-vr), (normalize-angle angle)
+; Motors:
+;   (set-motors! n1 n2), (change-motor-inputs n1 n2), (get-left%), (get-right%)
+; Sensors:
+;   (get-looking-dist angle), (get-robot-angle),  (get-vl), (get-vr)
+;   (get-lookahead-dist angle), (get-lookbehind-dist angle)       
+; Utilities:
+;   (normalize-angle angle)
 
 ; New functions
 ; (shoot) -> shoots a ball forward
@@ -37,8 +43,6 @@
 ; (angle-to-other-bot), (relative-angle-of-other-bot), (dist-to-other-bot), (other-bot-shooting?), (other-bot-level)
 ; (set-degree-mode), (set-radian-mode)
 
-; for a more detailed explanation, write (detailed-explanation), uncomment the third to last line, or go to the following link:
-;    https://github.com/zevbo/VirtualRobotMania/tree/master/manias/dodgeball-world
 (define (on-tick tick#)
   (set-radian-mode) ;; make sure to have this line in on-tick
   (define angle (angle-to-other-bot))
@@ -48,7 +52,7 @@
     )
   )
 
-(define my-bot
+(define your-bot
   (make-robot
    "A Robot" on-tick
    #:body-color "blue"
@@ -57,7 +61,26 @@
    #:name-color "black"
    ))
   
+; Starting the game:
+; In this game, the set-world! function takes two robots, instead of just one
+; One of the two robots should by your robot, but the other should be
+;   a different robot.
+; By default this file pits you up against "bot-boi," but we provide
+;   four robots for you to choose from. Here are there decriptions:
+; bot-boi, Level 1: Bot boi is a little timid, and not great at picking
+;   up neutral balls. But if you give him too much time, he will take a
+;   good straight shot
+; the-dagger, Level 2: The dagger specializes in close range attacks. It
+;   has a great ability to run around your robot and hit it from the side
+;   or back. However, despite its patience, it can get confused easily.
+; eager-shooter, Level 3: The opposite of the dagger, the eager shooter
+;   specializes in getting rid of its balls as quickly as possible, and
+;   then picking up some more. But if your fast enough, and accurate enough
+;   you can make it's quick firing and subsuquent loss of balls seem naive
+; pelosi-mobeel, Level 4: Cunning and effective. That's the Pelosi-Mobeel for
+;   you. It has the best shot, easily pinning apponents with darting long
+;   range shots. It has one weakness though: unlike the real Pelosi it has
+;   no ability to purposefuly pick up more balls.
 
-; (detailed-explanation)
-(set-world! my-bot bot-boi)
+(set-world! your-bot bot-boi)
 (run)
