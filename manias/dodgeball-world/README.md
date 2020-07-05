@@ -3,9 +3,9 @@
 <img src="./images/img3.png" width="50%" align="right">
 
 Welcome to Dodgeball World! This is the first ever Virtual Robotics
-1-vs-1 competiton!  Here you will be tasked with creating a robot that
-can shoot balls at your opponent, better than your opponent can shoot
-them at you.
+1-vs-1 competition!  Here you will be tasked with creating a robot
+that can shoot balls at your opponent, better than your opponent can
+shoot them at you.
 
 ## The Game
 
@@ -14,9 +14,13 @@ green.  The goal of the game is to knock out your opponent by shooting
 balls at them.
 
 You start out carrying a few balls, and you can recover balls by
-picking up balls after they've been shot.  Each time someone is hit by
-a ball, they lose a life (and their image fades a bit), and they're
-immediately teleported to a different part of the arena.
+picking up *inactive* balls.  A ball becomes inactive around 50 ticks
+after it's fired.  Inactive balls change their color from the color of
+their contestant (red or green) to black.
+
+Each time someone is hit by a ball of the opponent's color, they lose
+a life (and their image fades a bit), and they're immediately
+teleported to a different part of the arena.
 
 You can shoot balls out of the front of your car, and after every
 shot, you enter a *cooldown period* which lasts for 20 ticks, during
