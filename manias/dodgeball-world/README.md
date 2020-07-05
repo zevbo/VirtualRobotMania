@@ -14,51 +14,31 @@ green.  The goal of the game is to knock out your opponent by shooting
 balls at them.
 
 You start out carrying a few balls, and you can recover balls by
-picking up *inactive* balls.  A ball becomes inactive around 50 ticks
-after it's fired.  Inactive balls change their color from the color of
-their contestant (red or green) to black.
+picking up *neutral* balls.  A ball becomes neutral around 50 ticks
+after it's fired.  Balls change their color from the color of their
+contestant (red or green) to black when they become neutral.
 
 Each time someone is hit by a ball of the opponent's color, they lose
 a life (and their image fades a bit), and they're immediately
 teleported to a different part of the arena.
 
-You can shoot balls out of the front of your car, and after every
-shot, you enter a *cooldown period* which lasts for 20 ticks, during
-which you can't shoot again.
+Balls are shot out of the front of your car, and after every shot, you
+enter a *cooldown period* which lasts for 20 ticks, during which you
+can't shoot again.
 
-When you shoot a ball, it comes out as your color (red or green
-depending on where you start). If you get hit by a ball of the other
-players color, you will lose a life and become more transparent.
-
-Every tick, there is some chance (depending on your level) that a ball
-you just fired will become neutral, and turn black
-
-If you hit a black (or neutral ball) and you have fewer balls than
-your ball capacity, you will pick up that ball.
-
-You are hit by a ball if the bounding box of your robot intersects the
-bounding box of the ball. Note: if the ball is completely inside of
-your robot, you can neither pick it up nor be hit by it, until it hits
-the edge.
-
-Remember how whenever you get hit you lose a life and become more
-transparent? Well, when you become fully transparent, that means you
-have no more lives left and the other robot wins
-
-Last note: you will start either in the bottom left or top right
-(there is a little randomness in the starting y position)
-
-
-
-## Controls
-
-The controls are the same as the last competition: your bot has left
-and right motors that you can control independently.
+You'll start either in the bottom left or top right, though there is a
+little randomness in the starting position.
 
 ## Past functions
 
+The controls are the same as the last competition: your bot has left
+and right motors that you can control independently.  Indeed, there
+are a bunch of functions that you already know that still work in this
+new game.
+
 - `(set-motors! n1 n2)` sets the force being put into each side of the
   robot. 1 is the max, and -1 is the min for each side
+
 - `(change-motor-inputs n1 n2)` changes the force being put into each
   of the robot by the give amount for example: if before the motors
   were set to `(0.6, 0.3)`, and you call `(change-motor-inputs -0.1
@@ -81,22 +61,22 @@ and right motors that you can control independently.
 - `(get-robot-angle)` get's the global angle (ie what angle the robot
   is drawn at) of the robot. Again, turning leftwards is positive. The
   robot starts at an angle of 0.  The magnitude of this angle can be
-  larger than 180. For instance, if you make one rull rotation,
+  larger than 180. For instance, if you make one full rotation,
   `(get-robot-angle)` will return 360
 
 - `(normalize-angle angle)` takes an angle outside of the range [-180,
-  180) and returns the coresponding angle in that range
+  180) and returns the corresponding angle in that range
 
 - `(get-vl)`, `(get-vr)` get's the speed (in pixels per tick) of the
   left and right wheel of your robot
 
 ## New functions
 
-Note that any specs that depend on your level can be found by runnning
-`(level-diffs)`.
+These functions let you access the new functionality that's specific
+to this game
 
-
-- `(shoot)` shoots a ball forward. The speed is effected by the speed of your robot
+- `(shoot)` shoots a ball forward. The speed is effected by the speed
+  of your robot
 
 - `(angles-to-neutral-balls)` returns a list of the angles to all the
   neutral balls (neutral balls = balls you can pick up) if a ball is
@@ -120,7 +100,7 @@ Note that any specs that depend on your level can be found by runnning
   bot.
 
 - `(relative-angle-of-other-bot)` tells you the relative angle of the
-  other robot. So, if they are coming directly twoards you, it is 180
+  other robot. So, if they are coming directly towards you, it is 180
   or -180. Precisely, it is their angle - your angle.
 
 - `(dist-to-other-bot)` returns the distance in pixels to the other
@@ -134,7 +114,7 @@ Note that any specs that depend on your level can be found by runnning
 - `(set-degree-mode)`, `(set-radian-mode)` makes it so that all of
   your angles (both that you give to get from functions) are in the
   mode that you choose. Make sure to write this in on-tick. a quick
-  referesher: in degrees angle go from 0 to 360. Radians go from 0 to
+  refresher: in degrees angle go from 0 to 360. Radians go from 0 to
   2π
 
 ## Advanced levels
@@ -150,3 +130,10 @@ commenting-out the first of these lines, and uncommenting the second.
 
 Run the function `(level-diffs)` to see how the levels differ from
 each other.
+
+## Technical details
+
+You are hit by a ball if the bounding box of your robot intersects the
+bounding box of the ball. Note: if the ball is completely inside of
+your robot, you can neither pick it up nor be hit by it, until it hits
+the edge.
