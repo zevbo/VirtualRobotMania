@@ -3,6 +3,7 @@
 *.zo
 *.jpg
 *.png
+\#*#
 
 */chaseCompetition/*
 */localManias/*
