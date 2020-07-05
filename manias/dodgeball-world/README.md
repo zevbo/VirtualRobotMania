@@ -56,6 +56,13 @@ push forward).
 
 ### Sensors
 
+These let you tell things about the world and about yourself, like how
+much space there is ahead of you in a particular direction, and what
+angle you're turned out.
+
+Note that angles are by default in degrees, but later there's a
+function to switch everything to radians.
+
 - `(get-looking-dist angle)` sees how far you can look in the
   direction of the given angle until there is an object, ; which could
   be a ball, wall or another robot. It is measured from the center of
@@ -70,17 +77,18 @@ push forward).
 - `(get-vl)`, `(get-vr)` get's the speed (in pixels per tick) of the
   left and right wheel of your robot
 
-- `(get-robot-angle)` get's the global angle (i.e. what angle the robot
-  is drawn at) of the robot. Again, turning leftwards is positive. The
-  robot starts at an angle of 0.  The magnitude of this angle can be
-  larger than 180. For instance, if you make one full rotation,
-  `(get-robot-angle)` will return 360
+- `(get-robot-angle)` get's the total amount that your robot has
+  turned.  This is a tricky one.  When it's at zero, it means you're
+  pointing exactly to the right.  When you turn your car to the left,
+  it goes up, and when you go to the right it goes down.  But it's not
+  bounded, meaning if you turn to the right for two full circles, your
+  robot angle will be 720!  This can be a little confusing, but makes
+  it easier to compute how fast you're turning.
 
 ### Utility functions
 
 - `(normalize-angle angle)` takes an angle outside of the range [-180,
   180) and returns the corresponding angle in that range
-
 
 ## New functions
 
