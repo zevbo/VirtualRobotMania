@@ -1,11 +1,10 @@
 *.rkt~
 *.dep
 *.zo
-*.jpg
-*.png
 
 */chaseCompetition/*
 */localManias/*
 tmp*
 .vscode
 target/
+images/
