@@ -45,8 +45,7 @@
 ; (set-degree-mode), (set-radian-mode)
 
 (define (on-tick tick#)
-  (set-radian-mode) ;; make sure to have this line in on-tick
-  (define angle (angle-to-other-bot))
+  (set-degree-mode) ;; make sure to have this line in on-tick
   (cond
     [(or (front-left-close?) (front-right-close?)) (set-motors! -1 -1)]
     [else (set-motors! 0.8 1)]
