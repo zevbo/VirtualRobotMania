@@ -1,12 +1,12 @@
 # Dodgeball World
 
-Welcome to the dodgeball world! The first ever Virtual Robotics 1-vs-1
-competiton!  Here you will be tasked with creating a robot that can
-shoot balls at your opponent, better than your opponent can shoot them
-at you!
+Welcome to Dodgeball World! This is the first ever Virtual Robotics
+1-vs-1 competiton!  Here you will be tasked with creating a robot that
+can shoot balls at your opponent, better than your opponent can shoot
+them at you.
 
 Every time you get hit your robot will fade away just a bit.  The last
-robot standing wins!
+robot standing wins.
 
 ## Rules
 
@@ -37,8 +37,6 @@ Last note: you will start either in the bottom left or top right
 (there is a little randomness in the starting y position)
 
 ## Past functions
-
-You should remember most of these from previous manias!
 
 - `(set-motors! n1 n2)` sets the force being put into each side of the
   robot. 1 is the max, and -1 is the min for each side
@@ -119,3 +117,8 @@ Note that any specs that depend on your level can be found by runnning
   mode that you choose. Make sure to write this in on-tick. a quick
   referesher: in degrees angle go from 0 to 360. Radians go from 0 to
   2π
+
+## Advanced levels
+
+Are you studying computer science?
+Is the normal difficulty.
