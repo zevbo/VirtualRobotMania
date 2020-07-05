@@ -34,9 +34,9 @@
 (define (get-robot) (get-#robot robot#-on))
 (define (get-dodgeball-robot) (get-#dodgeball-robot robot#-on))
 (define (get-other-dodgeball-robot)
-  (if (equal? (get-#dodgeball-robot 1) (get-robot)) (get-#dodgeball-robot 2) (get-#robot 1)))
+  (if (equal? (get-#dodgeball-robot 1) (get-dodgeball-robot)) (get-#dodgeball-robot 2) (get-#dodgeball-robot 1)))
 (define (get-other-robot)
-  (get-#dodgeball-robot (get-other-dodgeball-robot)))
+  (dodgeball-robot-robot (get-other-dodgeball-robot)))
 
 (define global-ball-id -1)
 (define (get-ball-id)
@@ -78,14 +78,17 @@
 ; As long as you aren't in your cooldown period (mode on that later) and you have at least one ball left,
 ;   you can shoot from the front of your robot with the (shoot) function.
 ; When you fire a ball it will come out as your color (red or green depending on where you start). If you get hit by a
-;   ball of the other players color, you will lose a life and become more transparent.
+;   ball of the other players color, you will lose a life, become more transparent and teleport to a random spot on the board.
 ; Every tick, there is some chance (depending on your level) that a ball you just fired will become neutral, and turn black
 ; If you hit a black (or neutral ball) and you have fewer balls than your ball capacity, you will pick up that ball.
 ; You are hit by a ball if the bounding box of your robot intersects the bounding box of the ball. Note: if the ball is completely
 ;   inside of your robot, you can neither pick it up nor be hit by it, until it hits the edge.
 ; Remember how whenever you get hit you lose a life and become more transparent? Well, when you become fully transparent, 
 ;   that means you have no more lives left and the other robot wins
-; Last note: you will start either in the bottom left or top right (there is a little randomness in the starting y position)
+; A few more notes: 
+;   1. you will start either in the bottom left or top right (there is a little randomness in the starting y position)
+;   2. If no one shoots for 250 ticks, both robots will be randomly teleported
+;   3. On average once every 350 ticks, a neutral ball will be spawned at a random point on the map
 
 
 ; Past functions:
@@ -245,7 +248,7 @@
       (< (random) (get-mode-val (get-#dodgeball-robot (ball-type ball)) neutralize-chance))) 
      (set-ball-type! ball 'neut)])
   (cond
-    [(out-of-field? (ball-point ball)) (delete-ball (ball-id ball))]
+    [(out-of-field? (ball-pos ball)) (remove-ball (ball-id ball))]
     [(maps-intersect? (ball-edges ball) (get-all-edges #:excluded-ball-types (list 'neut 1 2)))
      (define intersection-lls
        (first (maps-intersecting-lls (ball-edges ball) (get-all-edges #:excluded-ball-types (list 'neut 1 2)))))
@@ -356,8 +359,8 @@
 (define (get-cooldown-time)
   (max 0 (- (+ (get-mode-val (get-dodgeball-robot) COOLDOWN) (dodgeball-robot-last-fire (get-dodgeball-robot))) tick#)))
 (define (out-of-field? point)
-  (or (> (abs (G-point-x point)) (/ WORLD_WIDTH 2)
-      (> (abs (G-point-y point)) (/ WORLDHEIGHT 2)))))
+  (or (> (abs (G-point-x point)) (/ WORLD_WIDTH 2))
+      (> (abs (G-point-y point)) (/ WORLD_HEIGHT 2))))
 (define (add-random-ball)
   (define pos (G-point (double-randomized (floor (- (/ WORLD_WIDTH  2) BALL_RADIUS)))
                        (double-randomized (floor (- (/ WORLD_HEIGHT 2) BALL_RADIUS)))))
@@ -410,7 +413,7 @@
   (radians->user-angle
     (G-normalize-angle:rad (- (R-robot-angle (get-other-robot)) (R-robot-angle (get-other-robot))))))
 (define (other-bot-shooting?)
-  (= (dodgeball-robot-last-fire (get-other-dodgeball-bot)) (- tick# 1)))
+  (= (dodgeball-robot-last-fire (get-other-dodgeball-robot)) (- tick# 1)))
 (define (other-bot-level)
   (dodgeball-robot-level (get-other-dodgeball-robot)))
 
@@ -465,7 +468,7 @@
   (radians->user-angle (R-robot-angle (get-robot))))
   
 
-(define ticks-per-new-ball 500)
+(define ticks-per-new-ball 350)
 (define printing-interval 35)
 (define ball-ids-to-remove (list))
 (create-run-function
