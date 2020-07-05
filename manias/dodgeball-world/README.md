@@ -1,6 +1,6 @@
 # Dodgeball World
 
-<img src="./images/img1.png" width="50%" align="right">
+<img src="./images/img3.png" width="50%" align="right">
 
 Welcome to Dodgeball World! This is the first ever Virtual Robotics
 1-vs-1 competiton!  Here you will be tasked with creating a robot that
@@ -9,10 +9,8 @@ them at you.
 
 ## Rules
 
-You can control the position of your ro just like the
-
-<img src="./images/img2.png" width=300>
-<img src="./images/img3.png" width=300>
+You can control how your bot moves in the same way as in the previous
+manias.
 
 Every time you get hit your robot will fade away just a bit.  The last
 robot standing wins.
