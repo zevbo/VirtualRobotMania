@@ -7,19 +7,22 @@ Welcome to Dodgeball World! This is the first ever Virtual Robotics
 can shoot balls at your opponent, better than your opponent can shoot
 them at you.
 
-## Rules
+## The Game
 
-The basic controls are basically the same as in the last competition:
-your bot has left and right motors that you can control independently.
+There are two players, each with an assigned color of either red or
+green.  The goal of the game is to knock out your opponent by shooting
+balls at them.
 
-Every time you get hit your robot will fade away just a bit.  The last
-robot standing wins.
+You start out carrying a few balls, and you can recover balls by
+picking up balls after they've been shot.  Each time someone is hit by
+a ball, they lose a life (and their image fades a bit), and they're
+immediately teleported to a different part of the arena.
 
-As long as you aren't in your cooldown period (mode on that later) and
-you have at least one ball left, you can shoot from the front of your
-robot with the (shoot) function.
+You can shoot balls out of the front of your car, and after every
+shot, you enter a *cooldown period* which lasts for 20 ticks, during
+which you can't shoot again.
 
-When you fire a ball it will come out as your color (red or green
+When you shoot a ball, it comes out as your color (red or green
 depending on where you start). If you get hit by a ball of the other
 players color, you will lose a life and become more transparent.
 
@@ -40,6 +43,13 @@ have no more lives left and the other robot wins
 
 Last note: you will start either in the bottom left or top right
 (there is a little randomness in the starting y position)
+
+
+
+## Controls
+
+The controls are the same as the last competition: your bot has left
+and right motors that you can control independently.
 
 ## Past functions
 
@@ -133,3 +143,6 @@ commenting-out the first of these lines, and uncommenting the second.
 (require "../../lib/worlds/dodgeball-world/dodgeball-world.rkt")
 ;(require "../../lib/worlds/dodgeball-world/dodgeball--advanced.rkt")
 ```
+
+Run the function `(level-diffs)` to see how the levels differ from
+each other.
