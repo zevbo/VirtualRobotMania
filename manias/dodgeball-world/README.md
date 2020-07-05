@@ -5,10 +5,10 @@ Welcome to Dodgeball World! This is the first ever Virtual Robotics
 can shoot balls at your opponent, better than your opponent can shoot
 them at you.
 
+## Rules
+
 Every time you get hit your robot will fade away just a bit.  The last
 robot standing wins.
-
-## Rules
 
 As long as you aren't in your cooldown period (mode on that later) and
 you have at least one ball left, you can shoot from the front of your
