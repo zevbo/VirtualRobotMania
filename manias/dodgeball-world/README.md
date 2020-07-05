@@ -38,44 +38,46 @@ in this new game.
 
 ### Motor control
 
-If you remember the robot has a left and right motor, where the motor
-determines the force on that side of the car.  The power to that motor
-ranges from -1 (maximum push in the reverse direction) to 1 (maximum
-push forward).
+The left and right motors on your car determine the force on that side
+of the car.  The power to each motor ranges from -1 (maximum push in
+the reverse direction) to 1 (maximum push forward).
 
 - `(set-motors! n1 n2)` sets the force being put into each side of the
-  robot. 1 is the max, and -1 is the min for each side
+  robot, ranging from -1 to 1.  Numbers beyond that range have no
+  extra effect, so `(set-motors! -10 5)` does the same thing as
+  `(set-motors! -1 1)`.
 
 - `(change-motor-inputs n1 n2)` changes the force being put into each
-  of the robot by the give amount for example: if before the motors
-  were set to `(0.6, 0.3)`, and you call `(change-motor-inputs -0.1
-  0.4)`, the motors will become set to `(0.5, 0.7)`
+  motor by the give amount.  For example: if the motors were already
+  set to `(0.6, 0.3)`, then calling `(change-motor-inputs -0.1 0.4)`
+  will leave them set to `(0.5, 0.7)`
 
 - `(get-left%)`, `(get-right%)` gets the input (i.e.: force) to the
   left or right motors
 
 ### Sensors
 
-These let you tell things about the world and about yourself, like how
-much space there is ahead of you in a particular direction, and what
-angle you're turned out.
+These let you measure things about the world and about yourself, like
+how much space there is ahead of you in a particular direction, and
+what angle you're turned out.
 
-Note that angles are by default in degrees, but later there's a
-function to switch everything to radians.
+Note that angles are by default in degrees, but there's now a function
+to switch everything to radians, which is documented in the section on
+new functions.
 
 - `(get-looking-dist angle)` sees how far you can look in the
-  direction of the given angle until there is an object, ; which could
+  direction of the given angle until there is an object, which could
   be a ball, wall or another robot. It is measured from the center of
-  the robot, 0 is looking directly ; forward, and positive angles are
-  towards the left.
+  the robot, so 0 means directly forward, and positive angles are to
+  the left.
 
 - `(get-lookahead-dist)` and `(get-lookbehind-dist)` are the same as
-  get-looking-dist except they are measured ; from the front and back
-  of the robot respectively, and obviously the angles are always 0 and
+  get-looking-dist except they are measured from the front and back of
+  the robot respectively, and obviously the angles are always 0 and
   180 degrees respectively
 
-- `(get-vl)`, `(get-vr)` get's the speed (in pixels per tick) of the
-  left and right wheel of your robot
+- `(get-vl)`, `(get-vr)` gets the speed (in pixels per tick) of the
+  left and right wheel of your robot.
 
 - `(get-robot-angle)` get's the total amount that your robot has
   turned.  This is a tricky one.  When it's at zero, it means you're
@@ -83,7 +85,8 @@ function to switch everything to radians.
   it goes up, and when you go to the right it goes down.  But it's not
   bounded, meaning if you turn to the right for two full circles, your
   robot angle will be 720!  This can be a little confusing, but makes
-  it easier to compute how fast you're turning.
+  it easier to compute how fast you're turning by comparing previous
+  readings of this sensor to the current one.
 
 ### Utility functions
 
@@ -107,21 +110,21 @@ to this game
   cooldown periods.
 
 - `(num-balls-left)` returns the number of balls you have left
+
 - `(front-left-close?)`, `(front-right-close?)`, `(back-left-close?)`,
   `(back-right-close?)` tells you if any given corner is very close
-  (within 15) of a wall
+  (within 15 ticks) of a wall
 
 - `(angle-to-other-bot)` returns the angle to the other bot. Leftwards
-  is positive. If you are facing the other robot, this function will
-  return 0. If it is directly behind you, it will return -180. If you
+  is positive.  If you are facing the other robot, this function will
+  return 0.  If it is directly behind you, it will return -180. If you
   would have to turn a little left to be facing it the number would be
   a small positive. Another way to think about what this function
   does, is say how much left you have to turn to be facing the other
   bot.
 
-- `(relative-angle-of-other-bot)` tells you the relative angle of the
-  other robot. So, if they are coming directly towards you, it is 180
-  or -180. Precisely, it is their angle - your angle.
+- `(get-other-robot-angle)`, which is like `(get-robot-angle)`, but it
+  gives the answer for the opposing bot.
 
 - `(dist-to-other-bot)` returns the distance in pixels to the other
   robot
@@ -133,9 +136,9 @@ to this game
 
 - `(set-degree-mode)`, `(set-radian-mode)` makes it so that all of
   your angles (both that you give to get from functions) are in the
-  mode that you choose. Make sure to write this in on-tick. a quick
-  refresher: in degrees angle go from 0 to 360. Radians go from 0 to
-  2π
+  mode that you choose. Make sure to write this in on-tick. When using
+  degrees angles go from 0 to 360.  With radians, they go from 0 to
+  2π.
 
 ## Advanced levels
 
