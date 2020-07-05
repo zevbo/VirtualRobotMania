@@ -1,6 +1,7 @@
 *.rkt~
 *.dep
 *.zo
+\#*#
 
 */chaseCompetition/*
 */localManias/*
