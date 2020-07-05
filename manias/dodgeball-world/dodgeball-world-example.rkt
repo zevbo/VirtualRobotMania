@@ -13,14 +13,15 @@
 ;;   standing wins!
 
 (require "../../lib/worlds/dodgeball-world/dodgeball-world.rkt")
-;(require "../../lib/worlds/dodgeball-world/dodgeball--advanced.rkt")
-; Above you can choose either the regular or advanced chase-world.
-;   Both of these worlds have the exact same functions. For more
+;(require "../../lib/worlds/dodgeball-world/dodgeball-world-advanced.rkt")
+;(require "../../lib/worlds/dodgeball-world/dodgeball-world-expert.rkt")
+; Above you can choose either the regular, advanced or expert chase-world.
+;   All of these worlds have the exact same functions. For more
 ;   info on the differneces, run the function (level-diffs)
 
 
 ; QUICKSTART
-;
+
 ; for a more detailed explanation, go to the following link:
 ;    https://github.com/zevbo/VirtualRobotMania/tree/master/manias/dodgeball-world
 
@@ -66,7 +67,7 @@
 ; One of the two robots should by your robot, but the other should be
 ;   a different robot.
 ; By default this file pits you up against "bot-boi," but we provide
-;   four robots for you to choose from. Here are there decriptions:
+;   four robots for you to choose from. Here are their decriptions:
 ; bot-boi, Level 1: Bot boi is a little timid, and not great at picking
 ;   up neutral balls. But if you give him too much time, he will take a
 ;   good straight shot
