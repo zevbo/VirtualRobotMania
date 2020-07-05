@@ -7,6 +7,10 @@ them at you.
 
 ## Rules
 
+You can control the position of your ro just like the
+
+
+
 Every time you get hit your robot will fade away just a bit.  The last
 robot standing wins.
 
