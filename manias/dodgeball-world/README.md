@@ -38,40 +38,42 @@ in this new game.
 
 ### Motor control
 
-If you remember the robot has a left and right motor, where the motor
-determines the force on that side of the car.  The power to that motor
-ranges from -1 (maximum push in the reverse direction) to 1 (maximum
-push forward).
+The left and right motors on your car determine the force on that side
+of the car.  The power to each motor ranges from -1 (maximum push in
+the reverse direction) to 1 (maximum push forward).
 
 - `(set-motors! n1 n2)` sets the force being put into each side of the
-  robot. 1 is the max, and -1 is the min for each side
+  robot, ranging from -1 to 1.  Numbers beyond that range have no
+  extra effect, so `(set-motors! -10 5)` does the same thing as
+  `(set-motors! -1 1)`.
 
 - `(change-motor-inputs n1 n2)` changes the force being put into each
-  of the robot by the give amount for example: if before the motors
-  were set to `(0.6, 0.3)`, and you call `(change-motor-inputs -0.1
-  0.4)`, the motors will become set to `(0.5, 0.7)`
+  motor by the give amount.  For example: if the motors were already
+  set to `(0.6, 0.3)`, then calling `(change-motor-inputs -0.1 0.4)`
+  will leave them set to `(0.5, 0.7)`
 
 - `(get-left%)`, `(get-right%)` gets the input (i.e.: force) to the
   left or right motors
 
 ### Sensors
 
-These let you tell things about the world and about yourself, like how
-much space there is ahead of you in a particular direction, and what
-angle you're turned out.
+These let you measure things about the world and about yourself, like
+how much space there is ahead of you in a particular direction, and
+what angle you're turned out.
 
-Note that angles are by default in degrees, but later there's a
-function to switch everything to radians.
+Note that angles are by default in degrees, but there's now a function
+to switch everything to radians, which is documented in the section on
+new functions.
 
 - `(get-looking-dist angle)` sees how far you can look in the
-  direction of the given angle until there is an object, ; which could
+  direction of the given angle until there is an object, which could
   be a ball, wall or another robot. It is measured from the center of
-  the robot, 0 is looking directly ; forward, and positive angles are
-  towards the left.
+  the robot, so 0 means directly forward, and positive angles are to
+  the left.
 
 - `(get-lookahead-dist)` and `(get-lookbehind-dist)` are the same as
-  get-looking-dist except they are measured ; from the front and back
-  of the robot respectively, and obviously the angles are always 0 and
+  get-looking-dist except they are measured from the front and back of
+  the robot respectively, and obviously the angles are always 0 and
   180 degrees respectively
 
 - `(get-vl)`, `(get-vr)` get's the speed (in pixels per tick) of the
