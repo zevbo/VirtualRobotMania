@@ -29,12 +29,19 @@ can't shoot again.
 You'll start either in the bottom left or top right, though there is a
 little randomness in the starting position.
 
-## Past functions
+## Functions you know and love
 
 The controls are the same as the last competition: your bot has left
 and right motors that you can control independently.  Indeed, there
 are a bunch of functions that you already know that still work in this
 new game.
+
+### Motor control
+
+If you remember the robot has a left and right motor, where the motor
+determines the force on that side of the car.  The power to that motor
+ranges from -1 (maximum push in the reverse direction) to 1 (maximum
+push forward).
 
 - `(set-motors! n1 n2)` sets the force being put into each side of the
   robot. 1 is the max, and -1 is the min for each side
@@ -43,6 +50,11 @@ new game.
   of the robot by the give amount for example: if before the motors
   were set to `(0.6, 0.3)`, and you call `(change-motor-inputs -0.1
   0.4)`, the motors will become set to `(0.5, 0.7)`
+
+- `(get-left%)`, `(get-right%)` gets the input (i.e.: force) to the
+  left or right motors
+
+### Sensors
 
 - `(get-looking-dist angle)` sees how far you can look in the
   direction of the given angle until there is an object, ; which could
@@ -55,20 +67,20 @@ new game.
   of the robot respectively, and obviously the angles are always 0 and
   180 degrees respectively
 
-- `(get-left%)`, `(get-right%)` gets the input (ie: force) to the left
-  or right motors
+- `(get-vl)`, `(get-vr)` get's the speed (in pixels per tick) of the
+  left and right wheel of your robot
 
-- `(get-robot-angle)` get's the global angle (ie what angle the robot
+- `(get-robot-angle)` get's the global angle (i.e. what angle the robot
   is drawn at) of the robot. Again, turning leftwards is positive. The
   robot starts at an angle of 0.  The magnitude of this angle can be
   larger than 180. For instance, if you make one full rotation,
   `(get-robot-angle)` will return 360
 
+### Utility functions
+
 - `(normalize-angle angle)` takes an angle outside of the range [-180,
   180) and returns the corresponding angle in that range
 
-- `(get-vl)`, `(get-vr)` get's the speed (in pixels per tick) of the
-  left and right wheel of your robot
 
 ## New functions
 
