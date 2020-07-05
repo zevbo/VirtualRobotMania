@@ -94,13 +94,13 @@ Note that any specs that depend on your level can be found by runnning
   `(back-right-close?)` tells you if any given corner is very close
   (within 15) of a wall
 
-- (angle-to-other-bot) -> returns the angle to the other
-  bot. Leftwards is positive. If you are facing the other robot, this
-  function will return 0. If it is directly behind you, it will return
-  -180. If you would have to turn a little left to be facing it the
-  number would be a small positive. Another way to think about what
-  this function does, is say how much left you have to turn to be
-  facing the other bot.
+- `(angle-to-other-bot)` returns the angle to the other bot. Leftwards
+  is positive. If you are facing the other robot, this function will
+  return 0. If it is directly behind you, it will return -180. If you
+  would have to turn a little left to be facing it the number would be
+  a small positive. Another way to think about what this function
+  does, is say how much left you have to turn to be facing the other
+  bot.
 
 - `(relative-angle-of-other-bot)` tells you the relative angle of the
   other robot. So, if they are coming directly twoards you, it is 180
