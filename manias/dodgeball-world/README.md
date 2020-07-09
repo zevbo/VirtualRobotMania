@@ -140,6 +140,10 @@ to this game
   degrees angles go from 0 to 360.  With radians, they go from 0 to
   2π.
 
+- `(robot-width)`, `(robot-length)` returns, in pixels, the width
+  and length of your car respectively. Length refers to the longer
+  side, and width the shorter.
+
 ## Advanced levels
 
 Are you a computer science god?  Do you think you're too cool for
