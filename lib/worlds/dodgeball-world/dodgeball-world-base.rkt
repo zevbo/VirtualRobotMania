@@ -12,6 +12,7 @@
  get-#robot get-#dodgeball-robot get-all-edges
  set-motors! change-motor-inputs level-diffs
  get-left% get-right% get-robot-angle get-vl get-vr
+ robot-width robot-length
  shoot angle-to-other-bot dist-to-other-bot
  set-radian-mode set-degree-mode get-cooldown-time
  get-looking-dist get-lookahead-dist get-lookbehind-dist num-balls-left
@@ -409,6 +410,8 @@
   (set-motors! (+ (get-left%) Δleft%) (+ (get-right%) Δright%)))
 (define (get-robot-angle)
   (radians->user-angle (R-robot-angle (get-robot))))
+(define (robot-width) (R-robot-width (get-robot)))
+(define (robot-length) (R-robot-length (get-robot)))
   
 
 (define ticks-per-new-ball 350)

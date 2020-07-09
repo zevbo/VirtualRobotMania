@@ -43,6 +43,7 @@
 ;      tells you if any given corner is very close (within 15) of a wall 
 ; (angle-to-other-bot), (relative-angle-of-other-bot), (dist-to-other-bot), (other-bot-shooting?), (other-bot-level)
 ; (set-degree-mode), (set-radian-mode)
+; (robot-width), (robot-length)
 
 (define (on-tick tick#)
   (set-degree-mode) ;; make sure to have this line in on-tick
