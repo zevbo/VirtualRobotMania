@@ -67,6 +67,7 @@
 ;   a different robot.
 ; By default this file pits you up against "bot-boi," but we provide
 ;   four robots for you to choose from. Here are their decriptions:
+; staionary-bot, Level 0: Does absolutely nothing
 ; bot-boi, Level 1: Bot boi is a little timid, and not great at picking
 ;   up neutral balls. But if you give him too much time, he will take a
 ;   good straight shot
