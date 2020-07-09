@@ -140,6 +140,10 @@ to this game
   degrees angles go from 0 to 360.  With radians, they go from 0 to
   2π.
 
+- `(robot-width)`, `(robot-length)` returns, in pixels, the width
+  and length of your car respectively. Length refers to the longer
+  side, and width the shorter.
+
 ## Advanced levels
 
 Are you a computer science god?  Do you think you're too cool for
@@ -160,3 +164,5 @@ You are hit by a ball if the bounding box of your robot intersects the
 bounding box of the ball. Note: if the ball is completely inside of
 your robot, you can neither pick it up nor be hit by it, until it hits
 the edge.
+
+The canvas is 450 by 450 units.
