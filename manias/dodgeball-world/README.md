@@ -160,3 +160,5 @@ You are hit by a ball if the bounding box of your robot intersects the
 bounding box of the ball. Note: if the ball is completely inside of
 your robot, you can neither pick it up nor be hit by it, until it hits
 the edge.
+
+The canvas is 450 by 450 units.
