@@ -134,6 +134,9 @@ to this game
 - `(other-bot-level)` returns the level of the other robot. Possible
   values are: `'normal`, `'advanced` and `'expert`
 
+- `(get-ball-vi)` returns the speed at which a ball is launched relative
+  to the robot that shoots it
+
 - `(set-degree-mode)`, `(set-radian-mode)` makes it so that all of
   your angles (both that you give to get from functions) are in the
   mode that you choose. Make sure to write this in on-tick. When using
