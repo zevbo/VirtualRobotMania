@@ -415,7 +415,7 @@
 (define (robot-length) (R-robot-length (get-robot)))
   
 
-(define ticks-per-new-ball 350)
+(define ticks-per-new-ball 80)
 (define printing-interval 35)
 (define ball-ids-to-remove (list))
 (create-run-function
