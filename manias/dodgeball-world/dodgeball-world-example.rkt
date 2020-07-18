@@ -41,7 +41,7 @@
 ; (num-balls-left) -> returns the number of balls you have left
 ; (front-left-close?), (front-right-close?), (back-left-close?), (back-right-close?) -> 
 ;      tells you if any given corner is very close (within 15) of a wall 
-; (angle-to-other-bot), (relative-angle-of-other-bot), (dist-to-other-bot), (other-bot-shooting?), (other-bot-level)
+; (angle-to-other-bot), (relative-angle-of-other-bot), (dist-to-other-bot), (other-bot-shooting?), (other-bot-level), (get-other-robot-angle)
 ; (set-degree-mode), (set-radian-mode)
 ; (robot-width), (robot-length)
 ; (get-ball-vi) -> returns intial velocity of all balls from a stationary robot

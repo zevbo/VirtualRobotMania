@@ -16,7 +16,7 @@
  shoot angle-to-other-bot dist-to-other-bot
  set-radian-mode set-degree-mode get-cooldown-time
  get-looking-dist get-lookahead-dist get-lookbehind-dist num-balls-left
- front-left-close? front-right-close? back-left-close? back-right-close? relative-angle-of-other-bot
+ front-left-close? front-right-close? back-left-close? back-right-close? relative-angle-of-other-bot get-other-robot-angle
  angles-to-neutral-balls
  (struct-out world:dodgeball) (struct-out ball)
  get-world get-#robot ball-edges other-bot-shooting? other-bot-level
@@ -413,6 +413,8 @@
   (radians->user-angle (R-robot-angle (get-robot))))
 (define (robot-width) (R-robot-width (get-robot)))
 (define (robot-length) (R-robot-length (get-robot)))
+(define (get-other-robot-angle)
+  (radians->user-angle (R-robot-angle (get-other-robot))))
   
 
 (define ticks-per-new-ball 80)
