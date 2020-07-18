@@ -44,11 +44,13 @@
 ; (angle-to-other-bot), (relative-angle-of-other-bot), (dist-to-other-bot), (other-bot-shooting?), (other-bot-level)
 ; (set-degree-mode), (set-radian-mode)
 ; (robot-width), (robot-length)
+; (get-ball-vi) -> returns intial velocity of all balls from a stationary robot
 
 (define (on-tick tick#)
   (set-degree-mode) ;; make sure to have this line in on-tick
   (cond
-    [(or (front-left-close?) (front-right-close?)) (set-motors! -1 -1)]
+    [(or (front-left-close?) (front-right-close?))
+     (set-motors! -1 -1)]
     [else (set-motors! 0.8 1)]
     )
   )

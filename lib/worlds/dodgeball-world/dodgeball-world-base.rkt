@@ -11,7 +11,7 @@
  run internal-make-robot set-world!
  get-#robot get-#dodgeball-robot get-all-edges
  set-motors! change-motor-inputs level-diffs
- get-left% get-right% get-robot-angle get-vl get-vr
+ get-left% get-right% get-robot-angle get-vl get-vr get-ball-vi
  robot-width robot-length
  shoot angle-to-other-bot dist-to-other-bot
  set-radian-mode set-degree-mode get-cooldown-time
@@ -355,7 +355,7 @@
    (R-robot-point (get-robot)) (R-robot-point (get-other-robot))))
 (define (relative-angle-of-other-bot)
   (radians->user-angle
-    (G-normalize-angle:rad (- (R-robot-angle (get-other-robot)) (R-robot-angle (get-other-robot))))))
+    (G-normalize-angle:rad (- (R-robot-angle (get-other-robot)) (R-robot-angle (get-robot))))))
 (define (other-bot-shooting?)
   (= (dodgeball-robot-last-fire (get-other-dodgeball-robot)) (- tick# 1)))
 (define (other-bot-level)
@@ -406,6 +406,7 @@
 (define (get-right%) (R-robot-right% (get-robot)))
 (define (get-vl) (* (R-robot-vl (get-robot)) TICK_LENGTH))
 (define (get-vr) (* (R-robot-vr (get-robot)) TICK_LENGTH))
+(define (get-ball-vi) (* ball-vi TICK_LENGTH))
 (define (change-motor-inputs Δleft% Δright%)
   (set-motors! (+ (get-left%) Δleft%) (+ (get-right%) Δright%)))
 (define (get-robot-angle)
