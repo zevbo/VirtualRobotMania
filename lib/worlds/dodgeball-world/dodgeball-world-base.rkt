@@ -312,7 +312,7 @@
   (define shot-ball (ball (get-ball-id) pos 0 0 type))
   (add-ball shot-ball))
 (define last-shot-tick 0)
-(define idel-ticks-to-teleport 250)
+(define idel-ticks-to-teleport 125)
 (define (shoot)
   (cond
     [(and
