@@ -63,7 +63,7 @@
 (define disqualified? #f)
 (define (make-mode-val normal-val advanced-val expert-val)
   (make-hash (list (cons 'normal normal-val) (cons 'advanced advanced-val) (cons 'expert expert-val))))
-(define STARTING_BALLS (make-mode-val 5 3 2))
+(define STARTING_BALLS (make-mode-val 5 4 2))
 (define BALL_CAPACITY (make-mode-val 5 4 3))
 (define STARTING_LIVES (make-mode-val 5 4 3))
 (define angle-mode 'degrees)
