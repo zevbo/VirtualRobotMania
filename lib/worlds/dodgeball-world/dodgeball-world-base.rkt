@@ -181,7 +181,7 @@
     (ball-pos ball)
     (G-scale-point TICK_LENGTH (G-point (ball-vx ball) (ball-vy ball))))))
 (define ball-k 0.01)
-(define neutralize-chance (make-mode-val 0.02 0.025 0.03))
+(define neutralize-chance (make-mode-val 0.025 0.03 0.035))
 (define min-stable 10)
 (define (que-remove-ball id)
   (set! ball-ids-to-remove (cons id ball-ids-to-remove)))
@@ -190,7 +190,7 @@
   (cond
     [(and
       (number? (ball-type ball))
-      (> (- tick# (ball-tick-shot ball) min-stable))
+      (> (- tick# (ball-tick-shot ball)) min-stable)
       (< (random) (get-mode-val (get-#dodgeball-robot (ball-type ball)) neutralize-chance))) 
      (set-ball-type! ball 'neut)])
   (cond
