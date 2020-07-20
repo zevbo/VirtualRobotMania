@@ -23,7 +23,7 @@
  (rename-out [normalize-user-angle normalize-angle]))
 
 (struct world:dodgeball (canvas edges robot1 robot2 [balls #:mutable]))
-(struct ball (id pos vx vy type) #:mutable #:transparent)
+(struct ball (id pos vx vy type tick-shot) #:mutable #:transparent)
 (struct dodgeball-robot (robot on-tick lives balls-left last-fire name level og-image) #:mutable)
 (define global-world (void))
 (define (get-world) global-world)
@@ -63,7 +63,7 @@
 (define disqualified? #f)
 (define (make-mode-val normal-val advanced-val expert-val)
   (make-hash (list (cons 'normal normal-val) (cons 'advanced advanced-val) (cons 'expert expert-val))))
-(define STARTING_BALLS (make-mode-val 5 4 2))
+(define STARTING_BALLS (make-mode-val 5 4 3))
 (define BALL_CAPACITY (make-mode-val 5 4 3))
 (define STARTING_LIVES (make-mode-val 5 4 3))
 (define angle-mode 'degrees)
@@ -81,7 +81,7 @@
   (print-mode-val "ball capacity" BALL_CAPACITY)
   (print-mode-val "starting balls" STARTING_BALLS)
   (print-mode-val "cooldown (in ticks)" COOLDOWN)
-  (define (convert mode) (floor (/ 1 (hash-ref neutralize-chance mode))))
+  (define (convert mode) (+ min-stable (floor (/ 1 (hash-ref neutralize-chance mode)))))
   (print-mode-val "average active life span of balls (in ticks)" 
     (make-mode-val (convert 'normal) (convert 'advanced) (convert 'expert))))
 
@@ -181,7 +181,8 @@
     (ball-pos ball)
     (G-scale-point TICK_LENGTH (G-point (ball-vx ball) (ball-vy ball))))))
 (define ball-k 0.01)
-(define neutralize-chance (make-mode-val 0.015 0.02 0.025))
+(define neutralize-chance (make-mode-val 0.02 0.025 0.03))
+(define min-stable 10)
 (define (que-remove-ball id)
   (set! ball-ids-to-remove (cons id ball-ids-to-remove)))
 (define (update-ball ball)
@@ -189,6 +190,7 @@
   (cond
     [(and
       (number? (ball-type ball))
+      (> (- tick# (ball-tick-shot ball) min-stable))
       (< (random) (get-mode-val (get-#dodgeball-robot (ball-type ball)) neutralize-chance))) 
      (set-ball-type! ball 'neut)])
   (cond
@@ -309,8 +311,8 @@
   (define pos (G-point (double-randomized (floor (- (/ WORLD_WIDTH  2) BALL_RADIUS)))
                        (double-randomized (floor (- (/ WORLD_HEIGHT 2) BALL_RADIUS)))))
   (define type 'neut)
-  (define shot-ball (ball (get-ball-id) pos 0 0 type))
-  (add-ball shot-ball))
+  (define b (ball (get-ball-id) pos 0 0 type tick#))
+  (add-ball b))
 (define last-shot-tick 0)
 (define idel-ticks-to-teleport 125)
 (define (shoot)
@@ -336,7 +338,7 @@
      (define shot-ball (ball (get-ball-id) pos
                              (+ (* (+ ball-vi robot-v) (cos angle)) (* perp-v (cos (+ angle (/ pi 2)))))
                              (+ (* (+ ball-vi robot-v) (sin angle)) (* perp-v (sin (+ angle (/ pi 2)))))
-                             type))
+                             type tick#))
      (add-ball shot-ball)
      (display-balls-of robot#-on)]))
 (define (add-ball ball)
