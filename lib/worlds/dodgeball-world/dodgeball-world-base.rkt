@@ -59,7 +59,9 @@
 (define SECS_PER_TURN 5)
 (define BALL_IMAGE_NEUT (circle BALL_RADIUS "solid" "black"))
 (define BALL_IMAGE_1 (circle BALL_RADIUS "solid" "red"))
+(define BALL_IMAGE_1_STUCK (circle BALL_RADIUS "solid" (color 255 175 175)))
 (define BALL_IMAGE_2 (circle BALL_RADIUS "solid" "green"))
+(define BALL_IMAGE_2_STUCK (circle BALL_RADIUS "solid" (color 175 255 175)))
 (define disqualified? #f)
 (define (make-mode-val normal-val advanced-val expert-val)
   (make-hash (list (cons 'normal normal-val) (cons 'advanced advanced-val) (cons 'expert expert-val))))
@@ -285,14 +287,16 @@
    (filter (lambda (ball) (not (= (ball-id ball) r-ball-id)))
            (world:dodgeball-balls (get-world)))))
 
-(define (ball-type->image ball-type)
-  (match ball-type
-   [1 BALL_IMAGE_1]
-   [2 BALL_IMAGE_2]
-   ['neut BALL_IMAGE_NEUT]))
+(define (ball-type->image ball-type #:shot-ball[shot-ball #f])
+  (match (cons ball-type (or shot-ball (and (number? ball-type) (< (cooldown-time (get-#dodgeball-robot ball-type)) 3))))
+    [(cons 1 #t) BALL_IMAGE_1]
+    [(cons 1 #f) BALL_IMAGE_1_STUCK]
+    [(cons 2 #t) BALL_IMAGE_2]
+    [(cons 2 #f) BALL_IMAGE_2_STUCK]
+    [(cons 'neut _) BALL_IMAGE_NEUT]))
 (define (overlay-ball ball canvas)
   (overlay-image
-   canvas (ball-type->image (ball-type ball))
+   canvas (ball-type->image (ball-type ball) #:shot-ball #t)
    0 (ball-pos ball)))
 
 (define force-fac 1.2)
@@ -302,8 +306,10 @@
 (define (double-randomized n)
   (set! n (inexact->exact n))
   (random (- 0 n) n))
+(define (cooldown-time dodgeball-robot)
+  (max 0 (- (+ (get-mode-val dodgeball-robot COOLDOWN) (dodgeball-robot-last-fire dodgeball-robot)) tick#)))
 (define (get-cooldown-time)
-  (max 0 (- (+ (get-mode-val (get-dodgeball-robot) COOLDOWN) (dodgeball-robot-last-fire (get-dodgeball-robot))) tick#)))
+  (cooldown-time (get-dodgeball-robot)))
 (define (out-of-field? point)
   (or (> (abs (G-point-x point)) (/ WORLD_WIDTH 2))
       (> (abs (G-point-y point)) (/ WORLD_HEIGHT 2))))
@@ -417,7 +423,12 @@
 (define (robot-length) (R-robot-length (get-robot)))
 (define (get-other-robot-angle)
   (radians->user-angle (R-robot-angle (get-other-robot))))
-  
+
+(define (fix-balls robot#)
+  (define bot (get-#dodgeball-robot robot#))
+  (cond
+    [(= (- (+ (get-mode-val bot COOLDOWN) (dodgeball-robot-last-fire bot)) tick#) 2)
+     (display-balls-of robot#)]))
 
 (define ticks-per-new-ball 80)
 (define printing-interval 35)
@@ -434,6 +445,8 @@
   (display-balls-of 1)
   (display-balls-of 2)]
  (lambda (world)
+   (fix-balls 1)
+   (fix-balls 2)
    (define tick-start 0); (current-milliseconds))
    (define print? (= (modulo tick# printing-interval) 10))
    (define (reset-start) 0); (set! tick-start (current-milliseconds)))
