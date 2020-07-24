@@ -1,0 +1,4 @@
+(library
+ (name robot_sim)
+ (libraries core)
+ (preprocess (pps ppx_jane)))

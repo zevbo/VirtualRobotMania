@@ -1,6 +1,8 @@
 *.rkt~
 *.dep
 *.zo
+*.jpg
+*.png
 \#*#
 
 */chaseCompetition/*
@@ -8,4 +10,7 @@
 tmp*
 .vscode
 target/
+_build/
+*~
+.merlin
 images/
