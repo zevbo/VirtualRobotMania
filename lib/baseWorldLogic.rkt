@@ -6,7 +6,7 @@
  TICKS_PER_SECOND
  TICK_LENGTH)
 
-(define TICKS_PER_SECOND 30) ;; anymore than 40 doesn't really do anything
+(define TICKS_PER_SECOND 10) ;; anymore than 40 doesn't really do anything
 (define TICK_LENGTH (/ 1.0 TICKS_PER_SECOND))
 
 ;; acceleration = M * %output - k * V
@@ -14,7 +14,7 @@
   (- (* m %output) (* k v)))
 (define VEL_ERROR 0.0001)
 (define DEFAULT_BOUNCE_SIZE 0)
-(define (bounce robot #:bounciness [bounciness 1] #:bounce-size [bounce-size DEFAULT_BOUNCE_SIZE])
+(define (bounce robot #:bounciness [bounciness 1.1] #:bounce-size [bounce-size DEFAULT_BOUNCE_SIZE])
   (set-vels! robot (* -1 bounciness (robot-vl robot)) (* -1 bounciness (robot-vr robot)))
   (update-pos robot #:dt bounce-size)
   )
@@ -44,7 +44,7 @@
      (change-pos robot Δx Δy)
      (set-robot-angle! robot (+ (robot-angle robot) Δangle))])
   (cond
-    [(map-robot-intersect? edges robot) 
+    [(map-robot-intersect? edges robot)
      (bounce robot #:bounce-size bounce-size)
      #t]
     [else #f])

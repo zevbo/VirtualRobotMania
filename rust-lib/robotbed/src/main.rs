@@ -1,15 +1,17 @@
 pub mod aliases;
 pub mod display_engine;
 pub mod image_helpers;
+pub mod robotbed;
 use display_engine::Item;
 
 // "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Official_photo_of_Speaker_Nancy_Pelosi_in_2019.jpg/960px-Official_photo_of_Speaker_Nancy_Pelosi_in_2019.jpg",
 // "https://upload.wikimedia.org/wikipedia/commons/4/44/Nancy_Pelosi_1993_congressional_photo.jpg");
 
 fn main() {
+    /*
     let img1 = image_helpers::download_img("../pelosi.jpeg");
     let img2 = image_helpers::download_img("../clap.jpeg");
-    let img3 = image_helpers::download_img("../pelosi-blue.jpg");
+    let img3 = image_helpers::download_img("../pelosi.jpeg");
     let images = vec![img1, img2, img3];
     let sender = display_engine::start_game_thread(images, 2000, 1500);
     let mut rotation = 0.0;
@@ -47,4 +49,5 @@ fn main() {
             Err(_) => break,
         }
     }
+    */
 }

@@ -83,14 +83,14 @@
      [(line-seg p1 p2)
        (begin
          (define diffs (cons (sub-points p1 p) (sub-points p2 p)))
-         (and (<= (* (point-x (car diffs)) (point-x (cdr diffs))) 0)
-              (<= (* (point-y (car diffs)) (point-y (cdr diffs))) 0)))]
+         (and (<= (* (point-x (car diffs)) (point-x (cdr diffs))) EPSILON)
+              (<= (* (point-y (car diffs)) (point-y (cdr diffs))) EPSILON)))]
      [(ray p-end p-dir)
       (begin
        (define dir-p (sub-points p p-end))
        (define dir-real (sub-points p-dir p-end))
-       (or (> (* (point-x dir-p) (point-x dir-real)) 0)
-           (> (* (point-y dir-p) (point-y dir-real)) 0)
+       (or (> (* (point-x dir-p) (point-x dir-real)) (- 0 EPSILON))
+           (> (* (point-y dir-p) (point-y dir-real)) (- 0 EPSILON))
            (equal? p p-end)))])))
 
 
@@ -121,9 +121,21 @@
          add-points sub-points scale-point rotate-point mid-point
          add-p-to-ll rotate-ll
          dist distSq
-         slope-of parallel?
+         slope-of angle-of parallel?
          ray-point-angle-form
-         angle-between)
+         angle-between
+         normalize-angle:rad normalize-angle:deg)
+
+
+(define (normalize-angle:deg angle)
+  (define int-angle (floor angle))
+  (define norm-int-angle (- (modulo (+ int-angle 180) 360) 180))
+  (define real-angle (+ norm-int-angle (- angle (floor angle))))
+  (if (> real-angle 180)
+      (- real-angle 360)
+      real-angle))
+(define (normalize-angle:rad angle)
+  (degrees->radians (normalize-angle:deg (radians->degrees angle))))
 
 (define (point-slope-form p slope)
   (line p (point (+ (point-x p) DELTA) (+ (point-y p) (* DELTA slope)))))

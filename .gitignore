@@ -13,3 +13,4 @@ target/
 _build/
 *~
 .merlin
+images/

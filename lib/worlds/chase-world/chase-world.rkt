@@ -6,7 +6,8 @@
          get-left% get-right% get-robot-angle get-vl get-vr
          get-looking-dist get-lookahead-dist get-lookbehind-dist angle-to-ball
          num-balls MAX_NUM_BALLS ball-exists? normalize-angle
-         get-ball-vx get-ball-vy angle-to-first-ball
+         get-ball-vx get-ball-vy angle-to-first-ball change-motor-inputs
+         get-left% get-right% get-robot-angle get-vl get-vr
          help)
 (set-cut-offs! 15 25 45 75)
 (define (help)

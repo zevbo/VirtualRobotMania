@@ -11,5 +11,8 @@ crate_type = ["lib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+robotbed = {path = "../robotbed"}
 ncollide2d = "0.23.0"
 nphysics2d = "0.16.0"
+nalgebra = "0.21.0"
+image = "0.23.6"

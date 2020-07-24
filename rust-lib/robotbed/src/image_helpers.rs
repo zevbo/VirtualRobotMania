@@ -17,8 +17,8 @@ pub fn resize(img_buf: ImgBuf, width: u32, height: u32) -> ImgBuf {
 }
 
 pub fn scale_img(img_buf: ImgBuf, scale_factor: f32) -> ImgBuf {
-    let width = (img_buf.width() as f32 * scale_factor) as u32;
-    let height = (img_buf.width() as f32 * scale_factor) as u32;
+    let width  = (img_buf.width()  as f32 * scale_factor) as u32;
+    let height = (img_buf.height() as f32 * scale_factor) as u32;
     return resize(img_buf, width, height);
 }
 
