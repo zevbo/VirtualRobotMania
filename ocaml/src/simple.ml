@@ -1,3 +1,3 @@
 open! Core
 
-let double x = x * 2
+let double_int x = x * 2

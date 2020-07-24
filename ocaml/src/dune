@@ -1,5 +1,4 @@
 (library
- (name ocaml_sim)
- (libraries core ctypes)
- (preprocess
-  (pps ppx_jane)))
+ (name robot_sim)
+ (libraries core)
+ (preprocess (pps ppx_jane)))
