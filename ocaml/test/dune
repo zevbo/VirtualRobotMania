@@ -8,7 +8,7 @@
 (rule
   (targets test.exe)
   (deps test.o ../librobot_sim%{ext_dll})
-  (action (run %{cc} -o test.exe -Wl,-rpath .. -L .. -lrobot_sim test.o)))
+  (action (run %{cc} -o test.exe test.o -Wl,-rpath .. -L .. -lrobot_sim)))
 
 (rule (copy ../librobot_sim%{ext_dll} librobot_sim%{ext_dll}))
 

@@ -7,6 +7,7 @@ void test(int x) {
 }
 
 int main(int argc, char **argv) {
+  robotsim_init();
   test(100);
   test(10000);
   test(323321);
