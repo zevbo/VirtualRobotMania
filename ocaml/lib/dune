@@ -1,5 +1,5 @@
 (library
  (name bindings)
- (libraries ctypes ctypes.foreign robot_sim)
+ (libraries ctypes robot_sim)
  (modules
   (:standard \ apply_bindings)))

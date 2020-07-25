@@ -4,24 +4,15 @@
   (action (run %{deps} .)))
 
 (rule
-  (copy stub/init.c init.c))
-
-(rule
   (copy lib/apply_bindings.ml apply_bindings.ml))
 
 (library
   (name mrobot_sim)
   (modules robot_sim_bindings apply_bindings)
   (libraries ctypes.stubs bindings)
-  (foreign_stubs (language c) (names robot_sim init))
+  (foreign_stubs (language c) (names robot_sim))
   (flags (:standard -w "-27"))
   (library_flags (:standard -linkall)))
-
-(rule
-  (targets librobot_sim.ml)
-  (action (write-file
-             %{targets}
-             "external init: unit -> unit = \"init\"")))
 
 (executable
   (name librobot_sim)
