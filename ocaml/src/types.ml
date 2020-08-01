@@ -42,7 +42,7 @@ end
 module F (M : S) = struct
   open M
 
-  module All_bounds (L1:Line_like) (L2:Line_like) = struct
+  module All_bounds (L1 : Line_like) (L2 : Line_like) = struct
     let f a b =
       let a_bounds = L1.get_bounds a in
       let b_bounds = L2.get_bounds b in
@@ -62,14 +62,11 @@ module F (M : S) = struct
       ; m : (module Line_like with type t = 'a)
       }
 
-    let create
-        (type a)
-        (m : (module Line_like with type t = a))
-        (line : a)
-      =
+    let create (type a) (m : (module Line_like with type t = a)) (line : a) =
       { line; m }
 
-    let get_bounds (type a) { m = (module M : Line_like with type t = a); line } =
+    let get_bounds (type a) { m = (module M : Line_like with type t = a); line }
+      =
       M.get_bounds line
 
     let on_line (type a) { m = (module M : Line_like with type t = a); line } =
@@ -77,8 +74,6 @@ module F (M : S) = struct
 
     let line t = t.line
   end
-
-
 
   module Line_like_packed : sig
     type t
@@ -109,7 +104,6 @@ module F (M : S) = struct
     let a_bounds = A.get_bounds a in
     let b_bounds = B.get_bounds b in
     a_bounds @ b_bounds
-  ;;
 
   let all_bounds_2 a b =
     Line_like_polymorphic.get_bounds a @ Line_like_polymorphic.get_bounds b
@@ -122,5 +116,4 @@ module F (M : S) = struct
         (Line_like_polymorphic.create (module Line_segment) b)
     in
     x @ y
-
 end
