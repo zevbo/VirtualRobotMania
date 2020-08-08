@@ -1,5 +1,4 @@
 open! Base
-open! General
 
 type t = {x : float; y : float}
 
