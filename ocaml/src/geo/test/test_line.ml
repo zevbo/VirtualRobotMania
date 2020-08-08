@@ -32,17 +32,17 @@ let%expect_test "param" =
     let ll = Line.to_ll line in
     let pt = Line_like.param_to_point ll p in
     let p' = Line_like.param_of ll pt in
-    print_s [%message "" (pt : Vec.t) (p' : float option)]
+    print_s [%message "" (pt : Vec.t) (p' : Float.Terse.t option)]
   in
   let line = l (v 0. 0.) (v 10. 10.) in
-  (* BUGGY! param_to_point works, but param_of returns None. *)
   param line 0.;
-  [%expect {| ((pt (0 0)) (p' ())) |}];
+  [%expect {| ((pt (0 0)) (p' (0))) |}];
   param line 1.;
-  [%expect {| ((pt (10 10)) (p' ())) |}];
+  [%expect {| ((pt (10 10)) (p' (1))) |}];
   param line 0.5;
-  [%expect {| ((pt (5 5)) (p' ())) |}];
+  [%expect {| ((pt (5 5)) (p' (0.5))) |}];
   param line (-1.);
+  (* BUG *)
   [%expect {| ((pt (-10 -10)) (p' ())) |}]
 
 let%expect_test "on line" =
@@ -51,11 +51,9 @@ let%expect_test "on line" =
     print_s [%sexp (result : bool)]
   in
   on_line (l (v 0. 0.) (v 10. 10.)) (v 1. 1.);
-  (* BUG! *)
-  [%expect {| false |}];
+  [%expect {| true |}];
   on_line (l (v 0. 0.) (v 10. 10.)) (v 0. 0.);
-  (* BUG! *)
-  [%expect {| false |}];
+  [%expect {| true |}];
   on_line (l (v 0. 0.) (v 10. 10.)) (v (-1.) (-1.));
   (* BUG! *)
   [%expect {| false |}]
@@ -65,5 +63,4 @@ let%expect_test "intersect" =
   let l2 = l (v (-1.) 1.) (v 1. (-1.)) in
   let i = Line_like.intersection (Line.to_ll l1) (Line.to_ll l2) in
   print_s [%sexp (i : Vec.t option)];
-  (* TODO: this looks like a bug! It should be ((0 0)). *)
-  [%expect {| () |}]
+  [%expect {| ((0 0)) |}]

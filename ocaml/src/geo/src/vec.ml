@@ -20,7 +20,7 @@ include Sexpable.Of_sexpable
 
 let create x y = { x; y }
 let origin = create 0. 0.
-let mag_sq t = (t.x **. t.x) +. (t.y **. t.y)
+let mag_sq t = (t.x *. t.x) +. (t.y *. t.y)
 let mag t = Float.sqrt (mag_sq t)
 let scale t c = { x = t.x *. c; y = t.y *. c }
 let add t1 t2 = { x = t1.x +. t2.x; y = t1.y +. t2.y }
