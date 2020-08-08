@@ -12,3 +12,7 @@ val distSq : t -> t -> float
 val dist : t -> t -> float
 val equals : ?epsilon:float -> t -> t -> bool
 val rotate : t -> float -> t
+val mid_point : t -> t -> t
+val avg_point : t list -> t
+
+val origin : t

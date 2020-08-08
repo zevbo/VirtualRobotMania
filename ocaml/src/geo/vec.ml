@@ -3,6 +3,7 @@ open! General
 
 type t = {x : float; y : float}
 let create x y = {x;y}
+let origin = create 0. 0.
 let magSq t = t.x **. t.x +. t.y **. t.y 
 let mag t = Float.sqrt (magSq t)
 let scale t c = {x = t.x *. c; y = t.y *. c}
@@ -20,3 +21,5 @@ let rotate pt angle =
     create 
         (pt.x *. (Float.cos angle) -. pt.y *. (Float.sin angle))
         (pt.y *. (Float.cos angle) +. pt.x *. (Float.sin angle))
+let mid_point pt1 pt2 = scale (add pt1 pt2) 0.5
+let avg_point pts = scale (List.fold_left pts ~init:origin ~f:add) (1. /. (Float.of_int (List.length pts)))

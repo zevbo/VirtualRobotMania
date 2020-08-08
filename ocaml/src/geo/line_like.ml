@@ -27,7 +27,7 @@ let param_of ?(epsilon = General.epsilon) t pt =
         None
 
 exception Bad_line_like_parameter of string
-let create_w_points pt dir_vec flip_points = 
+let create_w_flip_points pt dir_vec flip_points = 
     let ll_contianer = {pt; dir_vec; flips= []} in
     let param_of_flip flip_pt =
         match param_of ll_contianer flip_pt with
@@ -35,5 +35,5 @@ let create_w_points pt dir_vec flip_points =
         | None -> raise (Bad_line_like_parameter "attempted to initialize line like with flip_pt not on line")
     in
     let flips = List.map flip_points ~f:param_of_flip in
-    {pt; dir_vec; flips} 
+    {pt; dir_vec; flips}
 let flip_points_of t = List.map t.flips ~f:(param_to_point t)
