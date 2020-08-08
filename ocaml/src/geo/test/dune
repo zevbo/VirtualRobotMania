@@ -1,0 +1,6 @@
+(library
+ (name geo_test)
+ (libraries core geo)
+ (inline_tests)
+ (preprocess
+  (pps ppx_jane)))

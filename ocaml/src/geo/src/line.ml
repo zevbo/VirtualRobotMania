@@ -1,7 +1,4 @@
-open! Vec
-open! Line_like
-
-type t = {pt1: Vec.t; pt2: Vec.t}
+type t = {pt1: Vec.t; pt2: Vec.t} [@@deriving sexp]
 
 let create pt1 pt2 = {pt1; pt2}
 

@@ -1,4 +1,4 @@
-type t = {x : float; y : float}
+type t = {x : float; y : float} [@@deriving sexp]
 
 val create : float -> float -> t
 val magSq : t -> float

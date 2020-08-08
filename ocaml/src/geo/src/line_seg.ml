@@ -1,4 +1,5 @@
 type t = {pt1: Vec.t; pt2: Vec.t}
+[@@deriving sexp]
 
 let create pt1 pt2 = {pt1; pt2}
 let to_ll t =

@@ -1,6 +1,7 @@
 open! Vec
 
 type t = {pt: Vec.t; dir_vec: Vec.t; flips: float list;}
+[@@deriving sexp]
 
 val create : Vec.t -> Vec.t -> float list -> t
 val on_line : ?epsilon:float -> t -> Vec.t -> bool 

@@ -1,6 +1,7 @@
 open! Base
 
 type t = {pt: Vec.t; dir_vec: Vec.t; flips: float list;}
+[@@deriving sexp]
 
 let create pt dir_vec flips = {pt; dir_vec; flips}
 

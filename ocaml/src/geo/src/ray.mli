@@ -1,4 +1,5 @@
 type t = {pt_end: Vec.t; pt_dir: Vec.t}
+[@@deriving sexp]
 
 val create : Vec.t -> Vec.t -> t
 val to_ll : t -> Line_like.t
