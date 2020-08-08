@@ -27,6 +27,21 @@ let%expect_test "line and line-like" =
     ((line ((pt1 (1 -1)) (pt2 (-1 1))))
      (like ((pt (1 -1)) (dir_vec (-2 2)) (flips ())))) |}]
 
+let%expect_test "param" =
+  let param line p =
+    let pt = Line_like.param_to_point (Line.to_ll line) p in
+    print_s [%sexp (pt : Vec.t)]
+  in
+  let line = l (v 0. 0.) (v 10. 10.) in
+  param line 0.;
+  [%expect{| (0 0) |}];
+  param line 1.;
+  [%expect{| (10 10) |}];
+  param line 0.5;
+  [%expect{| (5 5) |}];
+  param line (-1.);
+  [%expect{| (-10 -10) |}]
+
 let%expect_test "on line" =
   let on_line line pt =
     let result = Line_like.on_line (Line.to_ll line) pt in
