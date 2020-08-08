@@ -1,4 +1,7 @@
 (library
  (name robot_sim)
  (libraries core)
- (preprocess (pps ppx_jane)))
+ (preprocess
+  (pps ppx_jane)))
+
+(include_subdirs unqualified)
