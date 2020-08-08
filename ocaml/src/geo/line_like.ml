@@ -4,6 +4,7 @@ open! General
 
 
 type t = {pt: Vec.t; dir_vec: Vec.t; flips: float list;}
+let create pt dir_vec flips = {pt; dir_vec; flips}
     
 (* param_of_unsafe returns a float c, such that pt + c * dir_vec = to the given point if that point is on the line *)
 (* will not error out if the point is not on the line *)
@@ -26,7 +27,7 @@ let param_of ?(epsilon = General.epsilon) t pt =
         None
 
 exception Bad_line_like_parameter of string
-let create pt dir_vec flip_points = 
+let create_w_points pt dir_vec flip_points = 
     let ll_contianer = {pt; dir_vec; flips= []} in
     let param_of_flip flip_pt =
         match param_of ll_contianer flip_pt with

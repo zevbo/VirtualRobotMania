@@ -2,7 +2,7 @@ open! Base
 open! General
 
 type t = {x : float; y : float}
-
+let create x y = {x;y}
 let magSq t = t.x **. t.x +. t.y **. t.y 
 let mag t = Float.sqrt (magSq t)
 let scale t c = {x = t.x *. c; y = t.y *. c}
@@ -16,3 +16,7 @@ let dist t1 t2 = Float.sqrt (distSq t1 t2)
 let equals ?(epsilon = General.epsilon) t1 t2 = 
     Float.((Float.abs (t1.x -. t2.x)) < epsilon) && 
     Float.((Float.abs (t1.y -. t2.y)) < epsilon)
+let rotate pt angle =
+    create 
+        (pt.x *. (Float.cos angle) -. pt.y *. (Float.sin angle))
+        (pt.y *. (Float.cos angle) +. pt.x *. (Float.sin angle))
