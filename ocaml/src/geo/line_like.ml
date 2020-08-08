@@ -1,7 +1,4 @@
-open! Vec
 open! Base
-open! General
-
 
 type t = {pt: Vec.t; dir_vec: Vec.t; flips: float list;}
 let create pt dir_vec flips = {pt; dir_vec; flips}
@@ -37,3 +34,25 @@ let create_w_flip_points pt dir_vec flip_points =
     let flips = List.map flip_points ~f:param_of_flip in
     {pt; dir_vec; flips}
 let flip_points_of t = List.map t.flips ~f:(param_to_point t)
+
+let slope_of t = t.dir_vec.y /. t.dir_vec.x
+let angle_of t = Float.atan (slope_of t)
+let are_parallel ?(epsilon = General.epsilon) t1 t2 =
+    General.imp_equals (angle_of t1) (angle_of t2) ~epsilon
+let intersection ?(epsilon = General.epsilon) t1 t2 = 
+    if (are_parallel t1 t2 ~epsilon) then
+        None 
+    else (
+        (* Algorithim: http://geomalgorithms.com/a05-_intersect-1.html *)
+        let u = t1.dir_vec in
+        let v = t2.dir_vec in
+        let w = Vec.sub t1.pt t2.pt in
+
+        let s = (v.y *. w.x -. v.x *. w.y) /. (v.x *. u.y -. v.y *. u.x) in
+        let intersection = Vec.add t1.pt  (Vec.scale u s) in
+
+        if (on_line t1 intersection && on_line t2 intersection) then
+            Some intersection
+        else
+            None
+    )

@@ -1,6 +1,3 @@
-open! Vec 
-open! Line_like
-
 type t = {pt_end: Vec.t; pt_dir: Vec.t}
 
 let create pt_end pt_dir = {pt_end;pt_dir}

@@ -1,6 +1,3 @@
-open! Vec
-open! Line_like
-
 type t = {pt1: Vec.t; pt2: Vec.t}
 let create pt1 pt2 = {pt1; pt2}
 let to_ll t = Line_like.create_w_flip_points t.pt1 (Vec.sub t.pt2 t.pt1) []
