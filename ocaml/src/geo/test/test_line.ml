@@ -29,18 +29,21 @@ let%expect_test "line and line-like" =
 
 let%expect_test "param" =
   let param line p =
-    let pt = Line_like.param_to_point (Line.to_ll line) p in
-    print_s [%sexp (pt : Vec.t)]
+    let ll = Line.to_ll line in
+    let pt = Line_like.param_to_point ll p in
+    let p' = Line_like.param_of ll pt in
+    print_s [%message "" (pt : Vec.t) (p' : float option)]
   in
   let line = l (v 0. 0.) (v 10. 10.) in
+  (* BUGGY! param_to_point works, but param_of returns None. *)
   param line 0.;
-  [%expect{| (0 0) |}];
+  [%expect {| ((pt (0 0)) (p' ())) |}];
   param line 1.;
-  [%expect{| (10 10) |}];
+  [%expect {| ((pt (10 10)) (p' ())) |}];
   param line 0.5;
-  [%expect{| (5 5) |}];
+  [%expect {| ((pt (5 5)) (p' ())) |}];
   param line (-1.);
-  [%expect{| (-10 -10) |}]
+  [%expect {| ((pt (-10 -10)) (p' ())) |}]
 
 let%expect_test "on line" =
   let on_line line pt =
