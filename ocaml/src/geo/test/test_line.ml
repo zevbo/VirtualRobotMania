@@ -34,6 +34,11 @@ let%expect_test "on line" =
   in
   on_line (l (v 0. 0.) (v 10. 10.)) (v 1. 1.);
   (* BUG! *)
+  [%expect {| false |}];
+  on_line (l (v 0. 0.) (v 10. 10.)) (v 0. 0.);
+  [%expect {| true |}];
+  on_line (l (v 0. 0.) (v 10. 10.)) (v (-1.) (-1.));
+  (* BUG! *)
   [%expect {| false |}]
 
 let%expect_test "intersect" =
