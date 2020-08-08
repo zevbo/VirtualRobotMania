@@ -60,12 +60,15 @@ let%expect_test "on line" =
   on_line line (v (-1.) (-1.));
   [%expect {| ((result true) (param -0.1)) |}];
   on_line line (v 11. 11.);
-  [%expect {| ((result true) (param 1.1)) |}]
+  [%expect {| ((result true) (param 1.1)) |}];
+  on_line line (v 1. 3.);
+  [%expect {| ((result false) (param 0.2)) |}]
 
 let%expect_test "intersect" =
-  let l1 = l (v 0. 0.) (v 1. 1.) in
-  let l2 = l (v (-1.) 1.) (v 1. (-1.)) in
-  let i = Line_like.intersection (Line.to_ll l1) (Line.to_ll l2) in
-  print_s [%sexp (i : Vec.t option)];
+  let l1 = l (v (-1.) (-1.)) (v 1. 1.) |> Line.to_ll in
+  let l2 = l (v (-1.) 1.) (v 1. (-1.)) |> Line.to_ll in
+  let parallel = Line_like.are_parallel l1 l2 in
+  let i = Line_like.intersection l1 l2 in
+  print_s [%message "" (i : Vec.t option) (parallel : bool)];
   (* BUG *)
-  [%expect {| () |}]
+  [%expect {| ((i ()) (parallel false)) |}]

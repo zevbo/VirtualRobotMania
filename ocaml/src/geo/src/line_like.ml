@@ -49,6 +49,9 @@ let are_parallel ?(epsilon = General.epsilon) t1 t2 =
   General.imp_equals (angle_of t1) (angle_of t2) ~epsilon_:epsilon
 
 let intersection ?(epsilon = General.epsilon) t1 t2 =
+  (* If they're not parallel, the underlying lines must have an
+       intersection, even if it's not on the segments in question *)
+  let open Float.O in
   if are_parallel t1 t2 ~epsilon
   then None
   else (
@@ -56,7 +59,7 @@ let intersection ?(epsilon = General.epsilon) t1 t2 =
     let u = t1.dir_vec in
     let v = t2.dir_vec in
     let w = Vec.sub t1.pt t2.pt in
-    let s = ((v.y *. w.x) -. (v.x *. w.y)) /. ((v.x *. u.y) -. (v.y *. u.x)) in
+    let s = ((v.y * w.x) - (v.x * w.y)) / ((v.x * u.y) - (v.y * u.x)) in
     let intersection = Vec.add t1.pt (Vec.scale u s) in
     if on_line t1 intersection && on_line t2 intersection
     then Some intersection
