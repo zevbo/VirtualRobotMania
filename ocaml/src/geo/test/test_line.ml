@@ -48,7 +48,7 @@ let%expect_test "param" =
 let%expect_test "on line" =
   let on_line line pt =
     let ll = Line.to_ll line in
-    let param = Line_like.unsafe_param_of ll pt in
+    let param = Line_like.param_of_proj_point ll pt in
     let result = Line_like.on_line ll pt in
     print_s [%message "" (result : bool) (param : float)]
   in

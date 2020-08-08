@@ -9,24 +9,22 @@ type t =
 
 let create pt dir_vec flips = { pt; dir_vec; flips }
 
-(* unsafe_param_of returns a float c, such that pt + c * dir_vec = to
-   the given point if that point is on the line.
-
-   will not error out if the point is not on the line *)
-let unsafe_param_of t pt = Vec.dot pt t.dir_vec /. Vec.mag_sq t.dir_vec
+(* param_of_proj_point returns a float c, such that pt + c * dir_vec = to
+   the given point projected on to the line. *)
+let param_of_proj_point t pt = Vec.dot pt t.dir_vec /. Vec.mag_sq t.dir_vec
 let param_to_point t param = Vec.add t.pt (Vec.scale t.dir_vec param)
 let flips_before t param = List.count t.flips ~f:(fun n -> Float.(n < param))
 let start_on t = flips_before t 0. % 2 = 0
 let is_param_on t param = Bool.equal (flips_before t param % 2 = 0) (start_on t)
 
 let on_line ?(epsilon = General.epsilon) t pt =
-  let param = unsafe_param_of t pt in
+  let param = param_of_proj_point t pt in
   let expected_pt = param_to_point t param in
   let is_t_on = is_param_on t param in
   is_t_on && Vec.equals pt expected_pt ~epsilon
 
 let param_of ?(epsilon = General.epsilon) t pt =
-  if on_line t pt ~epsilon then Some (unsafe_param_of t pt) else None
+  if on_line t pt ~epsilon then Some (param_of_proj_point t pt) else None
 
 exception Bad_line_like_parameter of string
 
