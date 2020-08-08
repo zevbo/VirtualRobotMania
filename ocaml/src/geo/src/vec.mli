@@ -10,6 +10,7 @@ val mag : t -> float
 val scale : t -> float -> t
 val add : t -> t -> t
 val sub : t -> t -> t
+val dot : t -> t -> float
 val to_unit : t -> t
 val collinear : t -> t -> t -> bool
 val dist_sq : t -> t -> float

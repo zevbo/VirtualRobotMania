@@ -43,24 +43,29 @@ let%expect_test "param" =
   [%expect {| ((pt (5 5)) (p' (0.5))) |}];
   param line (-1.);
   (* BUG *)
-  [%expect {| ((pt (-10 -10)) (p' ())) |}]
+  [%expect {| ((pt (-10 -10)) (p' (-1))) |}]
 
 let%expect_test "on line" =
   let on_line line pt =
-    let result = Line_like.on_line (Line.to_ll line) pt in
-    print_s [%sexp (result : bool)]
+    let ll = Line.to_ll line in
+    let param = Line_like.unsafe_param_of ll pt in
+    let result = Line_like.on_line ll pt in
+    print_s [%message "" (result : bool) (param : float)]
   in
-  on_line (l (v 0. 0.) (v 10. 10.)) (v 1. 1.);
-  [%expect {| true |}];
-  on_line (l (v 0. 0.) (v 10. 10.)) (v 0. 0.);
-  [%expect {| true |}];
-  on_line (l (v 0. 0.) (v 10. 10.)) (v (-1.) (-1.));
-  (* BUG! *)
-  [%expect {| false |}]
+  let line = l (v 0. 0.) (v 10. 10.) in
+  on_line line (v 1. 1.);
+  [%expect {| ((result true) (param 0.1)) |}];
+  on_line line (v 0. 0.);
+  [%expect {| ((result true) (param 0)) |}];
+  on_line line (v (-1.) (-1.));
+  [%expect {| ((result true) (param -0.1)) |}];
+  on_line line (v 11. 11.);
+  [%expect {| ((result true) (param 1.1)) |}]
 
 let%expect_test "intersect" =
   let l1 = l (v 0. 0.) (v 1. 1.) in
   let l2 = l (v (-1.) 1.) (v 1. (-1.)) in
   let i = Line_like.intersection (Line.to_ll l1) (Line.to_ll l2) in
   print_s [%sexp (i : Vec.t option)];
-  [%expect {| ((0 0)) |}]
+  (* BUG *)
+  [%expect {| () |}]

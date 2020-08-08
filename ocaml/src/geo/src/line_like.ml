@@ -13,7 +13,7 @@ let create pt dir_vec flips = { pt; dir_vec; flips }
    the given point if that point is on the line.
 
    will not error out if the point is not on the line *)
-let unsafe_param_of t pt = Vec.dist t.pt pt /. Vec.mag t.dir_vec
+let unsafe_param_of t pt = Vec.dot pt t.dir_vec /. Vec.mag_sq t.dir_vec
 let param_to_point t param = Vec.add t.pt (Vec.scale t.dir_vec param)
 let flips_before t param = List.count t.flips ~f:(fun n -> Float.(n < param))
 let start_on t = flips_before t 0. % 2 = 0
@@ -54,7 +54,7 @@ let intersection ?(epsilon = General.epsilon) t1 t2 =
   if are_parallel t1 t2 ~epsilon
   then None
   else (
-    (* Algorithim: http://geomalgorithms.com/a05-_intersect-1.html *)
+    (* Algorithm: http://geomalgorithms.com/a05-_intersect-1.html *)
     let u = t1.dir_vec in
     let v = t2.dir_vec in
     let w = Vec.sub t1.pt t2.pt in

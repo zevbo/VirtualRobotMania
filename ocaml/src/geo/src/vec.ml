@@ -39,8 +39,7 @@ let dist_sq t1 t2 = mag_sq (sub t1 t2)
 let dist t1 t2 = Float.sqrt (dist_sq t1 t2)
 
 let equals ?(epsilon = General.epsilon) t1 t2 =
-  Float.(Float.abs (t1.x -. t2.x) < epsilon)
-  && Float.(Float.abs (t1.y -. t2.y) < epsilon)
+  Float.O.(abs (t1.x - t2.x) < epsilon && abs (t1.y - t2.y) < epsilon)
 
 let rotate pt angle =
   create
@@ -53,3 +52,5 @@ let avg_point pts =
   scale
     (List.fold_left pts ~init:origin ~f:add)
     (1. /. Float.of_int (List.length pts))
+
+let dot t1 t2 = Float.O.((t1.x * t2.x) + (t1.y * t2.y))
