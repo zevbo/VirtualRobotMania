@@ -15,10 +15,7 @@ let create pt dir_vec flips = { pt; dir_vec; flips }
    will not error out if the point is not on the line *)
 let unsafe_param_of t pt = Vec.dist t.pt pt /. Vec.mag t.dir_vec
 let param_to_point t param = Vec.add t.pt (Vec.scale t.dir_vec param)
-
-let flips_before t param =
-  List.length (List.filter t.flips ~f:(fun n -> Float.(n < param)))
-
+let flips_before t param = List.count t.flips ~f:(fun n -> Float.(n < param))
 let start_on t = flips_before t 0. % 2 = 0
 let is_param_on t param = Bool.equal (flips_before t param % 2 = 0) (start_on t)
 
