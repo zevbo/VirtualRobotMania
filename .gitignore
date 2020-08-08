@@ -4,7 +4,10 @@
 *.jpg
 *.png
 \#*#
+*.DS_Store
 
+*/For_Competition/*
+For_Competition/
 */chaseCompetition/*
 */localManias/*
 tmp*
