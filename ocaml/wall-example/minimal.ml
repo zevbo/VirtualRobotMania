@@ -31,7 +31,7 @@ let fw = int_of_float (f *. float w)
 let fh = int_of_float (f *. float h)
 let b2 x y w h = Gg.Box2.v (Gg.P2.v x y) (Gg.Size2.v w h)
 
-let render context sw sh t =
+let render context texture sw sh t =
   let lw = float w in
   let lh = float h in
   let pw = lw *. f *. sw in
@@ -96,9 +96,15 @@ let render context sw sh t =
 
 open Tgles2
 
+let ok_exn = function
+  | Ok x -> x
+  | Error (`Msg x) -> Base.raise_s [%message "Failed" ~_:x]
+
+let load_texture () = Wall_texture.load_image "../../rust-lib/pelosi.jpeg" |> ok_exn
+
 let main () =
   Printexc.record_backtrace true;
-  match Sdl.init Sdl.Init.video with
+  match Sdl.init Sdl.Init.(video + audio + events) with
   | Error (`Msg e) ->
     Sdl.log "Init error: %s" e;
     exit 1
@@ -137,6 +143,7 @@ let main () =
         Sdl.log "Create context error: %s" e;
         exit 1
       | Ok ctx ->
+        let texture = load_texture () in
         let context =
           Renderer.create ~antialias:true ~stencil_strokes:true ()
         in
@@ -146,6 +153,7 @@ let main () =
           while Sdl.poll_event (Some event) do
             match Sdl.Event.enum (Sdl.Event.get event Sdl.Event.typ) with
             | `Quit -> quit := true
+            | `Key_down -> quit := true
             | _ -> ()
           done;
           Gl.viewport 0 0 fw fh;
@@ -160,7 +168,7 @@ let main () =
             Gl.one_minus_src_alpha;
           Gl.enable Gl.cull_face_enum;
           Gl.disable Gl.depth_test;
-          render context sw sh (Int32.to_float (Sdl.get_ticks ()) /. 1000.0);
+          render context texture sw sh (Int32.to_float (Sdl.get_ticks ()) /. 1000.0);
           Sdl.gl_swap_window w
         done;
         Sdl.gl_delete_context ctx;
