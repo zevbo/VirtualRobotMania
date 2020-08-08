@@ -4,8 +4,9 @@ type t =
   { x : float
   ; y : float
   }
-[@@deriving sexp]
 
+(* We make s-expressions look like simple pairs, eg., (3 4), 
+   rather than a record, e.g., ((x 3) (y 4)). *)
 include Sexpable.Of_sexpable
           (struct
             type t = float * float [@@deriving sexp]
