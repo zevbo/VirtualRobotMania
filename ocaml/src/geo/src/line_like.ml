@@ -13,7 +13,7 @@ let create pt dir_vec flips = { pt; dir_vec; flips }
    the given point if that point is on the line.
 
    will not error out if the point is not on the line *)
-let unsafe_param_of t pt = Vec.dist t.pt pt /. Vec.mag_sq t.dir_vec
+let unsafe_param_of t pt = Vec.dist t.pt pt /. Vec.mag t.dir_vec
 let param_to_point t param = Vec.add t.pt (Vec.scale t.dir_vec param)
 
 let flips_before t param =
