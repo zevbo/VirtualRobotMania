@@ -35,6 +35,7 @@ let is_param_on t param = Bool.equal (flips_before t param % 2 = 0) (start_on t)
 let slope_of t = t.dir_vec.y /. t.dir_vec.x
 let angle_of t = Float.atan (slope_of t)
 let flip_points_of t = List.map t.flips ~f:(param_to_point t)
+let ignore t = { t with underlying = () }
 
 module With_epsilon (Epsilon : Epsilon) = struct
   open Epsilon

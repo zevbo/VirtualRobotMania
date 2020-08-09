@@ -4,9 +4,8 @@ type t =
   }
 [@@deriving sexp]
 
-let create pt_end pt_dir = { pt_end; pt_dir }
-
-let to_ll t =
+let create pt_end pt_dir =
+  let t = { pt_end; pt_dir } in
   Line_like.create_w_flip_points
     t
     t.pt_dir

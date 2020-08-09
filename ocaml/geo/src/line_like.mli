@@ -14,6 +14,7 @@ val param_of_proj_point : _ t -> Vec.t -> float
 val is_param_on : _ t -> float -> bool
 val param_to_point : _ t -> float -> Vec.t
 val flip_points_of : _ t -> Vec.t list
+val ignore : _ t -> unit t
 
 (** These functions depend on some epsilon tolerance value *)
 module type Epsilon_dependent = sig

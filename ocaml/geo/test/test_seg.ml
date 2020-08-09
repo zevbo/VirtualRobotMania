@@ -2,14 +2,13 @@ open! Core_kernel
 open Geo
 
 let v x y = Vec.create (Int.to_float x) (Int.to_float y)
-let s a b = Line_seg.to_ll (Line_seg.create a b)
-let r a b = Ray.to_ll (Ray.create a b)
+let s a b = Line_seg.create a b
+let r a b = Ray.create a b
 
 let%expect_test "create and show seg" =
   let show v1 v2 =
     let seg = Line_seg.create v1 v2 in
-    let ll = Line_seg.to_ll seg in
-    print_s [%sexp (ll : Line_seg.t Line_like.t)]
+    print_s [%sexp (seg : Line_seg.t Line_like.t)]
   in
   show (v 1 1) (v 3 3);
   [%expect

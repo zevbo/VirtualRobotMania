@@ -4,9 +4,8 @@ type t =
   }
 [@@deriving sexp]
 
-let create pt1 pt2 = { pt1; pt2 }
-
-let to_ll t =
+let create pt1 pt2 =
+  let t = { pt1; pt2 } in
   Line_like.create_w_flip_points
     t
     (Vec.mid_point t.pt1 t.pt2)
