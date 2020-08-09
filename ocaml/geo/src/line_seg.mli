@@ -4,4 +4,4 @@ type t =
   }
 [@@deriving sexp]
 
-val create : Vec.t -> Vec.t -> t Line_like.t
+val create : Vec.t -> Vec.t -> Line_like.segment Line_like.t

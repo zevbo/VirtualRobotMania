@@ -1,20 +1,48 @@
 open! Vec
 
+type line = Line
+type segment = Segment
+type ray = Ray
+
+module Kind : sig
+  type _ t =
+    | Line : line t
+    | Segment : segment t
+    | Ray : ray t
+end
+
 type 'a t =
   { base : Vec.t
   ; dir_vec : Vec.t
   ; flips : float list
-  ; underlying : 'a
+  ; kind: 'a Kind.t
   }
-[@@deriving sexp]
+[@@deriving sexp_of]
 
-val create : 'a -> Vec.t -> Vec.t -> float list -> 'a t
+(** {2 Line Constructors} *)
+
+val line : Vec.t -> Vec.t -> line t
+val line_of_point_angle : Vec.t -> float -> line t
+val line_of_point_slope : Vec.t -> float -> line t
+
+(** {2 Ray Constructors} *)
+
+val ray : Vec.t -> Vec.t -> ray t
+val ray_of_point_angle : Vec.t -> float -> ray t
+val ray_of_point_slope : Vec.t -> float -> ray t
+
+(** {2 Segment Constructors} *)
+
+val segment : Vec.t -> Vec.t -> segment t
+
+(** {2 Other operators} *)
+
+val create : 'a Kind.t -> Vec.t -> Vec.t -> float list -> 'a t
 val start_on : _ t -> bool
 val param_of_proj_point : _ t -> Vec.t -> float
 val is_param_on : _ t -> float -> bool
 val param_to_point : _ t -> float -> Vec.t
 val flip_points_of : _ t -> Vec.t list
-val ignore : _ t -> unit t
 
 (** These functions depend on some epsilon tolerance value *)
 module type Epsilon_dependent = sig
@@ -22,7 +50,7 @@ module type Epsilon_dependent = sig
   val epsilon : float
 
   val on_line : _ t -> Vec.t -> bool
-  val create_w_flip_points : 'a -> Vec.t -> Vec.t -> Vec.t list -> 'a t
+  val create_w_flip_points : 'a Kind.t -> Vec.t -> Vec.t -> Vec.t list -> 'a t
   val param_of : _ t -> Vec.t -> float option
   val are_parallel : _ t -> _ t -> bool
   val intersection : _ t -> _ t -> Vec.t option

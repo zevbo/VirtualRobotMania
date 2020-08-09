@@ -7,7 +7,7 @@ type t =
 let create pt_end pt_dir =
   let t = { pt_end; pt_dir } in
   Line_like.create_w_flip_points
-    t
+    Line_like.Kind.Ray
     t.pt_dir
     (Vec.sub t.pt_dir t.pt_end)
     [ t.pt_end ]

@@ -4,6 +4,6 @@ type t =
   }
 [@@deriving sexp]
 
-val create : Vec.t -> Vec.t -> t Line_like.t
-val point_angle_form : Vec.t -> float -> t Line_like.t
-val point_slope_form : Vec.t -> float -> t Line_like.t
+val create : Vec.t -> Vec.t -> Line_like.ray Line_like.t
+val point_angle_form : Vec.t -> float -> Line_like.ray Line_like.t
+val point_slope_form : Vec.t -> float -> Line_like.ray Line_like.t
