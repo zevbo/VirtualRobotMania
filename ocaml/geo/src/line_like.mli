@@ -1,8 +1,8 @@
 open! Vec
 
-type line = Line   [@@deriving sexp]
-type segment = Segment   [@@deriving sexp]
-type ray = Ray   [@@deriving sexp]
+type line = Line [@@deriving sexp]
+type segment = Segment [@@deriving sexp]
+type ray = Ray [@@deriving sexp]
 
 module Kind : sig
   type _ t =
@@ -16,7 +16,7 @@ type 'a t =
   { base : Vec.t
   ; dir_vec : Vec.t
   ; flips : float list
-  ; kind: 'a Kind.t
+  ; kind : 'a Kind.t
   }
 [@@deriving sexp_of]
 

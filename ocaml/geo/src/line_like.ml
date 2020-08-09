@@ -1,16 +1,15 @@
 open! Base
 
-type line = Line   [@@deriving sexp]
-type segment = Segment   [@@deriving sexp]
-type ray = Ray  [@@deriving sexp]
+type line = Line [@@deriving sexp]
+type segment = Segment [@@deriving sexp]
+type ray = Ray [@@deriving sexp]
 
 module Kind = struct
   type _ t =
     | Line : line t
     | Segment : segment t
     | Ray : ray t
-          [@@deriving sexp_of]
-
+  [@@deriving sexp_of]
 end
 
 type 'a t =
@@ -106,29 +105,22 @@ include With_epsilon (struct
   let epsilon = 0.00001
 end)
 
-let line p1 p2 =
-  create_w_flip_points Kind.Line p1 (Vec.sub p2 p2) []
+let line p1 p2 = create_w_flip_points Kind.Line p1 (Vec.sub p2 p2) []
+
 let line_of_point_angle p angle =
   line p (Vec.add (Vec.rotate (Vec.create 1. 0.) angle) p)
-let line_of_point_slope p slope =
-  line_of_point_angle p (Float.atan slope)
 
-let ray p1 p2 =
-  create_w_flip_points
-    Kind.Ray
-    p2
-    (Vec.sub p2 p1)
-    [ p1 ]
+let line_of_point_slope p slope = line_of_point_angle p (Float.atan slope)
+let ray p1 p2 = create_w_flip_points Kind.Ray p2 (Vec.sub p2 p1) [ p1 ]
 
 let ray_of_point_angle p angle =
   ray p (Vec.add (Vec.rotate (Vec.create 1. 0.) angle) p)
 
-let ray_of_point_slope p slope =
-  ray_of_point_angle p (Float.atan slope)
+let ray_of_point_slope p slope = ray_of_point_angle p (Float.atan slope)
 
 let segment p1 p2 =
   create_w_flip_points
     Kind.Segment
     (Vec.mid_point p1 p2)
     (Vec.sub p1 p2)
-    [p1; p2]
+    [ p1; p2 ]
