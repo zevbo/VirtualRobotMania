@@ -1,5 +1,0 @@
-(executables
- (names minimal)
- (libraries core wall tsdl tgls.tgles2 gg)
- (preprocess
-  (pps ppx_jane)))
