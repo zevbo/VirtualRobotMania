@@ -14,4 +14,4 @@ let%expect_test "create and show seg" =
   [%expect
     {|
     ((seg ((pt1 (1 1)) (pt2 (3 3))))
-     (ll ((base (2 2)) (offset (-2 -2)) (flips (0.5 -0.5))))) |}]
+     (ll ((base (2 2)) (dir_vec (-2 -2)) (flips (0.5 -0.5))))) |}]

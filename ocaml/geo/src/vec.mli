@@ -1,3 +1,4 @@
+(** Represents a 2d vector *)
 type t =
   { x : float
   ; y : float
