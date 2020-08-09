@@ -13,3 +13,13 @@ stubs from Racket.  You should first run `dune build` to generate the
 necessary dll.
 
 This has been tested on MacOS and Linux so far.
+
+# Building and Testing with Dune
+
+Each library is organized as having a src and test directory.  You
+can run:
+
+- `dune build` to build the code itself
+- `dune runtest` to run the tests
+- `dune promote` to update any expect tests that need to be updated
+- `dune runtest --auto-promote` do the runtest and promotion together.
