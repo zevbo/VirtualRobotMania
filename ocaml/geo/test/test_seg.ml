@@ -26,4 +26,12 @@ let%expect_test "intersection" =
   intersect (s (v (-1) (-1)) (v 1 1)) (s (v (-1) 1) (v 1 (-1)));
   [%expect {| ((0 0)) |}];
   intersect (s (v 0 4) (v 4 0)) (s (v 4 4) (v 0 1));
-  [%expect {| ((1.7142857 2.2857143)) |}]
+  [%expect {| ((1.7142857 2.2857143)) |}];
+  intersect (s (v 0 0) (v 4 4)) (s (v 10 0) (v 0 10));
+  [%expect {| () |}];
+  intersect (s (v 0 0) (v 6 6)) (s (v 10 0) (v 0 10));
+  [%expect {| ((5 5)) |}];
+  intersect (s (v 0 0) (v 5 5)) (s (v 10 0) (v 0 10));
+  (* Mildly surprising that this doesn't cause an intersection, 
+     but not a big deal *)
+  [%expect {| () |}]

@@ -14,19 +14,19 @@ let%expect_test "line and line-like" =
   show (v 1. 1.) (v 3. 4.);
   [%expect
     {|
-    ((line ((pt1 (1 1)) (pt2 (3 4)))) (like ((base (1 1)) (offset (2 3))))) |}];
+    ((line ((pt1 (1 1)) (pt2 (3 4)))) (like ((base (1 1)) (dir_vec (2 3))))) |}];
   show (v (-1.) 1.) (v 1. (-1.));
   [%expect
     {|
-    ((line ((pt1 (-1 1)) (pt2 (1 -1)))) (like ((base (-1 1)) (offset (2 -2))))) |}];
+    ((line ((pt1 (-1 1)) (pt2 (1 -1)))) (like ((base (-1 1)) (dir_vec (2 -2))))) |}];
   show (v 1. (-1.)) (v (-1.) 1.);
   [%expect
     {|
-    ((line ((pt1 (1 -1)) (pt2 (-1 1)))) (like ((base (1 -1)) (offset (-2 2))))) |}];
+    ((line ((pt1 (1 -1)) (pt2 (-1 1)))) (like ((base (1 -1)) (dir_vec (-2 2))))) |}];
   show (v 3. (-4.)) (v 1. 0.);
   [%expect
     {|
-    ((line ((pt1 (3 -4)) (pt2 (1 0)))) (like ((base (3 -4)) (offset (-2 4))))) |}]
+    ((line ((pt1 (3 -4)) (pt2 (1 0)))) (like ((base (3 -4)) (dir_vec (-2 4))))) |}]
 
 let%expect_test "param" =
   let param line p =
@@ -72,7 +72,7 @@ let%expect_test "on line" =
       (Vec.dot (v (-1.) 4.) (v (-2.) 8.) /. Vec.mag_sq (v (-2.) 8.) : float)];
   [%expect {| 0.5 |}];
   print_s [%sexp (Line.to_ll line : Line_like.t)];
-  [%expect {| ((base (3 -4)) (offset (-2 4))) |}];
+  [%expect {| ((base (3 -4)) (dir_vec (-2 4))) |}];
   (* BUG, seems like it handles the case of a non-uniform line wrong *)
   on_line line (v 2. (-2.));
   [%expect {| ((result true) (param 0.5)) |}]
