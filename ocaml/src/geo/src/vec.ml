@@ -27,18 +27,18 @@ let add t1 t2 = { x = t1.x +. t2.x; y = t1.y +. t2.y }
 let sub t1 t2 = add t1 (scale t2 (-1.))
 let to_unit t = scale t (1. /. mag t)
 
-let collinear t1 t2 t3 =
+let collinear ~epsilon t1 t2 t3 =
   let open Float in
   let deviation =
     abs
       (((t2.y -. t1.y) *. (t3.x -. t2.x)) -. ((t2.x -. t1.x) *. (t3.y -. t2.y)))
   in
-  deviation < General.epsilon
+  deviation < epsilon
 
 let dist_sq t1 t2 = mag_sq (sub t1 t2)
 let dist t1 t2 = Float.sqrt (dist_sq t1 t2)
 
-let equals ?(epsilon = General.epsilon) t1 t2 =
+let equals ~epsilon t1 t2 =
   Float.O.(abs (t1.x - t2.x) < epsilon && abs (t1.y - t2.y) < epsilon)
 
 let rotate pt angle =

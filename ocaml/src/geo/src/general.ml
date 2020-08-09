@@ -1,2 +1,3 @@
-let epsilon = 0.00001
-let imp_equals ?(epsilon_ = epsilon) n1 n2 = Float.((abs (n1 -. n2)) < epsilon_)
+open! Base
+
+let imp_equals ~epsilon n1 n2 = Float.O.(abs (n1 - n2) < epsilon)
