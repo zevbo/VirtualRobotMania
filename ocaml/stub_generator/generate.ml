@@ -1,4 +1,5 @@
-let init_lib = {|
+let init_lib =
+  {|
 void robotsim_init(void) {
   char_os *caml_argv[1] = { NULL };
   caml_startup(caml_argv);
@@ -25,10 +26,10 @@ let generate dirname =
   Format.fprintf
     (Format.formatter_of_out_channel h_fd)
     "void robotsim_init(void);\n%a"
-    (Cstubs_inverted.write_c_header ~prefix) stubs;
+    (Cstubs_inverted.write_c_header ~prefix)
+    stubs;
   close_out h_fd;
   close_out c_fd;
   close_out ml_fd
-;;
 
 let () = generate Sys.argv.(1)
