@@ -8,8 +8,8 @@ type t =
 [@@deriving sexp]
 
 module type Epsilon_dependent = sig
+  val epsilon : float
   val on_line : t -> Vec.t -> bool
-  val flip_points_of : t -> Vec.t list
   val create_w_flip_points : Vec.t -> Vec.t -> Vec.t list -> t
   val param_of : t -> Vec.t -> float option
   val are_parallel : t -> t -> bool
@@ -31,9 +31,14 @@ let param_to_point t param = Vec.add t.base (Vec.scale t.offset param)
 let flips_before t param = List.count t.flips ~f:(fun n -> Float.(n < param))
 let start_on t = flips_before t 0. % 2 = 0
 let is_param_on t param = Bool.equal (flips_before t param % 2 = 0) (start_on t)
+let slope_of t = t.offset.y /. t.offset.x
+let angle_of t = Float.atan (slope_of t)
+let flip_points_of t = List.map t.flips ~f:(param_to_point t)
 
 module With_epsilon (Epsilon : Epsilon) = struct
   open Epsilon
+
+  let epsilon = epsilon
 
   let on_line t pt =
     let param = param_of_proj_point t pt in
@@ -58,10 +63,6 @@ module With_epsilon (Epsilon : Epsilon) = struct
     in
     let flips = List.map flip_points ~f:param_of_flip in
     { base; offset; flips }
-
-  let flip_points_of t = List.map t.flips ~f:(param_to_point t)
-  let slope_of t = t.offset.y /. t.offset.x
-  let angle_of t = Float.atan (slope_of t)
 
   let are_parallel t1 t2 =
     General.imp_equals (angle_of t1) (angle_of t2) ~epsilon
