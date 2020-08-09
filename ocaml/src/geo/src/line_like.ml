@@ -3,7 +3,7 @@ open! Base
 type t =
   { pt : Vec.t
   ; dir_vec : Vec.t
-  ; flips : float list
+  ; flips : float list [@sexp.list]
   }
 [@@deriving sexp]
 
@@ -11,7 +11,9 @@ let create pt dir_vec flips = { pt; dir_vec; flips }
 
 (* param_of_proj_point returns a float c, such that pt + c * dir_vec = to
    the given point projected on to the line. *)
-let param_of_proj_point t pt = Vec.dot pt t.dir_vec /. Vec.mag_sq t.dir_vec
+let param_of_proj_point t pt =
+  Vec.dot (Vec.sub pt t.pt) t.dir_vec /. Vec.mag_sq t.dir_vec
+
 let param_to_point t param = Vec.add t.pt (Vec.scale t.dir_vec param)
 let flips_before t param = List.count t.flips ~f:(fun n -> Float.(n < param))
 let start_on t = flips_before t 0. % 2 = 0
