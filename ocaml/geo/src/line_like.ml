@@ -4,26 +4,17 @@ type line = Line [@@deriving sexp]
 type segment = Segment [@@deriving sexp]
 type ray = Ray [@@deriving sexp]
 
-module Kind = struct
-  type _ t =
-    | Line : line t
-    | Segment : segment t
-    | Ray : ray t
-  [@@deriving sexp_of]
-end
-
 type 'a t =
   { base : Vec.t
   ; dir_vec : Vec.t
   ; flips : float list [@sexp.list]
-  ; kind : 'a Kind.t
   }
 [@@deriving sexp_of]
 
 module type Epsilon_dependent = sig
   val epsilon : float
   val on_line : _ t -> Vec.t -> bool
-  val create_w_flip_points : 'a Kind.t -> Vec.t -> Vec.t -> Vec.t list -> 'a t
+  val create_w_flip_points : Vec.t -> Vec.t -> Vec.t list -> 'a t
   val param_of : _ t -> Vec.t -> float option
   val are_parallel : _ t -> _ t -> bool
   val intersection : _ t -> _ t -> Vec.t option
@@ -32,8 +23,6 @@ end
 module type Epsilon = sig
   val epsilon : float
 end
-
-let create kind base dir_vec flips = { base; dir_vec; flips; kind }
 
 (** param_of_proj_point returns a float c, such that base + c * dir_vec = to
     the given point projected on to the line. *)
@@ -64,8 +53,8 @@ module With_epsilon (Epsilon : Epsilon) = struct
 
   exception Bad_line_like_parameter of string
 
-  let create_w_flip_points kind base dir_vec flip_points =
-    let ll_contianer = { base; dir_vec; flips = []; kind } in
+  let create_w_flip_points base dir_vec flip_points =
+    let ll_contianer = { base; dir_vec; flips = [] } in
     let param_of_flip flip_pt =
       match param_of ll_contianer flip_pt with
       | Some t -> t
@@ -75,7 +64,7 @@ module With_epsilon (Epsilon : Epsilon) = struct
              "attempted to initialize line like with flip_pt not on line")
     in
     let flips = List.map flip_points ~f:param_of_flip in
-    { base; dir_vec; flips; kind }
+    { base; dir_vec; flips }
 
   let are_parallel t1 t2 =
     General.imp_equals (angle_of t1) (angle_of t2) ~epsilon
@@ -105,13 +94,13 @@ include With_epsilon (struct
   let epsilon = 0.00001
 end)
 
-let line p1 p2 = create_w_flip_points Kind.Line p1 (Vec.sub p2 p2) []
+let line p1 p2 = create_w_flip_points p1 (Vec.sub p2 p2) []
 
 let line_of_point_angle p angle =
   line p (Vec.add (Vec.rotate (Vec.create 1. 0.) angle) p)
 
 let line_of_point_slope p slope = line_of_point_angle p (Float.atan slope)
-let ray p1 p2 = create_w_flip_points Kind.Ray p2 (Vec.sub p2 p1) [ p1 ]
+let ray p1 p2 = create_w_flip_points p2 (Vec.sub p2 p1) [ p1 ]
 
 let ray_of_point_angle p angle =
   ray p (Vec.add (Vec.rotate (Vec.create 1. 0.) angle) p)
@@ -119,8 +108,4 @@ let ray_of_point_angle p angle =
 let ray_of_point_slope p slope = ray_of_point_angle p (Float.atan slope)
 
 let segment p1 p2 =
-  create_w_flip_points
-    Kind.Segment
-    (Vec.mid_point p1 p2)
-    (Vec.sub p1 p2)
-    [ p1; p2 ]
+  create_w_flip_points (Vec.mid_point p1 p2) (Vec.sub p1 p2) [ p1; p2 ]

@@ -4,19 +4,12 @@ type line = Line [@@deriving sexp]
 type segment = Segment [@@deriving sexp]
 type ray = Ray [@@deriving sexp]
 
-module Kind : sig
-  type _ t =
-    | Line : line t
-    | Segment : segment t
-    | Ray : ray t
-  [@@deriving sexp_of]
-end
-
-type 'a t =
+(** The type parameter here is a phantom type, used to indicate
+    the underlying kind of line-like item this represents *)
+type 'a t = private
   { base : Vec.t
   ; dir_vec : Vec.t
   ; flips : float list
-  ; kind : 'a Kind.t
   }
 [@@deriving sexp_of]
 
@@ -38,7 +31,6 @@ val segment : Vec.t -> Vec.t -> segment t
 
 (** {2 Other operators} *)
 
-val create : 'a Kind.t -> Vec.t -> Vec.t -> float list -> 'a t
 val start_on : _ t -> bool
 val param_of_proj_point : _ t -> Vec.t -> float
 val is_param_on : _ t -> float -> bool
@@ -51,7 +43,7 @@ module type Epsilon_dependent = sig
   val epsilon : float
 
   val on_line : _ t -> Vec.t -> bool
-  val create_w_flip_points : 'a Kind.t -> Vec.t -> Vec.t -> Vec.t list -> 'a t
+  val create_w_flip_points : Vec.t -> Vec.t -> Vec.t list -> 'a t
   val param_of : _ t -> Vec.t -> float option
   val are_parallel : _ t -> _ t -> bool
   val intersection : _ t -> _ t -> Vec.t option
