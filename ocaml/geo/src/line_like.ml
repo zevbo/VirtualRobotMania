@@ -1,8 +1,8 @@
 open! Base
 
-type line = Line
-type segment = Segment
-type ray = Ray
+type line = Line   [@@deriving sexp]
+type segment = Segment   [@@deriving sexp]
+type ray = Ray  [@@deriving sexp]
 
 module Kind = struct
   type _ t =

@@ -1,14 +1,15 @@
 open! Vec
 
-type line = Line
-type segment = Segment
-type ray = Ray
+type line = Line   [@@deriving sexp]
+type segment = Segment   [@@deriving sexp]
+type ray = Ray   [@@deriving sexp]
 
 module Kind : sig
   type _ t =
     | Line : line t
     | Segment : segment t
     | Ray : ray t
+  [@@deriving sexp_of]
 end
 
 type 'a t =
