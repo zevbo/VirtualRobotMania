@@ -1,26 +1,27 @@
 open! Base
 
-type t =
+type 'a t =
   { base : Vec.t
   ; dir_vec : Vec.t
   ; flips : float list [@sexp.list]
+  ; underlying : 'a
   }
 [@@deriving sexp]
 
 module type Epsilon_dependent = sig
   val epsilon : float
-  val on_line : t -> Vec.t -> bool
-  val create_w_flip_points : Vec.t -> Vec.t -> Vec.t list -> t
-  val param_of : t -> Vec.t -> float option
-  val are_parallel : t -> t -> bool
-  val intersection : t -> t -> Vec.t option
+  val on_line : _ t -> Vec.t -> bool
+  val create_w_flip_points : 'a -> Vec.t -> Vec.t -> Vec.t list -> 'a t
+  val param_of : _ t -> Vec.t -> float option
+  val are_parallel : _ t -> _ t -> bool
+  val intersection : _ t -> _ t -> Vec.t option
 end
 
 module type Epsilon = sig
   val epsilon : float
 end
 
-let create base dir_vec flips = { base; dir_vec; flips }
+let create underlying base dir_vec flips = { base; dir_vec; flips; underlying }
 
 (** param_of_proj_point returns a float c, such that base + c * dir_vec = to
     the given point projected on to the line. *)
@@ -51,8 +52,8 @@ module With_epsilon (Epsilon : Epsilon) = struct
 
   exception Bad_line_like_parameter of string
 
-  let create_w_flip_points base dir_vec flip_points =
-    let ll_contianer = { base; dir_vec; flips = [] } in
+  let create_w_flip_points underlying base dir_vec flip_points =
+    let ll_contianer = { base; dir_vec; flips = []; underlying } in
     let param_of_flip flip_pt =
       match param_of ll_contianer flip_pt with
       | Some t -> t
@@ -62,7 +63,7 @@ module With_epsilon (Epsilon : Epsilon) = struct
              "attempted to initialize line like with flip_pt not on line")
     in
     let flips = List.map flip_points ~f:param_of_flip in
-    { base; dir_vec; flips }
+    { base; dir_vec; flips; underlying }
 
   let are_parallel t1 t2 =
     General.imp_equals (angle_of t1) (angle_of t2) ~epsilon

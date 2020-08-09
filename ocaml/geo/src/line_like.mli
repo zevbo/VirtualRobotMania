@@ -1,29 +1,30 @@
 open! Vec
 
-type t =
+type 'a t =
   { base : Vec.t
   ; dir_vec : Vec.t
   ; flips : float list
+  ; underlying : 'a
   }
 [@@deriving sexp]
 
-val create : Vec.t -> Vec.t -> float list -> t
-val start_on : t -> bool
-val param_of_proj_point : t -> Vec.t -> float
-val is_param_on : t -> float -> bool
-val param_to_point : t -> float -> Vec.t
-val flip_points_of : t -> Vec.t list
+val create : 'a -> Vec.t -> Vec.t -> float list -> 'a t
+val start_on : _ t -> bool
+val param_of_proj_point : _ t -> Vec.t -> float
+val is_param_on : _ t -> float -> bool
+val param_to_point : _ t -> float -> Vec.t
+val flip_points_of : _ t -> Vec.t list
 
 (** These functions depend on some epsilon tolerance value *)
 module type Epsilon_dependent = sig
   (** The epsilon used for these functions *)
   val epsilon : float
 
-  val on_line : t -> Vec.t -> bool
-  val create_w_flip_points : Vec.t -> Vec.t -> Vec.t list -> t
-  val param_of : t -> Vec.t -> float option
-  val are_parallel : t -> t -> bool
-  val intersection : t -> t -> Vec.t option
+  val on_line : _ t -> Vec.t -> bool
+  val create_w_flip_points : 'a -> Vec.t -> Vec.t -> Vec.t list -> 'a t
+  val param_of : _ t -> Vec.t -> float option
+  val are_parallel : _ t -> _ t -> bool
+  val intersection : _ t -> _ t -> Vec.t option
 end
 
 (** Here, we default Epsilon to 0.00001 *)

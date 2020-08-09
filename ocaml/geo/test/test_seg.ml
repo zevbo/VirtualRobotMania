@@ -9,13 +9,13 @@ let%expect_test "create and show seg" =
   let show v1 v2 =
     let seg = Line_seg.create v1 v2 in
     let ll = Line_seg.to_ll seg in
-    print_s [%message "" (seg : Line_seg.t) (ll : Line_like.t)]
+    print_s [%sexp (ll : Line_seg.t Line_like.t)]
   in
   show (v 1 1) (v 3 3);
   [%expect
     {|
-    ((seg ((pt1 (1 1)) (pt2 (3 3))))
-     (ll ((base (2 2)) (dir_vec (-2 -2)) (flips (0.5 -0.5))))) |}]
+    ((base (2 2)) (dir_vec (-2 -2)) (flips (0.5 -0.5))
+     (underlying ((pt1 (1 1)) (pt2 (3 3))))) |}]
 
 let%expect_test "intersection" =
   let intersect ll1 ll2 =

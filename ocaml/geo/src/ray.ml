@@ -8,6 +8,7 @@ let create pt_end pt_dir = { pt_end; pt_dir }
 
 let to_ll t =
   Line_like.create_w_flip_points
+    t
     t.pt_dir
     (Vec.sub t.pt_dir t.pt_end)
     [ t.pt_end ]
