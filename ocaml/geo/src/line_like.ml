@@ -89,5 +89,5 @@ module With_epsilon (Epsilon : Epsilon) = struct
 end
 
 include With_epsilon (struct
-    let epsilon = 0.00001
-  end)
+  let epsilon = 0.00001
+end)
