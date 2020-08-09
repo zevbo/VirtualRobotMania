@@ -22,8 +22,8 @@ end
 
 let create base offset flips = { base; offset; flips }
 
-(* param_of_proj_point returns a float c, such that base + c * offset = to
- the given point projected on to the line. *)
+(** param_of_proj_point returns a float c, such that base + c * offset = to
+    the given point projected on to the line. *)
 let param_of_proj_point t pt =
   Vec.dot (Vec.sub pt t.base) t.offset /. Vec.mag_sq t.offset
 
