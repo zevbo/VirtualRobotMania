@@ -9,7 +9,7 @@ type t =
    rather than a record, e.g., ((x 3) (y 4)). *)
 include Sexpable.Of_sexpable
           (struct
-            type t = float * float [@@deriving sexp]
+            type t = Float.Terse.t * Float.Terse.t [@@deriving sexp]
           end)
           (struct
             type nonrec t = t

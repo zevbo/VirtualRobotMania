@@ -1,26 +1,30 @@
 (rule
-  (targets robot_sim.c robot_sim.h robot_sim_bindings.ml)
-  (deps stub_generator/generate.exe)
-  (action (run %{deps} .)))
+ (targets robot_sim.c robot_sim.h robot_sim_bindings.ml)
+ (deps stub_generator/generate.exe)
+ (action
+  (run %{deps} .)))
 
 (rule
-  (copy lib/apply_bindings.ml apply_bindings.ml))
+ (copy bindings/apply_bindings.ml apply_bindings.ml))
 
 (library
-  (name mrobot_sim)
-  (modules robot_sim_bindings apply_bindings)
-  (libraries ctypes.stubs bindings)
-  (foreign_stubs (language c) (names robot_sim))
-  (flags (:standard -w "-27"))
-  (library_flags (:standard -linkall)))
+ (name mrobot_sim)
+ (modules robot_sim_bindings apply_bindings)
+ (libraries ctypes.stubs bindings)
+ (foreign_stubs
+  (language c)
+  (names robot_sim))
+ (flags
+  (:standard -w "-27"))
+ (library_flags
+  (:standard -linkall)))
 
 (executable
-  (name librobot_sim)
-  (modes shared_object)
-  (libraries mrobot_sim)
-  (modules librobot_sim))
+ (name librobot_sim)
+ (modes shared_object)
+ (libraries mrobot_sim)
+ (modules librobot_sim))
 
 (alias
  (name install)
- (deps librobot_sim{ext_dll})
- )
+ (deps librobot_sim{ext_dll}))
