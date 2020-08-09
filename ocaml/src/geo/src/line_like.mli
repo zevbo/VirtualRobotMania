@@ -33,4 +33,6 @@ module type Epsilon = sig
   val epsilon : float
 end
 
+(** Use this functor to instantiate the epsilon-dependent values
+    with a different value for Epsilon. *)
 module With_epsilon (Epsilon : Epsilon) : Epsilon_dependent
