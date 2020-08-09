@@ -1,8 +1,8 @@
 open! Vec
 
 type t =
-  { pt : Vec.t
-  ; dir_vec : Vec.t
+  { base : Vec.t
+  ; offset : Vec.t
   ; flips : float list
   }
 [@@deriving sexp]
