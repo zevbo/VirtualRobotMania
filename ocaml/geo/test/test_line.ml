@@ -8,29 +8,27 @@ let l = Line.create
 let%expect_test "line and line-like" =
   let show v1 v2 =
     let line = l v1 v2 in
-    let like = Line.to_ll line in
-    print_s [%message "" (line : Line.t) (like : Line_like.t)]
+    print_s [%sexp (line : Line.t Line_like.t)]
   in
   show (v 1. 1.) (v 3. 4.);
   [%expect
     {|
-    ((line ((pt1 (1 1)) (pt2 (3 4)))) (like ((base (1 1)) (dir_vec (2 3))))) |}];
+    ((base (1 1)) (dir_vec (2 3)) (underlying ((pt1 (1 1)) (pt2 (3 4))))) |}];
   show (v (-1.) 1.) (v 1. (-1.));
   [%expect
     {|
-    ((line ((pt1 (-1 1)) (pt2 (1 -1)))) (like ((base (-1 1)) (dir_vec (2 -2))))) |}];
+    ((base (-1 1)) (dir_vec (2 -2)) (underlying ((pt1 (-1 1)) (pt2 (1 -1))))) |}];
   show (v 1. (-1.)) (v (-1.) 1.);
   [%expect
     {|
-    ((line ((pt1 (1 -1)) (pt2 (-1 1)))) (like ((base (1 -1)) (dir_vec (-2 2))))) |}];
+    ((base (1 -1)) (dir_vec (-2 2)) (underlying ((pt1 (1 -1)) (pt2 (-1 1))))) |}];
   show (v 3. (-4.)) (v 1. 0.);
   [%expect
     {|
-    ((line ((pt1 (3 -4)) (pt2 (1 0)))) (like ((base (3 -4)) (dir_vec (-2 4))))) |}]
+    ((base (3 -4)) (dir_vec (-2 4)) (underlying ((pt1 (3 -4)) (pt2 (1 0))))) |}]
 
 let%expect_test "param" =
-  let param line p =
-    let ll = Line.to_ll line in
+  let param ll p =
     let pt = Line_like.param_to_point ll p in
     let p' = Line_like.param_of ll pt in
     print_s [%message "" (pt : Vec.t) (p' : Float.Terse.t option)]
@@ -47,8 +45,7 @@ let%expect_test "param" =
   [%expect {| ((pt (-10 -10)) (p' (-1))) |}]
 
 let%expect_test "on line" =
-  let on_line line pt =
-    let ll = Line.to_ll line in
+  let on_line ll pt =
     let param = Line_like.param_of_proj_point ll pt in
     let result = Line_like.on_line ll pt in
     print_s [%message "" (result : bool) (param : float)]
@@ -71,15 +68,16 @@ let%expect_test "on line" =
     [%sexp
       (Vec.dot (v (-1.) 4.) (v (-2.) 8.) /. Vec.mag_sq (v (-2.) 8.) : float)];
   [%expect {| 0.5 |}];
-  print_s [%sexp (Line.to_ll line : Line_like.t)];
-  [%expect {| ((base (3 -4)) (dir_vec (-2 4))) |}];
+  print_s [%sexp (line : Line.t Line_like.t)];
+  [%expect
+    {| ((base (3 -4)) (dir_vec (-2 4)) (underlying ((pt1 (3 -4)) (pt2 (1 0))))) |}];
   (* BUG, seems like it handles the case of a non-uniform line wrong *)
   on_line line (v 2. (-2.));
   [%expect {| ((result true) (param 0.5)) |}]
 
 let%expect_test "intersect" =
-  let l1 = l (v (-1.) (-1.)) (v 1. 1.) |> Line.to_ll in
-  let l2 = l (v (-1.) 1.) (v 1. (-1.)) |> Line.to_ll in
+  let l1 = l (v (-1.) (-1.)) (v 1. 1.) in
+  let l2 = l (v (-1.) 1.) (v 1. (-1.)) in
   let parallel = Line_like.are_parallel l1 l2 in
   let i = Line_like.intersection l1 l2 in
   print_s [%message "" (i : Vec.t option) (parallel : bool)];
