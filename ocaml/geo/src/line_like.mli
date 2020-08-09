@@ -2,7 +2,7 @@ open! Vec
 
 type t =
   { base : Vec.t
-  ; offset : Vec.t
+  ; dir_vec : Vec.t
   ; flips : float list
   }
 [@@deriving sexp]
