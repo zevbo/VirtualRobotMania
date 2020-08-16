@@ -1,5 +1,3 @@
-type t = 
-    | Simple of {drag_c: float; fric_c: float}
+type t = { energy_ret : float }
 
-val drag_c_of : t -> t -> float 
-val fric_c_of : t -> t -> float
+val energy_ret_of : t -> t -> float

@@ -5,4 +5,9 @@ type t =
   ; bounding_box : Square.t
   }
 
-val intersections : t -> t -> Vec.t list
+type intersection =
+  { pt : Vec.t
+  ; energy_ret : float
+  }
+
+val intersections : t -> t -> intersection list
