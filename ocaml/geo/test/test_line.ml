@@ -2,13 +2,13 @@ open! Core_kernel
 open Geo
 
 let v = Vec.create
-let l = Line.create
+let l = Line_like.line
 
 (* This test just shows off the testing infrastructure *)
 let%expect_test "line and line-like" =
   let show v1 v2 =
     let line = l v1 v2 in
-    print_s [%sexp (line : Line.t Line_like.t)]
+    print_s [%sexp (line : Line_like.line Line_like.t)]
   in
   show (v 1. 1.) (v 3. 4.);
   [%expect
@@ -68,7 +68,7 @@ let%expect_test "on line" =
     [%sexp
       (Vec.dot (v (-1.) 4.) (v (-2.) 8.) /. Vec.mag_sq (v (-2.) 8.) : float)];
   [%expect {| 0.5 |}];
-  print_s [%sexp (line : Line.t Line_like.t)];
+  print_s [%sexp (line : Line_like.line Line_like.t)];
   [%expect
     {| ((base (3 -4)) (dir_vec (-2 4)) (underlying ((pt1 (3 -4)) (pt2 (1 0))))) |}];
   (* BUG, seems like it handles the case of a non-uniform line wrong *)

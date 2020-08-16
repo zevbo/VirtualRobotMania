@@ -1,19 +1,28 @@
-(rule (copy ../robot_sim.h robot_sim.h))
+(rule
+ (copy ../robot_sim.h robot_sim.h))
 
 (rule
-  (targets test.o)
-  (deps (:x test.c) robot_sim.h)
-  (action (run %{ocamlc} -c %{x} -o test.o)))
+ (targets test.o)
+ (deps
+  (:x test.c)
+  robot_sim.h)
+ (action
+  (run %{ocamlc} -c %{x} -o test.o)))
 
 (rule
-  (targets test.exe)
-  (deps test.o ../librobot_sim%{ext_dll})
-  (action (run %{cc} -o test.exe test.o -Wl,-rpath .. -L .. -lrobot_sim)))
-
-(rule (copy ../librobot_sim%{ext_dll} librobot_sim%{ext_dll}))
+ (targets test.exe)
+ (deps test.o ../librobot_sim%{ext_dll})
+ (action
+  (run %{cc} -o test.exe test.o -Wl,-rpath .. -L .. -lrobot_sim)))
 
 (rule
-  (targets output)
-  (alias runtest)
-  (deps librobot_sim%{ext_dll} test.exe)
-  (action (with-stdout-to output (run ./test.exe > output))))
+ (copy ../librobot_sim%{ext_dll} librobot_sim%{ext_dll}))
+
+(rule
+ (targets output)
+ (alias runtest)
+ (deps librobot_sim%{ext_dll} test.exe)
+ (action
+  (with-stdout-to
+   output
+   (run ./test.exe > output))))
