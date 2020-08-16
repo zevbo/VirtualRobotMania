@@ -20,4 +20,12 @@ val equals : epsilon:float -> t -> t -> bool
 val rotate : t -> float -> t
 val mid_point : t -> t -> t
 val avg_point : t list -> t
+val angle_of : t -> float
+val angle_between : t -> t -> float
+val angle_with_origin : t -> t -> float
+
+(* Constants *)
+val normal_angle_range : float
+val min_angle : float
+val max_angle : float
 val origin : t
