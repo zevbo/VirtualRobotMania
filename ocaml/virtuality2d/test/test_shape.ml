@@ -1,4 +1,5 @@
-open! Core_kernel
+open! Base
+open Expect_test_helpers_core
 open Geo
 open Virtuality2d
 
@@ -10,4 +11,10 @@ let%expect_test _ =
     }
   in
   print_s [%sexp (s : Shape.t)];
-  [%expect {| ((edges ()) (bounding_box ((width 100) (height 100) (center (10 200))))) |}]
+  [%expect
+    {|
+      ((edges ())
+       (bounding_box (
+         (width  100)
+         (height 100)
+         (center (10 200))))) |}]
