@@ -5,6 +5,7 @@ type t =
   { edges : Edge.t list
   ; bounding_box : Square.t
   }
+[@@deriving sexp_of]
 
 type intersection =
   { pt : Vec.t
@@ -12,6 +13,7 @@ type intersection =
   ; edge_1 : Edge.t
   ; edge_2 : Edge.t
   }
+[@@deriving sexp_of]
 
 (* To do: make sure to shift line_likes *)
 let intersections t1 t2 =

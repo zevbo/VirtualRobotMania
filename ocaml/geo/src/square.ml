@@ -6,6 +6,7 @@ type t =
   ; height : float
   ; center : Vec.t
   }
+[@@deriving sexp_of]
 
 let contains t pt =
   General.imp_equals pt.x t.center.x ~epsilon:(t.width /. 2.)
