@@ -111,3 +111,5 @@ let segment p1 p2 =
   create_w_flip_points (Vec.mid_point p1 p2) (Vec.sub p1 p2) [ p1; p2 ]
 
 let angle_of t = Vec.angle_of t.base
+let get_p1 (t : segment t) = List.nth_exn (flip_points_of t) 0
+let get_p2 (t : segment t) = List.nth_exn (flip_points_of t) 1
