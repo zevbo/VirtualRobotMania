@@ -14,7 +14,7 @@ type t =
   ; air_drag_c : float
   }
 
-val p_of : t -> float
+val p_of : t -> Vec.t
 val momentum_of : t -> Vec.t
 val angular_momentum_of : t -> float
 val apply_tangnetial_forces : t -> t
