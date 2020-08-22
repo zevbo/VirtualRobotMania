@@ -3,6 +3,7 @@
    elastic.*)
 
 type t = { energy_ret : float }
+[@@deriving sexp_of]
 
 (** Determines how elastic a collision is between the two provided materials. *)
 val energy_ret_of : t -> t -> float
