@@ -85,6 +85,8 @@ let p_of t = Vec.scale t.v t.m
 let ke_of t =
   (0.5 *. t.m *. Vec.mag_sq t.v) +. (0.5 *. t.ang_intertia *. (t.omega **. 2.))
 
+(** Takes two bodies, returns the two bodies in the same order as a pair once they have collided.
+ If they are not touching, the same bodies will be returned *)
 let collide t1 t2 =
   (* Not sure how to handle when there are multiple intersections. For the moment, just choosing the first one *)
   match Shape.intersections t1.shape t2.shape with
