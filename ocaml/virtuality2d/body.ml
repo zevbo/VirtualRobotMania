@@ -92,7 +92,6 @@ let collide t1 t2 =
   | inter :: _ ->
     (* calculations done as if the collision point on t1 is standing still *)
     let epsilon = 0.0001 in
-    let mtotal = t1.m +. t2.m in
     let r1 = get_r inter.pt t1 in
     let r2 = get_r inter.pt t2 in
     let v1 = get_v_pt inter.pt t1 in
@@ -136,7 +135,7 @@ let collide t1 t2 =
          +. (Vec.mag r2 *. k2))
     in
     let apply_impulse impulse_mag =
-      let impulse_1 = Vec.scale flat_edge_acc_unit_vec impulse_min_mag in
+      let impulse_1 = Vec.scale flat_edge_acc_unit_vec impulse_mag in
       let impulse_2 = Vec.rotate impulse_1 Float.pi in
       ( apply_impulse_w_global_pos t1 impulse_1 inter.pt
       , apply_impulse_w_global_pos t2 impulse_2 inter.pt )
