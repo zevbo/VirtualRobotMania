@@ -23,7 +23,7 @@ let center_angle = 0.
 let min_angle = center_angle -. (normal_angle_range /. 2.)
 let max_angle = min_angle +. normal_angle_range
 
-let normaize_angle angle =
+let normalize_angle angle =
   let float_modulo n1 n2 =
     let rem = Caml.Float.rem n1 n2 in
     if Float.(rem < 0.) then rem +. n2 else rem
@@ -68,5 +68,5 @@ let avg_point pts =
 let dot t1 t2 = Float.O.((t1.x * t2.x) + (t1.y * t2.y))
 let angle_of t = Float.atan2 t.y t.x
 let angle_between t1 t2 = angle_of (sub t2 t1)
-let angle_with_origin t1 t2 = normaize_angle (angle_of t1 -. angle_of t2)
+let angle_with_origin t1 t2 = normalize_angle (angle_of t1 -. angle_of t2)
 let unit_vec angle = rotate (create 1. 0.) angle
