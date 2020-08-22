@@ -18,7 +18,7 @@ type t =
 let quadratic_formula a b c use_plus =
   let discriminant = (b *. b) -. (4. *. a *. c) in
   let numerator =
-    (if use_plus then (+.) else (-.)) (-.b) (Float.sqrt discriminant)
+    (if use_plus then ( +. ) else ( -. )) (-.b) (Float.sqrt discriminant)
   in
   numerator /. (2. *. a)
 
