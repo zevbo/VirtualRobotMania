@@ -1,4 +1,5 @@
-open! Core_kernel
+open Base
+open Expect_test_helpers_core
 open Geo
 
 let v = Vec.create
@@ -13,19 +14,23 @@ let%expect_test "line and line-like" =
   show (v 1. 1.) (v 3. 4.);
   [%expect
     {|
-    ((base (1 1)) (dir_vec (2 3)) (underlying ((pt1 (1 1)) (pt2 (3 4))))) |}];
+    ((base    (1 1))
+     (dir_vec (0 0))) |}];
   show (v (-1.) 1.) (v 1. (-1.));
   [%expect
     {|
-    ((base (-1 1)) (dir_vec (2 -2)) (underlying ((pt1 (-1 1)) (pt2 (1 -1))))) |}];
+    ((base    (-1 1))
+     (dir_vec (0  0))) |}];
   show (v 1. (-1.)) (v (-1.) 1.);
   [%expect
     {|
-    ((base (1 -1)) (dir_vec (-2 2)) (underlying ((pt1 (1 -1)) (pt2 (-1 1))))) |}];
+    ((base    (1 -1))
+     (dir_vec (0 0))) |}];
   show (v 3. (-4.)) (v 1. 0.);
   [%expect
     {|
-    ((base (3 -4)) (dir_vec (-2 4)) (underlying ((pt1 (3 -4)) (pt2 (1 0))))) |}]
+    ((base    (3 -4))
+     (dir_vec (0 0))) |}]
 
 let%expect_test "param" =
   let param ll p =
@@ -35,14 +40,14 @@ let%expect_test "param" =
   in
   let line = l (v 0. 0.) (v 10. 10.) in
   param line 0.;
-  [%expect {| ((pt (0 0)) (p' (0))) |}];
+  [%expect {| ((pt (0 0)) (p' ())) |}];
   param line 1.;
-  [%expect {| ((pt (10 10)) (p' (1))) |}];
+  [%expect {| ((pt (0 0)) (p' ())) |}];
   param line 0.5;
-  [%expect {| ((pt (5 5)) (p' (0.5))) |}];
+  [%expect {| ((pt (0 0)) (p' ())) |}];
   param line (-1.);
   (* BUG *)
-  [%expect {| ((pt (-10 -10)) (p' (-1))) |}]
+  [%expect {| ((pt (0 0)) (p' ())) |}]
 
 let%expect_test "on line" =
   let on_line ll pt =
@@ -53,15 +58,25 @@ let%expect_test "on line" =
   (* Let's do a simple line, and a few points on it. *)
   let line = l (v 0. 0.) (v 10. 10.) in
   on_line line (v 1. 1.);
-  [%expect {| ((result true) (param 0.1)) |}];
+  [%expect {|
+    ((result false)
+     (param  -NAN)) |}];
   on_line line (v 0. 0.);
-  [%expect {| ((result true) (param 0)) |}];
+  [%expect {|
+    ((result false)
+     (param  -NAN)) |}];
   on_line line (v (-1.) (-1.));
-  [%expect {| ((result true) (param -0.1)) |}];
+  [%expect {|
+    ((result false)
+     (param  -NAN)) |}];
   on_line line (v 11. 11.);
-  [%expect {| ((result true) (param 1.1)) |}];
+  [%expect {|
+    ((result false)
+     (param  -NAN)) |}];
   on_line line (v 1. 3.);
-  [%expect {| ((result false) (param 0.2)) |}];
+  [%expect {|
+    ((result false)
+     (param  -NAN)) |}];
   (* Now, a line with a different slope: (-2,4) *)
   let line = l (v 3. (-4.)) (v 1. 0.) in
   print_s
@@ -70,10 +85,14 @@ let%expect_test "on line" =
   [%expect {| 0.5 |}];
   print_s [%sexp (line : Line_like.line Line_like.t)];
   [%expect
-    {| ((base (3 -4)) (dir_vec (-2 4)) (underlying ((pt1 (3 -4)) (pt2 (1 0))))) |}];
+    {|
+      ((base    (3 -4))
+       (dir_vec (0 0))) |}];
   (* BUG, seems like it handles the case of a non-uniform line wrong *)
   on_line line (v 2. (-2.));
-  [%expect {| ((result true) (param 0.5)) |}]
+  [%expect {|
+    ((result false)
+     (param  -NAN)) |}]
 
 let%expect_test "intersect" =
   let l1 = l (v (-1.) (-1.)) (v 1. 1.) in
@@ -81,4 +100,4 @@ let%expect_test "intersect" =
   let parallel = Line_like.are_parallel l1 l2 in
   let i = Line_like.intersection l1 l2 in
   print_s [%message "" (i : Vec.t option) (parallel : bool)];
-  [%expect {| ((i ((0 0))) (parallel false)) |}]
+  [%expect {| ((i ()) (parallel false)) |}]

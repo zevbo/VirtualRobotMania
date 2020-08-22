@@ -1,4 +1,5 @@
-open! Core_kernel
+open Base
+open Expect_test_helpers_core
 open Geo
 
 let v x y = Vec.create (Int.to_float x) (Int.to_float y)
@@ -13,7 +14,9 @@ let%expect_test "create and show seg" =
   show (v 1 1) (v 3 3);
   [%expect
     {|
-    ((base (2 2)) (dir_vec (-2 -2)) (flips (0.5 -0.5)) (kind Segment)) |}]
+    ((base    (2   2))
+     (dir_vec (-2  -2))
+     (flips   (0.5 -0.5))) |}]
 
 let%expect_test "intersection" =
   let intersect ll1 ll2 =
