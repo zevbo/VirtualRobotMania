@@ -94,7 +94,7 @@ include With_epsilon (struct
   let epsilon = 0.00001
 end)
 
-let line p1 p2 = create_w_flip_points p1 (Vec.sub p2 p2) []
+let line p1 p2 = create_w_flip_points p1 (Vec.sub p2 p1) []
 
 let line_of_point_angle p angle =
   line p (Vec.add (Vec.rotate (Vec.create 1. 0.) angle) p)
