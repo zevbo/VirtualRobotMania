@@ -109,3 +109,5 @@ let ray_of_point_slope p slope = ray_of_point_angle p (Float.atan slope)
 
 let segment p1 p2 =
   create_w_flip_points (Vec.mid_point p1 p2) (Vec.sub p1 p2) [ p1; p2 ]
+
+let angle_of t = Vec.angle_of t.base
