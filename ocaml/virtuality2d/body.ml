@@ -88,8 +88,8 @@ let collide t1 t2 =
     let mtotal = t1.m +. t2.m in
     let v1 = get_v_pt inter.pt t1 in
     let v2 = get_v_pt inter.pt t2 in
-    let corner_1_dist = Shape.closest_dist_from_corner inter inter.edge_1 in
-    let corner_2_dist = Shape.closest_dist_from_corner inter inter.edge_2 in
+    let corner_1_dist = Shape.closest_dist_to_corner inter inter.edge_1 in
+    let corner_2_dist = Shape.closest_dist_to_corner inter inter.edge_2 in
     let flat_edge =
       if corner_1_dist > corner_2_dist then inter.edge_1 else inter.edge_2
     in
