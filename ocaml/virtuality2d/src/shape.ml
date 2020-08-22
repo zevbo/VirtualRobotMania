@@ -7,6 +7,10 @@ type t =
   }
 [@@deriving sexp_of]
 
+let create (edges : Edge.t list ) = 
+  let points = List.fold edges ~init:[] ~f:(fun edge points -> List.cons edge.ls.bounding_box)
+  let xs = 
+
 type intersection =
   { pt : Vec.t
   ; energy_ret : float
