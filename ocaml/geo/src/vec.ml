@@ -69,3 +69,4 @@ let dot t1 t2 = Float.O.((t1.x * t2.x) + (t1.y * t2.y))
 let angle_of t = Float.atan2 t.y t.x
 let angle_between t1 t2 = angle_of (sub t2 t1)
 let angle_with_origin t1 t2 = normaize_angle (angle_of t1 -. angle_of t2)
+let unit_vec angle = rotate (create 1. 0.) angle
