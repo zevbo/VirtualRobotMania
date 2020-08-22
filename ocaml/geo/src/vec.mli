@@ -23,6 +23,7 @@ val avg_point : t list -> t
 val angle_of : t -> float
 val angle_between : t -> t -> float
 val angle_with_origin : t -> t -> float
+val unit_vec : float -> t
 
 (* Constants *)
 val normal_angle_range : float
