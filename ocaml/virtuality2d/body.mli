@@ -18,3 +18,5 @@ val momentum_of : t -> Vec.t
 val angular_momentum_of : t -> float
 val apply_tangnetial_forces : t -> unit
 val collide : t -> t -> unit
+val apply_force : t -> Vec.t -> Vec.t -> unit
+val apply_force_with_global_pos : t -> Vec.t -> Vec.t -> unit

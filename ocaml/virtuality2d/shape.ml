@@ -9,6 +9,8 @@ type t =
 type intersection =
   { pt : Vec.t
   ; energy_ret : float
+  ; edge_1 : Edge.t
+  ; edge_2 : Edge.t
   }
 
 (* To do: make sure to shift line_likes *)
@@ -26,7 +28,16 @@ let intersections t1 t2 =
             Some
               { pt
               ; energy_ret = Material.energy_ret_of e1.material e2.material
+              ; edge_1 = e1
+              ; edge_2 = e2
               }
           | None -> None)
     in
     List.filter_opt intersecting_pairs)
+
+let closest_dist_to_corner inter (edge : Edge.t) =
+  let flip_points = Line_like.flip_points_of edge.ls in
+  let dists =
+    List.map flip_points ~f:(fun flip_point -> Vec.dist inter.pt flip_point)
+  in
+  Float.min (List.nth_exn dists 0) (List.nth_exn dists 1)

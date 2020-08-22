@@ -33,11 +33,16 @@ let apply_pure_torque t torque =
 
 let apply_force t force rel_force_pos =
   apply_com_force t force;
-  (* TODO: add angle_between *)
-  let angle = Vec.angle_between rel_force_pos force in
+  let angle = Vec.angle_with_origin force rel_force_pos in
   let r = Vec.mag rel_force_pos in
   let torque = Vec.mag force *. r *. Float.sin angle in
   apply_pure_torque t torque
+
+let apply_force_with_global_pos t force pos =
+  apply_force t force (Vec.sub pos t.pos)
+
+let apply_impulse t impulse rel_force_pos =
+  apply_force t (Vec.scale impulse (1. /. Consts.dt)) rel_force_pos
 
 (* 
   Currently assuming that friction/drag act essentially indepenedintly on angular and tangential velocity
@@ -60,33 +65,34 @@ let apply_tangnetial_forces t =
     t.v <- Vec.origin;
     t.omega <- 0.)
 
+let get_r pt t = Vec.sub pt t.pos
+
+let get_v_pt pt t =
+  let r = get_r pt t in
+  let v_perp =
+    Vec.scale
+      (* rotating r by pi/2 *)
+      (Vec.to_unit (Vec.rotate r (Float.pi *. 2.)))
+      (t.omega *. Vec.mag r)
+  in
+  Vec.add t.v v_perp
+
 let collide t1 t2 =
   (* Not sure how to handle when there are multiple intersections. For the moment, just choosing the first one *)
   let intersections = Shape.intersections t1.shape t2.shape in
   if List.length intersections > 0
   then (
-    (* calculations done as if t1 is standing still *)
+    (* calculations done as if the collision point on t1 is standing still *)
     let epsilon = 0.00001 in
     let inter = List.nth intersections 0 in
     let mtotal = t1.m +. t2.m in
-    let v2i = Vec.sub t2.v t1.v in
-    let s2i = Vec.mag v2i in
-    let p = s2i *. t2.m in
-    let ei = 0.5 *. t2.m *. s2i *. s2i in
-    let emin = 0.5 *. p *. p /. mtotal in
-    let ef = (inter.energy_ret *. (ei -. emin)) +. emin in
-    (* The following is for calculating the solution to the guadratic formula of s1f *)
-    let s1f_a = t1.m *. (t1.m +. t2.m) in
-    let s1f_b = -2. *. p *. t1.m in
-    let s1f_c = (2. *. t2.m *. ef) -. (p *. p) in
-    (* I don't know if we should be passing true or false to s1f.
-       But what I do know is that one of them will come out the same as the initial s1f (which is 0),
-          so that's how I'm doing it *)
-    let s1f_calculator = quadratic_formula s1f_a s1f_b s1f_c in
-    let s1f_true = s1f_calculator true in
-    let s1f_false = s1f_calculator false in
-    let s1f =
-      if Float.(Float.abs s1f_true < epsilon) then s1f_true else s1f_false
+    let v1 = get_v_pt inter.pt t1 in
+    let v2 = get_v_pt inter.pt t2 in
+    let corner_1_dist = Shape.closest_dist_from_corner inter inter.edge_1 in
+    let corner_2_dist = Shape.closest_dist_from_corner inter inter.edge_2 in
+    let flat_edge =
+      if corner_1_dist > corner_2_dist then inter.edge_1 else inter.edge_2
     in
-    let s2f = (p -. (t1.m *. s1f)) /. t2.m in
+    let force_angle = Line_like.angle_of flat_edge +. (Float.pi /. 2.) in
+    let vPerp1i = Vec.sub t2.v t1.v in
     ())
