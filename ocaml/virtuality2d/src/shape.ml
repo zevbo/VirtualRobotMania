@@ -9,11 +9,18 @@ type t =
 
 let create (edges : Edge.t list) =
   let points =
-    List.fold edges ~init:[] ~f:(fun edge points ->
-        List.cons edge.ls.bounding_box)
+    List.fold edges ~init:[] ~f:(fun points edge ->
+        Line_like.get_p1 edge.ls :: Line_like.get_p2 edge.ls :: points)
   in
-  (* let xs = *)
-  0
+  let xs = List.map points ~f:(fun (p : Vec.t) -> p.x) in
+  let ys = List.map points ~f:(fun (p : Vec.t) -> p.y) in
+  let min_x = List.reduce_exn xs ~f:Float.min in
+  let max_x = List.reduce_exn xs ~f:Float.max in
+  let min_y = List.reduce_exn ys ~f:Float.min in
+  let max_y = List.reduce_exn ys ~f:Float.max in
+  let center = Vec.create ((min_x +. max_x) /. 2.) ((min_y +. max_y) /. 2.) in
+  let bounding_box = Square.create (max_x -. min_x) (max_y -. min_y) center in
+  { edges; bounding_box }
 
 type intersection =
   { pt : Vec.t

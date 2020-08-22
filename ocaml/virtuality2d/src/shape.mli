@@ -6,6 +6,8 @@ type t =
   }
 [@@deriving sexp_of]
 
+val create : Edge.t list -> t
+
 type intersection =
   { pt : Vec.t
   ; energy_ret : float
