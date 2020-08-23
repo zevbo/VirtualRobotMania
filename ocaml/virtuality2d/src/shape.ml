@@ -19,7 +19,7 @@ let create (edges : Edge.t list) =
     (min_val +. max_val) /. 2., max_val -. min_val
   in
   let x_center, x_span = center_and_span Vec.x in
-  let y_center, y_span = center_and_span Vec.x in
+  let y_center, y_span = center_and_span Vec.y in
   let bounding_box =
     Square.create x_span y_span (Vec.create x_center y_center)
   in
