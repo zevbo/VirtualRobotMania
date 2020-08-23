@@ -1,9 +1,9 @@
-open! Geo
+open Geo
 open! Base
 
 type t =
   { edges : Edge.t list
-  ; bounding_box : Square.t
+  ; bounding_box : Rect.t
   }
 [@@deriving sexp_of]
 
@@ -20,9 +20,7 @@ let create (edges : Edge.t list) =
   in
   let x_center, x_span = center_and_span Vec.x in
   let y_center, y_span = center_and_span Vec.y in
-  let bounding_box =
-    Square.create x_span y_span (Vec.create x_center y_center)
-  in
+  let bounding_box = Rect.create x_span y_span (Vec.create x_center y_center) in
   { edges; bounding_box }
 
 type intersection =
@@ -35,9 +33,9 @@ type intersection =
 
 (* To do: make sure to shift line_likes *)
 let intersections t1 t2 =
-  let corners1 = Square.get_corners t1.bounding_box in
+  let corners1 = Rect.get_corners t1.bounding_box in
   if List.exists corners1 ~f:(fun corner ->
-         not (Square.contains t2.bounding_box corner))
+         not (Rect.contains t2.bounding_box corner))
   then []
   else (
     let intersecting_pairs =
