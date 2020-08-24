@@ -23,6 +23,25 @@ let create (edges : Edge.t list) =
   let bounding_box = Rect.create x_span y_span (Vec.create x_center y_center) in
   { edges; bounding_box }
 
+exception Bad_shape_creation of string
+
+let create_closed (points : Vec.t list) material =
+  let make_edge p1 p2 = Edge.create (Line_like.segment p1 p2) material in
+  let rec create_edges points starting_point =
+    match points with
+    | [] -> raise (Failure "empty points")
+    | [ pt ] -> [ make_edge starting_point pt ]
+    | pt1 :: pt2 :: tl ->
+      make_edge pt1 pt2 :: create_edges (pt2 :: tl) starting_point
+  in
+  match points with
+  | [] | [ _ ] | [ _; _ ] ->
+    raise
+      (Bad_shape_creation
+         ("Create_closed constructor given fewer than 3 points. Points: "
+         ^ String.t_of_sexp [%sexp (points : Vec.t list)]))
+  | first_point :: _tl -> create (create_edges points first_point)
+
 type intersection =
   { pt : Vec.t
   ; energy_ret : float

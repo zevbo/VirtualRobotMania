@@ -7,6 +7,7 @@ type t =
 [@@deriving sexp_of]
 
 val create : Edge.t list -> t
+val create_closed : Vec.t list -> Material.t -> t
 
 type intersection =
   { pt : Vec.t

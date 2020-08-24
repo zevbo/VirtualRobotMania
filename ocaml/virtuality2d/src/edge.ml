@@ -5,3 +5,5 @@ type t =
   ; material : Material.t
   }
 [@@deriving sexp_of]
+
+let create ls material = { ls; material }
