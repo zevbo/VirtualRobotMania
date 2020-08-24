@@ -4,7 +4,7 @@ type t =
   { x : float
   ; y : float
   }
-[@@derving fields]
+[@@deriving fields]
 
 (* We make s-expressions look like simple pairs, eg., (3 4), 
    rather than a record, e.g., ((x 3) (y 4)). *)
