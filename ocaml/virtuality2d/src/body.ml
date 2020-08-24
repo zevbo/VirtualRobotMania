@@ -15,6 +15,20 @@ type t =
   ; air_drag_c : float
   }
 
+let create shape m ang_intertia average_r =
+  { shape
+  ; m
+  ; ang_intertia
+  ; average_r
+  ; pos = Vec.origin
+  ; v = Vec.origin
+  ; omega = 0.
+  ; ground_drag_c = 0.
+  ; ground_fric_k_c = 0.
+  ; ground_fric_s_c = 0.
+  ; air_drag_c = 0.
+  }
+
 let quadratic_formula a b c use_plus =
   let discriminant = (b *. b) -. (4. *. a *. c) in
   let numerator =
