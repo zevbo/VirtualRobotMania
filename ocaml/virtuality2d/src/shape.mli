@@ -2,7 +2,7 @@ open! Geo
 
 type t =
   { edges : Edge.t list
-  ; bounding_box : Square.t
+  ; bounding_box : Rect.t
   }
 [@@deriving sexp_of]
 

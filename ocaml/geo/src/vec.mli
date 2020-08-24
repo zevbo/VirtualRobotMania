@@ -3,7 +3,7 @@ type t =
   { x : float
   ; y : float
   }
-[@@derving fields] [@@deriving sexp]
+[@@deriving sexp, fields]
 
 val create : float -> float -> t
 val mag_sq : t -> float
