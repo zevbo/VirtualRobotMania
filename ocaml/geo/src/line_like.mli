@@ -40,6 +40,7 @@ val angle_of : _ t -> float
 val get_p1 : segment t -> Vec.t
 val get_p2 : segment t -> Vec.t
 val shift : 'a t -> Vec.t -> 'a t
+val turn : 'a t -> float -> 'a t
 val rotate : 'a t -> float -> 'a t
 
 (** These functions depend on some epsilon tolerance value *)
