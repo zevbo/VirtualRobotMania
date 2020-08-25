@@ -52,6 +52,27 @@ let quadratic_formula a b c use_plus =
   in
   numerator /. (2. *. a)
 
+type intersection =
+  { pt : Vec.t
+  ; energy_ret : float
+  ; edge_1 : Edge.t
+  ; edge_2 : Edge.t
+  }
+[@@deriving sexp_of]
+
+let intersections t1 t2 =
+  (* create and do_intersect in Line_like and use here *)
+  List.filter_map (List.cartesian_product t1.edges t2.edges) ~f:(fun (e1, e2) ->
+      match Line_like.intersection e1.ls e2.ls with
+      | Some pt ->
+        Some
+          { pt
+          ; energy_ret = Material.energy_ret_of e1.material e2.material
+          ; edge_1 = e1
+          ; edge_2 = e2
+          }
+      | None -> None)
+
 let momentum_of t = Vec.scale t.v t.m
 let angular_momentum_of t = t.omega *. t.ang_intertia
 
