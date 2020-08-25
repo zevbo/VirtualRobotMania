@@ -39,6 +39,8 @@ val flip_points_of : _ t -> Vec.t list
 val angle_of : _ t -> float
 val get_p1 : segment t -> Vec.t
 val get_p2 : segment t -> Vec.t
+val shift : 'a t -> Vec.t -> 'a t
+val rotate : 'a t -> float -> 'a t
 
 (** These functions depend on some epsilon tolerance value *)
 module type Epsilon_dependent = sig

@@ -3,11 +3,7 @@ type t =
   { x : float
   ; y : float
   }
-<<<<<<< HEAD
-[@@deriving fields]
-=======
 [@@deriving sexp, fields]
->>>>>>> virtuality2d
 
 val create : float -> float -> t
 val mag_sq : t -> float
