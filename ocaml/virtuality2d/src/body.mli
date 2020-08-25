@@ -42,3 +42,15 @@ val apply_impulse : t -> Vec.t -> Vec.t -> t
 val apply_impulse_w_global_pos : t -> Vec.t -> Vec.t -> t
 val apply_force : t -> Vec.t -> Vec.t -> float -> t
 val apply_force_w_global_pos : t -> Vec.t -> Vec.t -> float -> t
+val get_edges_w_global_pos : t -> Edge.t list
+
+type intersection =
+  { pt : Vec.t
+  ; energy_ret : float
+  ; edge_1 : Edge.t
+  ; edge_2 : Edge.t
+  }
+[@@deriving sexp_of]
+
+val intersections : t -> t -> intersection list
+val closest_dist_to_corner : intersection -> Edge.t -> float

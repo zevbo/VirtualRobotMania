@@ -51,32 +51,3 @@ let create_rect width height ?(com = Vec.origin) material =
   let br = Vec.create x (-.y) in
   let points = List.map [ tr; tl; bl; br ] ~f:(fun pt -> Vec.sub pt com) in
   create_closed points material
-
-type intersection =
-  { pt : Vec.t
-  ; energy_ret : float
-  ; edge_1 : Edge.t
-  ; edge_2 : Edge.t
-  }
-[@@deriving sexp_of]
-
-(* To do: make sure to shift line_likes *)
-let intersections t1 t2 =
-  (* create and do_intersect in Line_like and use here *)
-  List.filter_map (List.cartesian_product t1.edges t2.edges) ~f:(fun (e1, e2) ->
-      match Line_like.intersection e1.ls e2.ls with
-      | Some pt ->
-        Some
-          { pt
-          ; energy_ret = Material.energy_ret_of e1.material e2.material
-          ; edge_1 = e1
-          ; edge_2 = e2
-          }
-      | None -> None)
-
-let closest_dist_to_corner inter (edge : Edge.t) =
-  let flip_points = Line_like.flip_points_of edge.ls in
-  let dists =
-    List.map flip_points ~f:(fun flip_point -> Vec.dist inter.pt flip_point)
-  in
-  Float.min (List.nth_exn dists 0) (List.nth_exn dists 1)

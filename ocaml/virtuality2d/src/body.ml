@@ -60,9 +60,23 @@ type intersection =
   }
 [@@deriving sexp_of]
 
+let get_edges_w_global_pos t =
+  let to_global_pos t (ls : Line_like.segment Line_like.t) =
+    Line_like.rotate (Line_like.shift ls t.pos) t.angle
+  in
+  let global_edges =
+    List.map t.shape.edges ~f:(fun edge ->
+        { edge with ls = to_global_pos t edge.ls })
+  in
+  global_edges
+
 let intersections t1 t2 =
   (* create and do_intersect in Line_like and use here *)
-  List.filter_map (List.cartesian_product t1.edges t2.edges) ~f:(fun (e1, e2) ->
+  List.filter_map
+    (List.cartesian_product
+       (get_edges_w_global_pos t1)
+       (get_edges_w_global_pos t2))
+    ~f:(fun (e1, e2) ->
       match Line_like.intersection e1.ls e2.ls with
       | Some pt ->
         Some
@@ -72,6 +86,13 @@ let intersections t1 t2 =
           ; edge_2 = e2
           }
       | None -> None)
+
+let closest_dist_to_corner inter (edge : Edge.t) =
+  let flip_points = Line_like.flip_points_of edge.ls in
+  let dists =
+    List.map flip_points ~f:(fun flip_point -> Vec.dist inter.pt flip_point)
+  in
+  Float.min (List.nth_exn dists 0) (List.nth_exn dists 1)
 
 let momentum_of t = Vec.scale t.v t.m
 let angular_momentum_of t = t.omega *. t.ang_intertia
@@ -140,7 +161,7 @@ let ke_of t =
  If they are not touching, the same bodies will be returned *)
 let collide t1 t2 =
   (* Not sure how to handle when there are multiple intersections. For the moment, just choosing the first one *)
-  match Shape.intersections t1.shape t2.shape with
+  match intersections t1 t2 with
   | [] -> t1, t2
   | inter :: _ ->
     (* calculations done as if the collision point on t1 is standing still *)
@@ -149,8 +170,8 @@ let collide t1 t2 =
     let r2 = get_r inter.pt t2 in
     let v1 = get_v_pt inter.pt t1 in
     let v2 = get_v_pt inter.pt t2 in
-    let corner_1_dist = Shape.closest_dist_to_corner inter inter.edge_1 in
-    let corner_2_dist = Shape.closest_dist_to_corner inter inter.edge_2 in
+    let corner_1_dist = closest_dist_to_corner inter inter.edge_1 in
+    let corner_2_dist = closest_dist_to_corner inter inter.edge_2 in
     let is_edge_1_flat = Float.(corner_1_dist > corner_2_dist) in
     let flat_edge = if is_edge_1_flat then inter.edge_1 else inter.edge_2 in
     let force_angle = Line_like.angle_of flat_edge.ls +. (Float.pi /. 2.) in

@@ -36,8 +36,4 @@ let%expect_test _ =
   [%expect {|
     ((width  200)
      (height 0)
-     (center (100 0))) |}];
-  print_s [%sexp (List.length (Shape.intersections s2 s3) : int)];
-  [%expect {| 1 |}];
-  print_s [%sexp ((List.nth_exn (Shape.intersections s2 s3) 0).pt : Vec.t)];
-  [%expect{| (100 0) |}]
+     (center (100 0))) |}]
