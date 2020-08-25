@@ -113,3 +113,5 @@ let segment p1 p2 =
 let angle_of t = Vec.angle_of t.base
 let get_p1 (t : segment t) = List.nth_exn (flip_points_of t) 0
 let get_p2 (t : segment t) = List.nth_exn (flip_points_of t) 1
+let shift t shift_by = { t with base = Vec.add t.base shift_by }
+let rotate t rotate_by = { t with dir_vec = Vec.rotate t.dir_vec rotate_by }
