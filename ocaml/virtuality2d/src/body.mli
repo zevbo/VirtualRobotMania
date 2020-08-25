@@ -22,6 +22,7 @@ val create
   -> float
   -> ?pos:Vec.t
   -> ?v:Vec.t
+  -> ?angle:float
   -> ?omega:float
   -> ?ground_drag_c:float
   -> ?ground_fric_k_c:float
