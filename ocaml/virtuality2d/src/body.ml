@@ -8,25 +8,41 @@ type t =
   ; average_r : float
   ; pos : Vec.t
   ; v : Vec.t
+  ; angle : float
   ; omega : float
   ; ground_drag_c : float
   ; ground_fric_s_c : float
   ; ground_fric_k_c : float
   ; air_drag_c : float
   }
+[@@deriving sexp_of]
 
-let create shape m ang_intertia average_r =
+let create
+    shape
+    m
+    ang_intertia
+    ?(pos = Vec.origin)
+    ?(v = Vec.origin)
+    ?(angle = 0.)
+    ?(omega = 0.)
+    ?(ground_drag_c = 0.)
+    ?(ground_fric_k_c = 0.)
+    ?(ground_fric_s_c = 0.)
+    ?(air_drag_c = 0.)
+    average_r
+  =
   { shape
   ; m
   ; ang_intertia
   ; average_r
-  ; pos = Vec.origin
-  ; v = Vec.origin
-  ; omega = 0.
-  ; ground_drag_c = 0.
-  ; ground_fric_k_c = 0.
-  ; ground_fric_s_c = 0.
-  ; air_drag_c = 0.
+  ; pos
+  ; v
+  ; angle
+  ; omega
+  ; ground_drag_c
+  ; ground_fric_k_c
+  ; ground_fric_s_c
+  ; air_drag_c
   }
 
 let quadratic_formula a b c use_plus =
@@ -39,28 +55,28 @@ let quadratic_formula a b c use_plus =
 let momentum_of t = Vec.scale t.v t.m
 let angular_momentum_of t = t.omega *. t.ang_intertia
 
-let apply_com_force t force =
-  { t with v = Vec.add t.v (Vec.scale force (Consts.dt /. t.m)) }
+let apply_com_impulse t impulse =
+  { t with v = Vec.add t.v (Vec.scale impulse (1. /. t.m)) }
 
-(* Pure torque in this case means no net force on the com *)
-let apply_pure_torque t torque =
-  { t with omega = t.omega +. (torque *. Consts.dt /. t.m) }
-
-let apply_force t force rel_force_pos =
-  let t = apply_com_force t force in
-  let angle = Vec.angle_with_origin force rel_force_pos in
-  let r = Vec.mag rel_force_pos in
-  let torque = Vec.mag force *. r *. Float.sin angle in
-  apply_pure_torque t torque
-
-let apply_force_w_global_pos t force pos =
-  apply_force t force (Vec.sub pos t.pos)
+(* Pure angular_impulse in this case means no net impulse on the com *)
+let apply_pure_angular_impulse t angular_impulse =
+  { t with omega = t.omega +. (angular_impulse /. t.ang_intertia) }
 
 let apply_impulse t impulse rel_force_pos =
-  apply_force t (Vec.scale impulse (1. /. Consts.dt)) rel_force_pos
+  let t = apply_com_impulse t impulse in
+  let angle = Vec.angle_with_origin impulse rel_force_pos in
+  let r = Vec.mag rel_force_pos in
+  let angular_impulse = Vec.mag impulse *. r *. Float.sin angle in
+  apply_pure_angular_impulse t angular_impulse
 
 let apply_impulse_w_global_pos t impulse pos =
   apply_impulse t impulse (Vec.sub pos t.pos)
+
+let apply_force t force rel_force_pos dt =
+  apply_impulse t (Vec.scale force dt) rel_force_pos
+
+let apply_force_w_global_pos t force pos dt =
+  apply_impulse t (Vec.scale force dt) (Vec.sub pos t.pos)
 
 (* 
   Currently assuming that friction/drag act essentially indepenedintly on angular and tangential velocity
