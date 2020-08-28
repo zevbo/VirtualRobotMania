@@ -88,4 +88,11 @@ let%expect_test _ =
         : Vec.t * Vec.t)];
   [%expect {|
     ((-1.7071095  2.0906061E-16)
-     (-0.29289055 0)) |}]
+     (-0.29289055 0)) |}];
+  print_s
+    [%sexp
+      (get_vels (Body.collide b1 { b3 with pos = Vec.create 40.0 100.0 })
+        : Vec.t * Vec.t)];
+  [%expect {|
+    ((-1.9999989     2.4492922E-16)
+     (-1.1402215E-06 0)) |}]

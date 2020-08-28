@@ -50,7 +50,7 @@ let quadratic_formula a b c use_plus =
   let numerator =
     (if use_plus then ( +. ) else ( -. )) (-.b) (Float.sqrt discriminant)
   in
-  numerator
+  numerator /. (2. *. a)
 
 type intersection =
   { pt : Vec.t
@@ -175,6 +175,7 @@ let collide t1 t2 =
     let is_edge_1_flat = Float.(corner_1_dist > corner_2_dist) in
     let flat_edge = if is_edge_1_flat then inter.edge_1 else inter.edge_2 in
     let force_angle = Line_like.angle_of flat_edge.ls +. (Float.pi /. 2.) in
+    (* acc angle for the flat edge *)
     let flat_edge_acc_angle =
       let starting_point_w_buffer =
         Vec.add inter.pt (Vec.scale (Vec.unit_vec force_angle) epsilon)
@@ -187,14 +188,21 @@ let collide t1 t2 =
         Option.is_some (Line_like.intersection edge.ls test_ray)
       in
       if List.length (List.filter ~f:is_hit (get_edges_w_global_pos t)) % 2 = 1
-      then force_angle +. Float.pi
-      else force_angle
+      then force_angle
+      else force_angle +. Float.pi
     in
-    let ei = ke_of t1 +. ke_of t2 in
+    let t1_acc_angle =
+      if is_edge_1_flat
+      then flat_edge_acc_angle
+      else flat_edge_acc_angle +. Float.pi
+    in
+    let t2_acc_angle = t1_acc_angle -. Float.pi in
+    let t1_acc_unit_vec = Vec.unit_vec t1_acc_angle in
+    let t2_acc_unit_vec = Vec.unit_vec t2_acc_angle in
     (* perp velocity of the intersection points *)
-    let flat_edge_acc_unit_vec = Vec.unit_vec flat_edge_acc_angle in
-    let s1 = Vec.dot v1 flat_edge_acc_unit_vec in
-    let s2 = Vec.dot v2 flat_edge_acc_unit_vec in
+    let s1 = Vec.dot v1 t2_acc_unit_vec in
+    let s2 = Vec.dot v2 t2_acc_unit_vec in
+    let ei = ke_of t1 +. ke_of t2 in
     let get_k_of t r =
       Vec.mag r *. Float.sin (Vec.angle_of r) /. t.ang_intertia
     in
@@ -209,8 +217,8 @@ let collide t1 t2 =
          +. (Vec.mag r2 *. k2))
     in
     let apply_impulse impulse_mag =
-      let impulse_1 = Vec.scale flat_edge_acc_unit_vec impulse_mag in
-      let impulse_2 = Vec.rotate impulse_1 Float.pi in
+      let impulse_1 = Vec.scale t1_acc_unit_vec impulse_mag in
+      let impulse_2 = Vec.scale t2_acc_unit_vec impulse_mag in
       ( apply_impulse_w_global_pos t1 impulse_1 inter.pt
       , apply_impulse_w_global_pos t2 impulse_2 inter.pt )
     in
@@ -221,7 +229,7 @@ let collide t1 t2 =
     let e_min_2 = ke_of t2_with_impulse_min in
     let e_min = e_min_1 +. e_min_2 in
     let e_final = (inter.energy_ret *. (ei -. e_min)) +. e_min in
-    (* Link to math: https://www.wolframalpha.com/input/?i=E+%3D+0.5%28m+*+%28v+%2B+x%2Fm%29%5E2+%2B+M+*+%28V+%2B+x%2FM%29%5E2+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+%2B+x+*+K%29%5E2%29%2C+solve+for+x *)
+    (* Link to math: https://www.wolframalpha.com/input/?i=E+%3D+0.5%28m+*+%28v+%2B+x%2Fm%29%5E2+%2B+M+*+%28V+-+x%2FM%29%5E2+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+-+x+*+K%29%5E2%29%2C+solve+for+x *)
     let impulse_a =
       0.5
       *. ((t1.ang_intertia *. (k1 **. 2.))
@@ -231,9 +239,9 @@ let collide t1 t2 =
     in
     let impulse_b =
       (t1.ang_intertia *. k1 *. t1.omega)
-      +. (t2.ang_intertia *. k2 *. t2.omega)
+      -. (t2.ang_intertia *. k2 *. t2.omega)
       +. Vec.mag t1.v
-      +. Vec.mag t2.v
+      -. Vec.mag t2.v
     in
     let impulse_c =
       (0.5
@@ -244,5 +252,7 @@ let collide t1 t2 =
       -. e_final
     in
     (* Not sure if it is always + for the +/- in the quad formula *)
-    let impulse_mag = quadratic_formula impulse_a impulse_b impulse_c false in
+    let impulse_mag = quadratic_formula impulse_a impulse_b impulse_c true in
     apply_impulse impulse_mag
+
+(* apply_impulse impulse_mag *)
