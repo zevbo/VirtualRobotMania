@@ -45,9 +45,9 @@ let create_closed (points : Vec.t list) material =
 let create_rect width height ?(com = Vec.origin) material =
   let x = width /. 2. in
   let y = height /. 2. in
-  let tr = Vec.create x y in
   let tl = Vec.create (-.x) y in
-  let bl = Vec.create (-.x) (-.y) in
+  let tr = Vec.create x y in
   let br = Vec.create x (-.y) in
-  let points = List.map [ tr; tl; bl; br ] ~f:(fun pt -> Vec.sub pt com) in
+  let bl = Vec.create (-.x) (-.y) in
+  let points = List.map [ tl; tr; br; bl ] ~f:(fun pt -> Vec.sub pt com) in
   create_closed points material

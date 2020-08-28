@@ -50,7 +50,7 @@ let quadratic_formula a b c use_plus =
   let numerator =
     (if use_plus then ( +. ) else ( -. )) (-.b) (Float.sqrt discriminant)
   in
-  numerator /. (2. *. a)
+  numerator
 
 type intersection =
   { pt : Vec.t
@@ -62,7 +62,7 @@ type intersection =
 
 let get_edges_w_global_pos t =
   let to_global_pos t (ls : Line_like.segment Line_like.t) =
-    Line_like.rotate (Line_like.shift ls t.pos) t.angle
+    Line_like.shift (Line_like.rotate ls t.angle) t.pos
   in
   let global_edges =
     List.map t.shape.edges ~f:(fun edge ->
@@ -182,11 +182,11 @@ let collide t1 t2 =
       let test_ray =
         Line_like.ray_of_point_angle starting_point_w_buffer force_angle
       in
-      let shape = if is_edge_1_flat then t1.shape else t2.shape in
+      let t = if is_edge_1_flat then t1 else t2 in
       let is_hit (edge : Edge.t) =
         Option.is_some (Line_like.intersection edge.ls test_ray)
       in
-      if List.length (List.filter ~f:is_hit shape.edges) % 2 = 1
+      if List.length (List.filter ~f:is_hit (get_edges_w_global_pos t)) % 2 = 1
       then force_angle +. Float.pi
       else force_angle
     in
@@ -244,5 +244,5 @@ let collide t1 t2 =
       -. e_final
     in
     (* Not sure if it is always + for the +/- in the quad formula *)
-    let impulse_mag = quadratic_formula impulse_a impulse_b impulse_c true in
+    let impulse_mag = quadratic_formula impulse_a impulse_b impulse_c false in
     apply_impulse impulse_mag
