@@ -5,6 +5,8 @@ open Virtuality2d
 
 let%expect_test _ =
   let s1 = Shape.create_rect 100. 100. (Material.create 1.) in
+  let s2 = Shape.create_rect 100. 100. (Material.create 0.) in
+  let s3 = Shape.create_rect 100. 100. (Material.create 0.5) in
   let b1 = Body.create s1 1. 200. 25. in
   let b2 =
     Body.create
@@ -16,7 +18,7 @@ let%expect_test _ =
       ~angle:(-0.1)
       25.
   in
-  let b3 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 120. 0. } in
+  let b3 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 120.7 0. } in
   print_s [%sexp ((Body.apply_com_impulse b1 (Vec.create 0. 1.)).v : Vec.t)];
   [%expect {| (0 1) |}];
   print_s [%sexp ((Body.apply_pure_angular_impulse b1 100.).omega : float)];
@@ -62,6 +64,28 @@ let%expect_test _ =
     [%sexp
       (List.map (Body.intersections b1 b3) ~f:(fun inter -> inter.pt)
         : Vec.t list)];
-  [%expect];
-  print_s [%sexp (Body.collide b1 b3 : Body.t * Body.t)];
-  [%expect]
+  [%expect {|
+    ((50 0.010678119)
+     (50 -0.010678119)) |}];
+  let get_vels (bodies : Body.t * Body.t) =
+    match bodies with
+    | body1, body2 -> body1.v, body2.v
+  in
+  print_s [%sexp (get_vels (Body.collide b1 b3) : Vec.t * Vec.t)];
+  [%expect {|
+    ((-1.9999989     2.4492922E-16)
+     (-1.1402215E-06 0)) |}];
+  print_s
+    [%sexp
+      (get_vels (Body.collide { b1 with shape = s2 } { b3 with shape = s2 })
+        : Vec.t * Vec.t)];
+  [%expect {|
+    ((-1.0032106  1.2285787E-16)
+     (-0.99678937 0)) |}];
+  print_s
+    [%sexp
+      (get_vels (Body.collide { b1 with shape = s3 } { b3 with shape = s3 })
+        : Vec.t * Vec.t)];
+  [%expect {|
+    ((-1.7071095  2.0906061E-16)
+     (-0.29289055 0)) |}]
