@@ -34,7 +34,13 @@ let flips_before t param = List.count t.flips ~f:(fun n -> Float.(n < param))
 let start_on t = flips_before t 0. % 2 = 0
 let is_param_on t param = Bool.equal (flips_before t param % 2 = 0) (start_on t)
 let slope_of t = t.dir_vec.y /. t.dir_vec.x
-let angle_of t = Float.atan (slope_of t)
+
+let angle_of t =
+  Vec.normalize_angle
+    ~min_angle:(Float.pi /. -2.)
+    ~max_angle:(Float.pi /. 2.)
+    (Vec.angle_of t.dir_vec)
+
 let flip_points_of t = List.map t.flips ~f:(param_to_point t)
 
 module With_epsilon (Epsilon : Epsilon) = struct
@@ -110,7 +116,6 @@ let ray_of_point_slope p slope = ray_of_point_angle p (Float.atan slope)
 let segment p1 p2 =
   create_w_flip_points (Vec.mid_point p1 p2) (Vec.sub p1 p2) [ p1; p2 ]
 
-let angle_of t = Vec.angle_of t.base
 let get_p1 (t : segment t) = List.nth_exn (flip_points_of t) 0
 let get_p2 (t : segment t) = List.nth_exn (flip_points_of t) 1
 let shift t shift_by = { t with base = Vec.add t.base shift_by }

@@ -12,23 +12,19 @@ let%expect_test "line and line-like" =
     print_s [%sexp (line : Line_like.line Line_like.t)]
   in
   show (v 1. 1.) (v 3. 4.);
-  [%expect
-    {|
+  [%expect {|
     ((base    (1 1))
      (dir_vec (2 3))) |}];
   show (v (-1.) 1.) (v 1. (-1.));
-  [%expect
-    {|
+  [%expect {|
     ((base    (-1 1))
      (dir_vec (2  -2))) |}];
   show (v 1. (-1.)) (v (-1.) 1.);
-  [%expect
-    {|
+  [%expect {|
     ((base    (1  -1))
      (dir_vec (-2 2))) |}];
   show (v 3. (-4.)) (v 1. 0.);
-  [%expect
-    {|
+  [%expect {|
     ((base    (3  -4))
      (dir_vec (-2 4))) |}]
 
@@ -84,8 +80,7 @@ let%expect_test "on line" =
       (Vec.dot (v (-1.) 4.) (v (-2.) 8.) /. Vec.mag_sq (v (-2.) 8.) : float)];
   [%expect {| 0.5 |}];
   print_s [%sexp (line : Line_like.line Line_like.t)];
-  [%expect
-    {|
+  [%expect {|
       ((base    (3  -4))
        (dir_vec (-2 4))) |}];
   (* BUG, seems like it handles the case of a non-uniform line wrong *)
@@ -101,3 +96,22 @@ let%expect_test "intersect" =
   let i = Line_like.intersection l1 l2 in
   print_s [%message "" (i : Vec.t option) (parallel : bool)];
   [%expect {| ((i ((0 0))) (parallel false)) |}]
+
+let%expect_test "basic line info" =
+  let l1 = Line_like.segment (v 0. 0.) (v 2. 0.) in
+  let l2 =
+    Line_like.rotate (Line_like.segment (v 0. 0.) (v 2. 0.)) (Float.pi /. 6.)
+  in
+  let l3 = Line_like.segment (v 1. 1.) (v 1. (-3.)) in
+  print_s [%sexp (Line_like.slope_of l1 : float)];
+  [%expect {| -0 |}];
+  print_s [%sexp (Line_like.slope_of l2 : float)];
+  [%expect {| 0.57735026918962562 |}];
+  print_s [%sexp (Line_like.slope_of l3 : float)];
+  [%expect {| INF |}];
+  print_s [%sexp (Line_like.angle_of l1 : float)];
+  [%expect {| 0 |}];
+  print_s [%sexp (Line_like.angle_of l2 : float)];
+  [%expect {| 0.5235987755982987 |}];
+  print_s [%sexp (Line_like.angle_of l3 : float)];
+  [%expect {| -1.5707963267948966 |}]

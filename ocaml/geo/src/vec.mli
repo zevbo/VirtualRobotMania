@@ -24,6 +24,7 @@ val angle_of : t -> float
 val angle_between : t -> t -> float
 val angle_with_origin : t -> t -> float
 val unit_vec : float -> t
+val normalize_angle : ?min_angle:float -> ?max_angle:float -> float -> float
 
 (* Constants *)
 val normal_angle_range : float

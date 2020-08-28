@@ -36,6 +36,7 @@ val param_of_proj_point : _ t -> Vec.t -> float
 val is_param_on : _ t -> float -> bool
 val param_to_point : _ t -> float -> Vec.t
 val flip_points_of : _ t -> Vec.t list
+val slope_of : _ t -> float
 val angle_of : _ t -> float
 val get_p1 : segment t -> Vec.t
 val get_p2 : segment t -> Vec.t
