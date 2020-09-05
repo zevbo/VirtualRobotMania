@@ -3,22 +3,24 @@ open Expect_test_helpers_core
 open Geo
 open Virtuality2d
 
-let%expect_test _ =
-  let s1 = Shape.create_rect 100. 100. (Material.create 1.) in
-  let s2 = Shape.create_rect 100. 100. (Material.create 0.) in
-  let s3 = Shape.create_rect 100. 100. (Material.create 0.5) in
-  let b1 = Body.create s1 1. 200. 25. in
-  let b2 =
-    Body.create
-      s1
-      1.
-      200.
-      ~v:(Vec.create (-2.) 0.)
-      ~pos:(Vec.create 100. 0.)
-      ~angle:(-0.1)
-      25.
-  in
-  let b3 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 120.7 0. } in
+let s1 = Shape.create_rect 100. 100. (Material.create 1.)
+let s2 = Shape.create_rect 100. 100. (Material.create 0.)
+let s3 = Shape.create_rect 100. 100. (Material.create 0.5)
+let b1 = Body.create s1 1. 200. 25.
+
+let b2 =
+  Body.create
+    s1
+    1.
+    200.
+    ~v:(Vec.create (-2.) 0.)
+    ~pos:(Vec.create 100. 0.)
+    ~angle:(-0.1)
+    25.
+
+let b3 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 120.7 0. }
+
+let%expect_test "impulses" =
   print_s [%sexp ((Body.apply_com_impulse b1 (Vec.create 0. 1.)).v : Vec.t)];
   [%expect {| (0 1) |}];
   print_s [%sexp ((Body.apply_pure_angular_impulse b1 100.).omega : float)];
@@ -27,7 +29,9 @@ let%expect_test _ =
     [%sexp
       ((Body.apply_impulse b1 (Vec.create 0. 1.) (Vec.create 20. 0.)).omega
         : float)];
-  [%expect {| 0.1 |}];
+  [%expect {| 0.1 |}]
+
+let%expect_test "intersections" =
   print_s
     [%sexp
       (List.map (Body.get_edges_w_global_pos b2) ~f:(fun edge -> edge.ls)
@@ -66,7 +70,9 @@ let%expect_test _ =
         : Vec.t list)];
   [%expect {|
     ((50 0.010678119)
-     (50 -0.010678119)) |}];
+     (50 -0.010678119)) |}]
+
+let%expect_test "collisions" =
   let get_vels (bodies : Body.t * Body.t) =
     match bodies with
     | body1, body2 -> body1.v, body2.v
@@ -113,14 +119,14 @@ let%expect_test _ =
          { b3 with pos = Vec.create 120. 40.0; shape = s2 })
   in
   print_s [%sexp (get_v_pt collided_bodies_1 : float * float)];
-  [%expect{| (1.805132940270928 1.8051328614213928) |}];
+  [%expect {| (1.805132940270928 1.8051328614213928) |}];
   print_s [%sexp (collided_bodies_1.t1.omega : float)];
-  [%expect{| 0.039565950208509927 |}];
+  [%expect {| 0.039565950208509927 |}];
   print_s
     [%sexp
       (get_vels (collided_bodies_1.t1, collided_bodies_1.t2) : Vec.t * Vec.t)];
-  [%expect{|
+  [%expect {|
     ((-0.19437628 2.3804229E-17)
      (-1.8056237  0)) |}];
   print_s [%sexp (collided_bodies_1.impulse_pt : Vec.t)];
-  [%expect{| (50 40.710678) |}]
+  [%expect {| (50 40.710678) |}]
