@@ -35,7 +35,6 @@ val p_of : t -> Vec.t
 val momentum_of : t -> Vec.t
 val angular_momentum_of : t -> float
 val apply_tangnetial_forces : t -> t
-val collide : t -> t -> t * t
 val apply_com_impulse : t -> Vec.t -> t
 val apply_pure_angular_impulse : t -> float -> t
 val apply_impulse : t -> Vec.t -> Vec.t -> t
@@ -43,6 +42,7 @@ val apply_impulse_w_global_pos : t -> Vec.t -> Vec.t -> t
 val apply_force : t -> Vec.t -> Vec.t -> float -> t
 val apply_force_w_global_pos : t -> Vec.t -> Vec.t -> float -> t
 val get_edges_w_global_pos : t -> Edge.t list
+val get_v_pt : t -> Vec.t -> Vec.t
 
 type intersection =
   { pt : Vec.t
@@ -54,3 +54,16 @@ type intersection =
 
 val intersections : t -> t -> intersection list
 val closest_dist_to_corner : intersection -> Edge.t -> float
+
+type collision =
+  { t1 : t
+  ; t2 : t
+  ; impulse_pt : Vec.t
+  ; t1_acc_angle : float
+  ; impulse_mag : float
+  ; debug : float
+  }
+[@@deriving sexp_of]
+
+val get_collision : t -> t -> collision Option.t
+val collide : t -> t -> t * t

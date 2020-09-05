@@ -140,14 +140,14 @@ let apply_tangnetial_forces t =
   then { t with v = Vec.origin; omega = 0. }
   else t
 
-let get_r pt t = Vec.sub pt t.pos
+let get_r t pt = Vec.sub pt t.pos
 
-let get_v_pt pt t =
-  let r = get_r pt t in
+let get_v_pt t pt =
+  let r = get_r t pt in
   let v_perp =
     Vec.scale
       (* rotating r by pi/2 *)
-      (Vec.to_unit (Vec.rotate r (Float.pi *. 2.)))
+      (Vec.to_unit (Vec.rotate r (Float.pi /. 2.)))
       (t.omega *. Vec.mag r)
   in
   Vec.add t.v v_perp
@@ -157,19 +157,29 @@ let p_of t = Vec.scale t.v t.m
 let ke_of t =
   (0.5 *. t.m *. Vec.mag_sq t.v) +. (0.5 *. t.ang_intertia *. (t.omega **. 2.))
 
+type collision =
+  { t1 : t
+  ; t2 : t
+  ; impulse_pt : Vec.t
+  ; t1_acc_angle : float
+  ; impulse_mag : float
+  ; debug : float
+  }
+[@@deriving sexp_of]
+
 (** Takes two bodies, returns the two bodies in the same order as a pair once they have collided.
  If they are not touching, the same bodies will be returned *)
-let collide t1 t2 =
+let get_collision t1 t2 =
   (* Not sure how to handle when there are multiple intersections. For the moment, just choosing the first one *)
   match intersections t1 t2 with
-  | [] -> t1, t2
+  | [] -> None
   | inter :: _ ->
     (* calculations done as if the collision point on t1 is standing still *)
     let epsilon = 0.0001 in
-    let r1 = get_r inter.pt t1 in
-    let r2 = get_r inter.pt t2 in
-    let v1 = get_v_pt inter.pt t1 in
-    let v2 = get_v_pt inter.pt t2 in
+    let r1 = get_r t1 inter.pt in
+    let r2 = get_r t2 inter.pt in
+    let v1 = get_v_pt t1 inter.pt in
+    let v2 = get_v_pt t2 inter.pt in
     let corner_1_dist = closest_dist_to_corner inter inter.edge_1 in
     let corner_2_dist = closest_dist_to_corner inter inter.edge_2 in
     let is_edge_1_flat = Float.(corner_1_dist > corner_2_dist) in
@@ -203,8 +213,10 @@ let collide t1 t2 =
     let s1 = Vec.dot v1 t2_acc_unit_vec in
     let s2 = Vec.dot v2 t2_acc_unit_vec in
     let ei = ke_of t1 +. ke_of t2 in
+    (* the theta in torque = F * r * sin(theta). Need a better name *)
+    let get_torque_theta_of r = t1_acc_angle -. Vec.angle_of r in
     let get_k_of t r =
-      Vec.mag r *. Float.sin (Vec.angle_of r) /. t.ang_intertia
+      Vec.mag r *. Float.sin (get_torque_theta_of r) /. t.ang_intertia
     in
     let k1 = get_k_of t1 r1 in
     let k2 = get_k_of t2 r2 in
@@ -213,8 +225,8 @@ let collide t1 t2 =
       (s1 -. s2)
       /. ((1. /. t1.m)
          +. (1. /. t2.m)
-         +. (Vec.mag r1 *. k1)
-         +. (Vec.mag r2 *. k2))
+         +. (Vec.mag r1 *. k1 *. Float.sin (get_torque_theta_of r1))
+         +. (Vec.mag r2 *. k2 *. Float.sin (get_torque_theta_of r2)))
     in
     let apply_impulse impulse_mag =
       let impulse_1 = Vec.scale t1_acc_unit_vec impulse_mag in
@@ -225,6 +237,11 @@ let collide t1 t2 =
     let t1_with_impulse_min, t2_with_impulse_min =
       apply_impulse impulse_min_mag
     in
+    let get_v_pt t impulse_pt t1_acc_angle =
+      Vec.dot (get_v_pt t impulse_pt) (Vec.unit_vec t1_acc_angle)
+    in
+    let debug = get_v_pt t2_with_impulse_min inter.pt t1_acc_angle in
+    (* e_min is wrong *)
     let e_min_1 = ke_of t1_with_impulse_min in
     let e_min_2 = ke_of t2_with_impulse_min in
     let e_min = e_min_1 +. e_min_2 in
@@ -252,7 +269,21 @@ let collide t1 t2 =
       -. e_final
     in
     (* Not sure if it is always + for the +/- in the quad formula *)
+    (* Otherwise seems that this is right *)
     let impulse_mag = quadratic_formula impulse_a impulse_b impulse_c true in
-    apply_impulse impulse_mag
+    let t1_final, t2_final = apply_impulse impulse_mag in
+    Some
+      { t1 = t1_final
+      ; t2 = t2_final
+      ; impulse_pt = inter.pt
+      ; t1_acc_angle
+      ; impulse_mag
+      ; debug
+      }
 
-(* apply_impulse impulse_mag *)
+let collide t1 t2 =
+  match get_collision t1 t2 with
+  | None -> t1, t2
+  | Some
+      { t1; t2; impulse_pt = _; t1_acc_angle = _; impulse_mag = _; debug = _ }
+    -> t1, t2

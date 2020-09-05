@@ -80,19 +80,47 @@ let%expect_test _ =
       (get_vels (Body.collide { b1 with shape = s2 } { b3 with shape = s2 })
         : Vec.t * Vec.t)];
   [%expect {|
-    ((-1.0032106  1.2285787E-16)
-     (-0.99678937 0)) |}];
+    ((-0.99999944 1.2246461E-16)
+     (-1.0000006  0)) |}];
   print_s
     [%sexp
       (get_vels (Body.collide { b1 with shape = s3 } { b3 with shape = s3 })
         : Vec.t * Vec.t)];
   [%expect {|
-    ((-1.7071095  2.0906061E-16)
-     (-0.29289055 0)) |}];
+    ((-1.7071058  2.0906017E-16)
+     (-0.29289419 0)) |}];
   print_s
     [%sexp
-      (get_vels (Body.collide b1 { b3 with pos = Vec.create 40.0 100.0 })
-        : Vec.t * Vec.t)];
+      (List.map
+         ~f:(fun inter -> inter.pt)
+         (Body.intersections b1 { b3 with pos = Vec.create 120.7 40.0 })
+        : Vec.t list)];
   [%expect {|
-    ((-1.9999989     2.4492922E-16)
-     (-1.1402215E-06 0)) |}]
+    ((50 40.010678)
+     (50 39.989322)) |}];
+  let get_v_pt (collision : Body.collision) =
+    match collision with
+    | { t1; t2; impulse_pt; t1_acc_angle; impulse_mag = _; debug = _ } ->
+      let calculate t =
+        Vec.dot (Body.get_v_pt t impulse_pt) (Vec.unit_vec t1_acc_angle)
+      in
+      calculate t1, calculate t2
+  in
+  let collided_bodies_1 =
+    Option.value_exn
+      (Body.get_collision
+         { b1 with shape = s2 }
+         { b3 with pos = Vec.create 120. 40.0; shape = s2 })
+  in
+  print_s [%sexp (get_v_pt collided_bodies_1 : float * float)];
+  [%expect{| (1.805132940270928 1.8051328614213928) |}];
+  print_s [%sexp (collided_bodies_1.t1.omega : float)];
+  [%expect{| 0.039565950208509927 |}];
+  print_s
+    [%sexp
+      (get_vels (collided_bodies_1.t1, collided_bodies_1.t2) : Vec.t * Vec.t)];
+  [%expect{|
+    ((-0.19437628 2.3804229E-17)
+     (-1.8056237  0)) |}];
+  print_s [%sexp (collided_bodies_1.impulse_pt : Vec.t)];
+  [%expect{| (50 40.710678) |}]
