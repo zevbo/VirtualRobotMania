@@ -281,9 +281,17 @@ let get_collision t1 t2 =
       ; debug
       }
 
-let collide t1 t2 =
+let advance t dt =
+  { t with
+    pos = Vec.add t.pos (Vec.scale t.v dt)
+  ; angle = t.angle +. (t.omega *. dt)
+  }
+
+let collide_advance t1 t2 dt =
   match get_collision t1 t2 with
   | None -> t1, t2
   | Some
       { t1; t2; impulse_pt = _; t1_acc_angle = _; impulse_mag = _; debug = _ }
-    -> t1, t2
+    -> advance t1 dt, advance t2 dt
+
+let collide t1 t2 = collide_advance t1 t2 0.

@@ -67,3 +67,5 @@ type collision =
 
 val get_collision : t -> t -> collision Option.t
 val collide : t -> t -> t * t
+val advance : t -> float -> t
+val collide_advance : t -> t -> float -> t * t
