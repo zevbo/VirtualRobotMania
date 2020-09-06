@@ -65,7 +65,7 @@ type collision =
   }
 [@@deriving sexp_of]
 
-val get_collision : t -> t -> collision Option.t
+val get_collision : t -> t -> collision option
 
 (** Takes two bodies, returns the two bodies in the same order as a pair once
     they have collided. If they are not touching, the same bodies will be
