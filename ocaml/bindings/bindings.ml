@@ -1,7 +1,7 @@
 open Ctypes
 
-(** This is the file where we expose the functions we want to allow to
-   be called from Racket.  *)
+(** This is the file where we expose the functions we want to allow to be called
+    from Racket. *)
 
 module Stubs (I : Cstubs_inverted.INTERNAL) = struct
   let () =

@@ -66,6 +66,11 @@ type collision =
 [@@deriving sexp_of]
 
 val get_collision : t -> t -> collision Option.t
+
+(** Takes two bodies, returns the two bodies in the same order as a pair once
+    they have collided. If they are not touching, the same bodies will be
+    returned *)
 val collide : t -> t -> t * t
+
 val advance : t -> float -> t
 val collide_advance : t -> t -> float -> t * t

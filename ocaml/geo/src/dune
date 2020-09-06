@@ -1,5 +1,5 @@
 (library
  (name geo)
- (libraries core)
+ (libraries base)
  (preprocess
   (pps ppx_jane)))

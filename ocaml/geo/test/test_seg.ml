@@ -33,8 +33,8 @@ let%expect_test "intersection" =
   intersect (s (v 0 0) (Vec.create 5.01 5.01)) (s (v 10 0) (v 0 10));
   [%expect {| ((5 5)) |}];
   intersect (s (v 0 0) (Vec.create 5. 5.)) (s (v 10 0) (v 0 10));
-  (* Mildly surprising that this doesn't cause an intersection,
-     but not a big deal *)
+  (* Mildly surprising that this doesn't cause an intersection, but not a big
+     deal *)
   [%expect {| () |}];
   (* We can also intersect a ray and a segment. *)
   intersect (s (v 10 0) (v 0 10)) (r (v 0 0) (v 1 1));
