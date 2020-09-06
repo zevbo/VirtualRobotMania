@@ -1,4 +1,4 @@
 type t = { bodies : Body.t list }
 
-val collide_bodies : t -> t
-val advance : t -> t
+val collide_bodies : Body.t list -> Body.t list
+val advance : t -> float -> t
