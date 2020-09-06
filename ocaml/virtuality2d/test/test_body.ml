@@ -3,9 +3,9 @@ open Expect_test_helpers_core
 open Geo
 open Virtuality2d
 
-let s1 = Shape.create_rect 100. 100. (Material.create 1.)
-let s2 = Shape.create_rect 100. 100. (Material.create 0.)
-let s3 = Shape.create_rect 100. 100. (Material.create 0.5)
+let s1 = Shape.create_rect 100. 100. (Material.create ~energy_ret:1.)
+let s2 = Shape.create_rect 100. 100. (Material.create ~energy_ret:0.)
+let s3 = Shape.create_rect 100. 100. (Material.create ~energy_ret:0.5)
 let b1 = Body.create s1 1. 200. 25.
 
 let b2 =

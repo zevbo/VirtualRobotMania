@@ -16,7 +16,7 @@ let%expect_test _ =
   let br = Vec.create 100. (-100.) in
   let og = Vec.create 0. 0. in
   let right = Vec.create 200. 0. in
-  let mat1 = Material.create 1.0 in
+  let mat1 = Material.create ~energy_ret:1.0 in
   let s2 = Shape.create_closed [ tr; tl; bl; br ] mat1 in
   let s3 = Shape.create [ Edge.create (Line_like.segment og right) mat1 ] in
   print_s [%sexp (s1 : Shape.t)];
