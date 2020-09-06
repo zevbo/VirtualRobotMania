@@ -2,7 +2,7 @@ open! Base
 
 type t = { bodies : Body.t list }
 
-(* If objects get stuck, we might want a small bounce *)
+(* TODO: If objects get stuck, we might want a small bounce *)
 let rec collide_bodies bodies =
   match bodies with
   | [] -> []
