@@ -1,3 +1,4 @@
 profile=janestreet
 let-binding-spacing=compact
 margin=80
+wrap-comments

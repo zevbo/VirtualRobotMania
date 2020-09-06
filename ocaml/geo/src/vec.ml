@@ -6,8 +6,8 @@ type t =
   }
 [@@deriving fields]
 
-(* We make s-expressions look like simple pairs, eg., (3 4), 
-   rather than a record, e.g., ((x 3) (y 4)). *)
+(* We make s-expressions look like simple pairs, eg., (3 4), rather than a
+   record, e.g., ((x 3) (y 4)). *)
 include Sexpable.Of_sexpable
           (struct
             type t = Float.Terse.t * Float.Terse.t [@@deriving sexp]

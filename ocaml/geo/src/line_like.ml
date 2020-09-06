@@ -24,8 +24,8 @@ module type Epsilon = sig
   val epsilon : float
 end
 
-(** param_of_proj_point returns a float c, such that base + c * dir_vec = to
-    the given point projected on to the line. *)
+(** param_of_proj_point returns a float c, such that base + c * dir_vec = to the
+    given point projected on to the line. *)
 let param_of_proj_point t pt =
   Vec.dot (Vec.sub pt t.base) t.dir_vec /. Vec.mag_sq t.dir_vec
 
@@ -76,8 +76,8 @@ module With_epsilon (Epsilon : Epsilon) = struct
     General.imp_equals (angle_of t1) (angle_of t2) ~epsilon
 
   let intersection_as_lines t1 t2 =
-    (* If they're not parallel, the underlying lines must have an
-       intersection, even if it's not on the segments in question *)
+    (* If they're not parallel, the underlying lines must have an intersection,
+       even if it's not on the segments in question *)
     let open Float.O in
     if are_parallel t1 t2
     then None

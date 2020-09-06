@@ -120,12 +120,10 @@ let apply_force t force rel_force_pos dt =
 let apply_force_w_global_pos t force pos dt =
   apply_impulse t (Vec.scale force dt) (Vec.sub pos t.pos)
 
-(* 
-  Currently assuming that friction/drag act essentially indepenedintly on angular and tangential velocity
-    even though that is not the case
-  However, to determine if friction is static or kinetic, we did that with angular and tangential velocity
-    at the same time 
-*)
+(* Currently assuming that friction/drag act essentially indepenedintly on
+   angular and tangential velocity even though that is not the case However, to
+   determine if friction is static or kinetic, we did that with angular and
+   tangential velocity at the same time *)
 let del_v_from_fric fric_c = fric_c *. Consts.dt
 
 let del_omega_from_fric t fric_c =
@@ -167,10 +165,9 @@ type collision =
   }
 [@@deriving sexp_of]
 
-(** Takes two bodies, returns the two bodies in the same order as a pair once they have collided.
- If they are not touching, the same bodies will be returned *)
 let get_collision t1 t2 =
-  (* Not sure how to handle when there are multiple intersections. For the moment, just choosing the first one *)
+  (* Not sure how to handle when there are multiple intersections. For the
+     moment, just choosing the first one *)
   match intersections t1 t2 with
   | [] -> None
   | inter :: _ ->
@@ -246,7 +243,8 @@ let get_collision t1 t2 =
     let e_min_2 = ke_of t2_with_impulse_min in
     let e_min = e_min_1 +. e_min_2 in
     let e_final = (inter.energy_ret *. (ei -. e_min)) +. e_min in
-    (* Link to math: https://www.wolframalpha.com/input/?i=E+%3D+0.5%28m+*+%28v+%2B+x%2Fm%29%5E2+%2B+M+*+%28V+-+x%2FM%29%5E2+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+-+x+*+K%29%5E2%29%2C+solve+for+x *)
+    (* Link to math:
+       https://www.wolframalpha.com/input/?i=E+%3D+0.5%28m+*+%28v+%2B+x%2Fm%29%5E2+%2B+M+*+%28V+-+x%2FM%29%5E2+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+-+x+*+K%29%5E2%29%2C+solve+for+x *)
     let impulse_a =
       0.5
       *. ((t1.ang_intertia *. (k1 **. 2.))

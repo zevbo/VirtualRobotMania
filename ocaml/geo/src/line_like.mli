@@ -4,8 +4,8 @@ type line = Line [@@deriving sexp]
 type segment = Segment [@@deriving sexp]
 type ray = Ray [@@deriving sexp]
 
-(** The type parameter here is a phantom type, used to indicate
-    the underlying kind of line-like item this represents *)
+(** The type parameter here is a phantom type, used to indicate the underlying
+    kind of line-like item this represents *)
 type 'a t = private
   { base : Vec.t
   ; dir_vec : Vec.t
@@ -63,6 +63,6 @@ module type Epsilon = sig
   val epsilon : float
 end
 
-(** Use this functor to instantiate the epsilon-dependent values
-    with a different value for Epsilon. *)
+(** Use this functor to instantiate the epsilon-dependent values with a
+    different value for Epsilon. *)
 module With_epsilon (Epsilon : Epsilon) : Epsilon_dependent
