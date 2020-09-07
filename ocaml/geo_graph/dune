@@ -1,0 +1,5 @@
+(executable
+ (name main)
+ (libraries geo base cairo2-gtk)
+ (preprocess
+  (pps ppx_jane)))
