@@ -1,5 +1,5 @@
 (executable
  (name main)
- (libraries geo base cairo2-gtk)
+ (libraries geo base graphics)
  (preprocess
   (pps ppx_jane)))
