@@ -5,7 +5,6 @@ exception Exit
 
 let () =
   Graphics.open_graph "";
-  Graphics.resize_window 600 600;
   Graphics.set_window_title "Testing, 1,2,3";
   Graphics.auto_synchronize false;
   try
