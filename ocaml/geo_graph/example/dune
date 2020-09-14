@@ -1,5 +1,5 @@
 (executable
  (name main)
- (libraries geo base graphics)
+ (libraries geo base tsdl)
  (preprocess
   (pps ppx_jane)))
