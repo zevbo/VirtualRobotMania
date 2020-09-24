@@ -74,3 +74,4 @@ val collide : t -> t -> t * t
 
 val advance : t -> float -> t
 val collide_advance : t -> t -> float -> t * t
+val collide_and_min_bounce : t -> t -> float -> t * t

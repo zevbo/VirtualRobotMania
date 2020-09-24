@@ -293,3 +293,19 @@ let collide_advance t1 t2 dt =
     -> advance t1 dt, advance t2 dt
 
 let collide t1 t2 = collide_advance t1 t2 0.
+
+(* will collide two bodies, and advance them the amount for them to no longer be
+   touching *)
+(* the amount it advances them will be a multiple of dt, for calculation reasons *)
+let collide_and_min_bounce t1 t2 dt =
+  match get_collision t1 t2 with
+  | None -> t1, t2
+  | Some
+      { t1; t2; impulse_pt = _; t1_acc_angle = _; impulse_mag = _; debug = _ }
+    ->
+    let rec advance_until_freed t1 t2 =
+      if List.is_empty (intersections t1 t2)
+      then t1, t2
+      else advance_until_freed (advance t1 dt) (advance t2 dt)
+    in
+    advance_until_freed t1 t2
