@@ -24,8 +24,18 @@ let main () =
       let texture =
         ok_exn (Sdl.create_texture_from_surface renderer image_surface)
       in
+      let event = Sdl.Event.create () in
       for i = 0 to 10_000 do
+        if (Sdl.poll_event (Some event)) then (
+          match Sdl.Event.enum (Sdl.Event.get event Sdl.Event.typ) with
+          | `Key_up ->
+            let key = Sdl.Event.get event Sdl.Event.keyboard_keycode in
+            printf "Key: %s\n%!" (Sdl.get_key_name key);
+            if key = Sdl.K.q then Caml.exit 0
+          | _ -> ()
+        );
         let theta = Float.of_int i *. 1.0 in
+        ok_exn (Sdl.set_render_draw_color renderer 255 255 100 0);
         ok_exn (Sdl.render_fill_rect renderer None);
         ok_exn
           (Sdl.render_copy_ex
@@ -43,12 +53,3 @@ let main () =
       Caml.exit 0)
 
 let () = main ()
-
-(* {[ exception Exit
-
-   let () = Graphics.open_graph ""; Graphics.set_window_title "Testing, 1,2,3";
-   Graphics.auto_synchronize false; try for i = 0 to 1000 do
-   Graphics.clear_graph (); if Graphics.key_pressed () then raise Exit;
-   Unix.sleepf 0.01; let offset = Float.of_int i /. 0.1 |> Float.to_int in
-   printf "offset: %d\n%!" offset; Graphics.fill_poly [| 0 + offset, 0 + offset;
-   100, 400; 400, 100 |]; Graphics.synchronize () done with | Exit -> () ]} *)
