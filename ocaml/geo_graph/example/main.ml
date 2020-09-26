@@ -25,7 +25,9 @@ let main () =
         ok_exn (Sdl.create_texture_from_surface renderer image_surface)
       in
       let event = Sdl.Event.create () in
-      for i = 0 to 10_000 do
+      let i = ref 0 in
+      while true do
+        Int.incr i;
         if (Sdl.poll_event (Some event)) then (
           match Sdl.Event.enum (Sdl.Event.get event Sdl.Event.typ) with
           | `Key_up ->
@@ -34,7 +36,7 @@ let main () =
             if key = Sdl.K.q then Caml.exit 0
           | _ -> ()
         );
-        let theta = Float.of_int i *. 1.0 in
+        let theta = Float.of_int !i *. 1.0 in
         ok_exn (Sdl.set_render_draw_color renderer 255 255 100 0);
         ok_exn (Sdl.render_fill_rect renderer None);
         ok_exn
