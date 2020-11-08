@@ -120,7 +120,7 @@ let draw_line t ~width v1 v2 color =
     let open Float.O in
     let { Vec.x; y } =
       let { Vec.x; y } = center in
-      math_to_sdl t (Vec.create (x - (mag / 2.)) (y - (width / 2.)))
+      math_to_sdl t (Vec.create (x - (mag / 2.)) (y + (width / 2.)))
     in
     let w = width in
     let h = mag in
@@ -142,7 +142,7 @@ let draw_line t ~width v1 v2 color =
     ~dst
     t.renderer
     t.pixel
-    (Angle.to_degrees theta)
+    (-.Angle.to_degrees theta)
     None
     Sdl.Flip.none
   |> ok_exn
