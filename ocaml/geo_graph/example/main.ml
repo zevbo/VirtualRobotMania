@@ -30,9 +30,9 @@ let main () =
     Display.draw_line
       display
       ~width:20.
-      (Vec.create (Float.of_int !i) 0.)
-      (Vec.create 300. 300.)
-      Color.black;
+      (Vec.create 0. 0.)
+      (Vec.scale (Vec.unit_vec (Angle.of_degrees (Float.of_int !i))) 100.)
+      (Color.rgb 250 50 50);
     Display.draw_image
       display
       image
