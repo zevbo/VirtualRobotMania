@@ -69,6 +69,9 @@ let clear t color =
 
 let present t = Sdl.render_present t.renderer
 
+(* Move from math-style coordinates (origin at zero, y goes up, x goes to the
+   right) to SDL coordinates (origin at upper left, y goes down, x goes to the
+   right. *)
 let math_to_sdl t { Vec.x; y } =
   let open Float.O in
   let w, h = t.size in
