@@ -16,13 +16,13 @@ type 'a t = private
 (** {2 Line Constructors} *)
 
 val line : Vec.t -> Vec.t -> line t
-val line_of_point_angle : Vec.t -> float -> line t
+val line_of_point_angle : Vec.t -> Angle.t -> line t
 val line_of_point_slope : Vec.t -> float -> line t
 
 (** {2 Ray Constructors} *)
 
 val ray : Vec.t -> Vec.t -> ray t
-val ray_of_point_angle : Vec.t -> float -> ray t
+val ray_of_point_angle : Vec.t -> Angle.t -> ray t
 val ray_of_point_slope : Vec.t -> float -> ray t
 
 (** {2 Segment Constructors} *)
@@ -37,12 +37,12 @@ val is_param_on : _ t -> float -> bool
 val param_to_point : _ t -> float -> Vec.t
 val flip_points_of : _ t -> Vec.t list
 val slope_of : _ t -> float
-val angle_of : _ t -> float
+val angle_of : _ t -> Angle.t
 val get_p1 : segment t -> Vec.t
 val get_p2 : segment t -> Vec.t
 val shift : 'a t -> Vec.t -> 'a t
-val turn : 'a t -> float -> 'a t
-val rotate : 'a t -> float -> 'a t
+val turn : 'a t -> Angle.t -> 'a t
+val rotate : 'a t -> Angle.t -> 'a t
 
 (** These functions depend on some epsilon tolerance value *)
 module type Epsilon_dependent = sig

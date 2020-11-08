@@ -27,6 +27,12 @@ let main () =
         if key = Sdl.K.q then Caml.exit 0
       | _ -> ());
     Display.clear display Color.white;
+    Display.draw_line
+      display
+      ~width:20.
+      (Vec.create (Float.of_int !i) 0.)
+      (Vec.create 300. 300.)
+      Color.black;
     Display.draw_image
       display
       image
