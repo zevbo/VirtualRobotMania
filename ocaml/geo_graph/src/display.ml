@@ -11,13 +11,14 @@ let ok_exn x = Or_error.ok_exn (oe x)
 type t =
   { renderer : Sdl.renderer
   ; window : Sdl.window
+  ; size : int * int
   }
 
 let init ~w ~h ~title =
   let () = ok_exn @@ Sdl.init Sdl.Init.(video + events) in
   let window = ok_exn @@ Sdl.create_window ~w ~h title Sdl.Window.opengl in
   let renderer = ok_exn @@ Sdl.create_renderer window in
-  { renderer; window }
+  { renderer; window; size = w, h }
 
 module Image = struct
   type t =
@@ -45,18 +46,21 @@ let clear t color =
 let present t = Sdl.render_present t.renderer
 
 let draw_image t ?(scale = 1.0) (img : Image.t) v theta =
-  let w, h =
-    let w, h = img.size in
-    let adj x = Float.iround_nearest_exn (Float.of_int x *. scale) in
-    adj w, adj h
+  let dst =
+    let open Float.O in
+    let w, h =
+      let w, h = img.size in
+      let adj x = Float.of_int x * scale in
+      adj w, adj h
+    in
+    let float = Float.of_int in
+    let x = (float (fst t.size) / 2.) + Vec.x v - (w / 2.) in
+    let y = (float (snd t.size) / 2.) - Vec.y v - (h / 2.) in
+    let round = Float.iround_nearest_exn in
+    Sdl.Rect.create ~x:(round x) ~y:(round y) ~w:(round w) ~h:(round h)
   in
   Sdl.render_copy_ex
-    ~dst:
-      (Sdl.Rect.create
-         ~x:(Float.iround_nearest_exn (Vec.x v))
-         ~y:(Float.iround_nearest_exn (Vec.y v))
-         ~w
-         ~h)
+    ~dst
     t.renderer
     img.texture
     (Angle.to_degrees theta)

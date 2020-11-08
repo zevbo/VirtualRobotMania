@@ -27,7 +27,12 @@ let main () =
         if key = Sdl.K.q then Caml.exit 0
       | _ -> ());
     Display.clear display Color.white;
-    Display.draw_image display image (Vec.create 300. 100.) theta ~scale:0.05;
+    Display.draw_image
+      display
+      image
+      (Vec.create (-200.) (-200.))
+      theta
+      ~scale:0.05;
     Display.present display;
     (* 5ms *)
     Sdl.delay 5l
