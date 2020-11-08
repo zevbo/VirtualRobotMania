@@ -76,16 +76,12 @@ let math_to_sdl t { Vec.x; y } =
   let y = (Float.of_int h / 2.) - y in
   Vec.create x y
 
-let sdl_to_math t { Vec.x; y } =
+let _sdl_to_math t { Vec.x; y } =
   let open Float.O in
   let w, h = t.size in
   let x = -.(Float.of_int w / 2.) + x in
   let y = -.(Float.of_int h / 2.) - y in
   Vec.create x y
-
-let () =
-  ignore sdl_to_math;
-  ignore math_to_sdl
 
 let draw_image t ?(scale = 1.0) (img : Image.t) vec theta =
   let dst =
@@ -95,12 +91,10 @@ let draw_image t ?(scale = 1.0) (img : Image.t) vec theta =
       let adj x = Float.of_int x * scale in
       adj w, adj h
     in
-    let float = Float.of_int in
     let corner =
       let { Vec.x; y } = vec in
-      Vec.create
-        ((float (fst t.size) / 2.) + x - (w / 2.))
-        ((float (snd t.size) / 2.) - y - (h / 2.))
+      (* Why is it + h/2 for y? *)
+      math_to_sdl t (Vec.create (x - (w / 2.)) (y + (h / 2.)))
     in
     let { Vec.x; y } = corner in
     let round = Float.iround_nearest_exn in
@@ -116,6 +110,7 @@ let draw_image t ?(scale = 1.0) (img : Image.t) vec theta =
   |> ok_exn
 
 let draw_line t ~width v1 v2 color =
+  let round = Float.iround_nearest_exn in
   set_pixel_color t color;
   let diff = Vec.sub v2 v1 in
   let theta = Vec.angle_of diff in
@@ -141,7 +136,6 @@ let draw_line t ~width v1 v2 color =
           (y : float)
           (w : float)
           (h : float)];
-    let round = Float.iround_nearest_exn in
     Sdl.Rect.create ~x:(round x) ~y:(round y) ~w:(round w) ~h:(round h)
   in
   Sdl.render_copy_ex

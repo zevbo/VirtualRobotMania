@@ -27,18 +27,22 @@ let main () =
         if key = Sdl.K.q then Caml.exit 0
       | _ -> ());
     Display.clear display Color.white;
+    let base = Vec.create 150. 150. in
     Display.draw_line
       display
       ~width:20.
-      (Vec.create 0. 0.)
-      (Vec.scale (Vec.unit_vec (Angle.of_degrees (Float.of_int !i))) 100.)
+      base
+      (Vec.add
+         base
+         (Vec.scale (Vec.unit_vec (Angle.of_degrees (Float.of_int !i))) 100.))
       (Color.rgb 250 50 50);
-    Display.draw_image
+    Display.draw_line
       display
-      image
-      (Vec.create (-200.) (-200.))
-      theta
-      ~scale:0.05;
+      ~width:5.
+      (Vec.create (-150.) (-150.))
+      (Vec.create (-250.) (-50.))
+      (Color.rgb 10 250 10);
+    Display.draw_image display image (Vec.create 0. 0.) theta ~scale:0.05;
     Display.present display;
     (* 5ms *)
     Sdl.delay 5l
