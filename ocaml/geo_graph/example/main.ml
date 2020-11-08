@@ -28,17 +28,16 @@ let main () =
       | _ -> ());
     Display.clear display Color.white;
     let base = Vec.create 150. 150. in
-    Display.draw_line
-      display
-      ~width:20.
+    let line w v1 v2 c = Display.draw_line display ~width:w v1 v2 c in
+    line
+      20.
       base
       (Vec.add
          base
          (Vec.scale (Vec.unit_vec (Angle.of_degrees (Float.of_int !i))) 100.))
       (Color.rgb 250 50 50);
-    Display.draw_line
-      display
-      ~width:5.
+    line
+      5.
       (Vec.create (-150.) (-150.))
       (Vec.create (-250.) (-50.))
       (Color.rgb 10 250 10);

@@ -72,12 +72,11 @@ let present t = Sdl.render_present t.renderer
 (* Move from math-style coordinates (origin at zero, y goes up, x goes to the
    right) to SDL coordinates (origin at upper left, y goes down, x goes to the
    right. *)
-let math_to_sdl t { Vec.x; y } =
+let math_to_sdl t (v : Vec.t) =
   let open Float.O in
   let w, h = t.size in
-  let x = (Float.of_int w / 2.) + x in
-  let y = (Float.of_int h / 2.) - y in
-  Vec.create x y
+  let f = Float.of_int in
+  { Vec.x = (f w / 2.) + v.x; y = (f h / 2.) - v.y }
 
 let _sdl_to_math t { Vec.x; y } =
   let open Float.O in
@@ -114,7 +113,6 @@ let draw_image t ?(scale = 1.0) (img : Image.t) vec theta =
 
 let draw_line t ~width v1 v2 color =
   let round = Float.iround_nearest_exn in
-  set_pixel_color t color;
   let diff = Vec.sub v2 v1 in
   let theta = Vec.angle_of diff in
   let mag = Vec.mag diff in
@@ -125,8 +123,8 @@ let draw_line t ~width v1 v2 color =
       let { Vec.x; y } = center in
       math_to_sdl t (Vec.create (x - (mag / 2.)) (y + (width / 2.)))
     in
-    let w = width in
-    let h = mag in
+    let w = mag in
+    let h = width in
     print_s
       [%message
         "rect"
@@ -141,6 +139,7 @@ let draw_line t ~width v1 v2 color =
           (h : float)];
     Sdl.Rect.create ~x:(round x) ~y:(round y) ~w:(round w) ~h:(round h)
   in
+  set_pixel_color t color;
   Sdl.render_copy_ex
     ~dst
     t.renderer
