@@ -125,18 +125,6 @@ let draw_line t ~width v1 v2 color =
     in
     let w = mag in
     let h = width in
-    print_s
-      [%message
-        "rect"
-          (v1 : Vec.t)
-          (v2 : Vec.t)
-          (center : Vec.t)
-          (theta : Angle.t)
-          (mag : float)
-          (x : float)
-          (y : float)
-          (w : float)
-          (h : float)];
     Sdl.Rect.create ~x:(round x) ~y:(round y) ~w:(round w) ~h:(round h)
   in
   set_pixel_color t color;
