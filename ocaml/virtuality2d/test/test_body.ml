@@ -108,7 +108,9 @@ let%expect_test "collisions" =
     match collision with
     | { t1; t2; impulse_pt; t1_acc_angle; impulse_mag = _; debug = _ } ->
       let calculate t =
-        Vec.dot (Body.get_v_pt t impulse_pt) (Vec.unit_vec t1_acc_angle)
+        Vec.dot
+          (Body.get_v_pt t impulse_pt)
+          (Vec.unit_vec (Angle.of_radians t1_acc_angle))
       in
       calculate t1, calculate t2
   in

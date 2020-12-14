@@ -62,7 +62,7 @@ type intersection =
 
 let get_edges_w_global_pos t =
   let to_global_pos t (ls : Line_like.segment Line_like.t) =
-    Line_like.shift (Line_like.rotate ls t.angle) t.pos
+    Line_like.shift (Line_like.rotate ls (Angle.of_radians t.angle)) t.pos
   in
   let global_edges =
     List.map t.shape.edges ~f:(fun edge ->
@@ -108,7 +108,9 @@ let apply_impulse t impulse rel_force_pos =
   let t = apply_com_impulse t impulse in
   let angle = Vec.angle_with_origin impulse rel_force_pos in
   let r = Vec.mag rel_force_pos in
-  let angular_impulse = Vec.mag impulse *. r *. Float.sin angle in
+  let angular_impulse =
+    Vec.mag impulse *. r *. Float.sin (Angle.to_radians angle)
+  in
   apply_pure_angular_impulse t angular_impulse
 
 let apply_impulse_w_global_pos t impulse pos =
@@ -145,7 +147,7 @@ let get_v_pt t pt =
   let v_perp =
     Vec.scale
       (* rotating r by pi/2 *)
-      (Vec.to_unit (Vec.rotate r (Float.pi /. 2.)))
+      (Vec.to_unit (Vec.rotate r (Angle.of_radians (Float.pi /. 2.))))
       (t.omega *. Vec.mag r)
   in
   Vec.add t.v v_perp
@@ -181,14 +183,20 @@ let get_collision t1 t2 =
     let corner_2_dist = closest_dist_to_corner inter inter.edge_2 in
     let is_edge_1_flat = Float.(corner_1_dist > corner_2_dist) in
     let flat_edge = if is_edge_1_flat then inter.edge_1 else inter.edge_2 in
-    let force_angle = Line_like.angle_of flat_edge.ls +. (Float.pi /. 2.) in
+    let force_angle =
+      Angle.to_radians (Line_like.angle_of flat_edge.ls) +. (Float.pi /. 2.)
+    in
     (* acc angle for the flat edge *)
     let flat_edge_acc_angle =
       let starting_point_w_buffer =
-        Vec.add inter.pt (Vec.scale (Vec.unit_vec force_angle) epsilon)
+        Vec.add
+          inter.pt
+          (Vec.scale (Vec.unit_vec (Angle.of_radians force_angle)) epsilon)
       in
       let test_ray =
-        Line_like.ray_of_point_angle starting_point_w_buffer force_angle
+        Line_like.ray_of_point_angle
+          starting_point_w_buffer
+          (Angle.of_radians force_angle)
       in
       let t = if is_edge_1_flat then t1 else t2 in
       let is_hit (edge : Edge.t) =
@@ -204,14 +212,16 @@ let get_collision t1 t2 =
       else flat_edge_acc_angle +. Float.pi
     in
     let t2_acc_angle = t1_acc_angle -. Float.pi in
-    let t1_acc_unit_vec = Vec.unit_vec t1_acc_angle in
-    let t2_acc_unit_vec = Vec.unit_vec t2_acc_angle in
+    let t1_acc_unit_vec = Vec.unit_vec (Angle.of_radians t1_acc_angle) in
+    let t2_acc_unit_vec = Vec.unit_vec (Angle.of_radians t2_acc_angle) in
     (* perp velocity of the intersection points *)
     let s1 = Vec.dot v1 t2_acc_unit_vec in
     let s2 = Vec.dot v2 t2_acc_unit_vec in
     let ei = ke_of t1 +. ke_of t2 in
     (* the theta in torque = F * r * sin(theta). Need a better name *)
-    let get_torque_theta_of r = t1_acc_angle -. Vec.angle_of r in
+    let get_torque_theta_of r =
+      t1_acc_angle -. Angle.to_radians (Vec.angle_of r)
+    in
     let get_k_of t r =
       Vec.mag r *. Float.sin (get_torque_theta_of r) /. t.ang_intertia
     in
@@ -237,7 +247,9 @@ let get_collision t1 t2 =
     let get_v_pt t impulse_pt t1_acc_angle =
       Vec.dot (get_v_pt t impulse_pt) (Vec.unit_vec t1_acc_angle)
     in
-    let debug = get_v_pt t2_with_impulse_min inter.pt t1_acc_angle in
+    let debug =
+      get_v_pt t2_with_impulse_min inter.pt (Angle.of_radians t1_acc_angle)
+    in
     (* e_min is wrong *)
     let e_min_1 = ke_of t1_with_impulse_min in
     let e_min_2 = ke_of t2_with_impulse_min in
