@@ -3,7 +3,7 @@ open! Geo
 type t =
   { shape : Shape.t
   ; m : float
-  ; ang_intertia : float (* for friction's effect on angular velocity *)
+  ; ang_inertia : float (* for friction's effect on angular velocity *)
   ; average_r : float
   ; pos : Vec.t
   ; v : Vec.t
@@ -18,18 +18,18 @@ type t =
 
 (** Shape -> Mass -> Angular Inertia -> Average_r *)
 val create
-  :  Shape.t
-  -> float
-  -> float
-  -> ?pos:Vec.t
+  :  ?pos:Vec.t
   -> ?v:Vec.t
   -> ?angle:float
   -> ?omega:float
   -> ?ground_drag_c:float
   -> ?ground_fric_k_c:float
   -> ?ground_fric_s_c:float
-  -> ?air_drag_c:float
-  -> float
+  -> ?air_drag_c:float 
+  -> m:float
+  -> ang_inertia:float
+  -> average_r:float
+  -> Shape.t
   -> t
 
 val p_of : t -> Vec.t

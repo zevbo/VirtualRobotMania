@@ -6,17 +6,17 @@ open Virtuality2d
 let s1 = Shape.create_rect 100. 100. (Material.create ~energy_ret:1.)
 let s2 = Shape.create_rect 100. 100. (Material.create ~energy_ret:0.)
 let s3 = Shape.create_rect 100. 100. (Material.create ~energy_ret:0.5)
-let b1 = Body.create s1 1. 200. 25.
+let b1 = Body.create ~m:1. ~ang_inertia:200. ~average_r:25. s1 
 
 let b2 =
   Body.create
-    s1
-    1.
-    200.
-    ~v:(Vec.create (-2.) 0.)
+    ~m:1.
+    ~ang_inertia:200.
+    ~average_r:25.
+    ~v:(Vec.create (-10.) 0.)
     ~pos:(Vec.create 100. 0.)
     ~angle:(-0.1)
-    25.
+    s1
 
 let b3 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 120.7 0. }
 

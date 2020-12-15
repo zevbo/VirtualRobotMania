@@ -18,5 +18,4 @@ let rec collide_bodies bodies =
     new_first_body :: collide_bodies new_tl
 
 let advance t dt =
-  of_bodies (List.map ~f:(fun body -> Body.advance body dt) t.bodies)
-  (*of_bodies (List.map ~f:(fun body -> Body.advance body dt) (collide_bodies t.bodies))*)
+  of_bodies (List.map ~f:(fun body -> Body.advance body dt) (collide_bodies t.bodies))
