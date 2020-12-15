@@ -2,6 +2,10 @@ open! Base
 
 type t = { bodies : Body.t list }
 
+let create () = {bodies = []}
+let of_bodies bodies = {bodies}
+let add_body t body = {bodies = body :: t.bodies }
+
 (* TODO: If objects get stuck, we might want a small bounce *)
 let rec collide_bodies bodies =
   match bodies with

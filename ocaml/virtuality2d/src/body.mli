@@ -16,6 +16,7 @@ type t =
   }
 [@@deriving sexp_of]
 
+(** Shape -> Mass -> Angular Inertia -> Average_r *)
 val create
   :  Shape.t
   -> float

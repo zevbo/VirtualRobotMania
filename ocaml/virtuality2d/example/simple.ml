@@ -1,8 +1,7 @@
 open Virtuality2d
 open Geo_graph
 open Tsdl
-
-  let fps = 20.
+let fps = 20.
 let main () = 
   let elastic = Material.create ~energy_ret:1. in
   let shape = Shape.create_rect 10. 10. elastic in
@@ -12,7 +11,7 @@ let main () =
   while true do 
     Display.draw_image ~scale:0.1 display image robot.pos (Geo.Angle.of_radians robot.angle);
     (*world := World.advance (!world) (1. /. fps);*)
-    Sdl.delay (Int32.of_float fps)
+    Sdl.delay (Int32.of_float (1. /. fps))
   done;
   ()
 
