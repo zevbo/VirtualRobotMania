@@ -47,9 +47,7 @@ let run () =
   let draw_robot robot_n =
     let robot = List.nth_exn !world.bodies robot_n in
     let half_length =
-      Vec.rotate
-        (Vec.create (robot_length /. 2.) 0.)
-        (Angle.of_radians robot.angle)
+      Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
     in
     Display.draw_line
       ~width:robot_width
