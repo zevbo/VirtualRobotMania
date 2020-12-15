@@ -100,9 +100,7 @@ let%expect_test "intersect" =
 let%expect_test "basic line info" =
   let l1 = Line_like.segment (v 0. 0.) (v 2. 0.) in
   let l2 =
-    Line_like.rotate
-      (Line_like.segment (v 0. 0.) (v 2. 0.))
-      (Angle.of_radians (Float.pi /. 6.))
+    Line_like.rotate (Line_like.segment (v 0. 0.) (v 2. 0.)) (Float.pi /. 6.)
   in
   let l3 = Line_like.segment (v 1. 1.) (v 1. (-3.)) in
   print_s [%sexp (Line_like.slope_of l1 : float)];
@@ -111,9 +109,9 @@ let%expect_test "basic line info" =
   [%expect {| 0.57735026918962562 |}];
   print_s [%sexp (Line_like.slope_of l3 : float)];
   [%expect {| INF |}];
-  print_s [%sexp (Line_like.angle_of l1 : Angle.t)];
+  print_s [%sexp (Line_like.angle_of l1 : float)];
   [%expect {| 0 |}];
-  print_s [%sexp (Line_like.angle_of l2 : Angle.t)];
+  print_s [%sexp (Line_like.angle_of l2 : float)];
   [%expect {| 0.5235987755982987 |}];
-  print_s [%sexp (Line_like.angle_of l3 : Angle.t)];
+  print_s [%sexp (Line_like.angle_of l3 : float)];
   [%expect {| -1.5707963267948966 |}]
