@@ -4,7 +4,7 @@ open! Base
 type t =
   { shape : Shape.t
   ; m : float
-  ; ang_intertia : float (* for friction's effect on angular velocity *)
+  ; ang_inertia : float (* for friction's effect on angular velocity *)
   ; average_r : float
   ; pos : Vec.t
   ; v : Vec.t
@@ -18,9 +18,6 @@ type t =
 [@@deriving sexp_of]
 
 let create
-    shape
-    m
-    ang_intertia
     ?(pos = Vec.origin)
     ?(v = Vec.origin)
     ?(angle = 0.)
@@ -29,11 +26,14 @@ let create
     ?(ground_fric_k_c = 0.)
     ?(ground_fric_s_c = 0.)
     ?(air_drag_c = 0.)
-    average_r
+    ~m
+    ~ang_inertia
+    ~average_r
+    shape
   =
   { shape
   ; m
-  ; ang_intertia
+  ; ang_inertia
   ; average_r
   ; pos
   ; v
@@ -46,11 +46,14 @@ let create
   }
 
 let quadratic_formula a b c use_plus =
-  let discriminant = (b *. b) -. (4. *. a *. c) in
-  let numerator =
-    (if use_plus then ( +. ) else ( -. )) (-.b) (Float.sqrt discriminant)
-  in
-  numerator /. (2. *. a)
+  if Float.equal a 0.
+  then -.b /. c
+  else (
+    let discriminant = (b *. b) -. (4. *. a *. c) in
+    let numerator =
+      (if use_plus then ( +. ) else ( -. )) (-.b) (Float.sqrt discriminant)
+    in
+    numerator /. (2. *. a))
 
 type intersection =
   { pt : Vec.t
@@ -95,14 +98,14 @@ let closest_dist_to_corner inter (edge : Edge.t) =
   Float.min (List.nth_exn dists 0) (List.nth_exn dists 1)
 
 let momentum_of t = Vec.scale t.v t.m
-let angular_momentum_of t = t.omega *. t.ang_intertia
+let angular_momentum_of t = t.omega *. t.ang_inertia
 
 let apply_com_impulse t impulse =
   { t with v = Vec.add t.v (Vec.scale impulse (1. /. t.m)) }
 
 (* Pure angular_impulse in this case means no net impulse on the com *)
 let apply_pure_angular_impulse t angular_impulse =
-  { t with omega = t.omega +. (angular_impulse /. t.ang_intertia) }
+  { t with omega = t.omega +. (angular_impulse /. t.ang_inertia) }
 
 let apply_impulse t impulse rel_force_pos =
   let t = apply_com_impulse t impulse in
@@ -127,7 +130,7 @@ let apply_force_w_global_pos t force pos dt =
 let del_v_from_fric fric_c = fric_c *. Consts.dt
 
 let del_omega_from_fric t fric_c =
-  fric_c *. t.average_r *. (t.m /. t.ang_intertia) *. Consts.dt
+  fric_c *. t.average_r *. (t.m /. t.ang_inertia) *. Consts.dt
 
 let apply_tangnetial_forces t =
   let del_v_from_fric_s = del_v_from_fric t.ground_fric_s_c in
@@ -145,7 +148,7 @@ let get_v_pt t pt =
   let v_perp =
     Vec.scale
       (* rotating r by pi/2 *)
-      (Vec.to_unit (Vec.rotate r (Angle.of_radians (Float.pi /. 2.))))
+      (Vec.to_unit (Vec.rotate r (Float.pi /. 2.)))
       (t.omega *. Vec.mag r)
   in
   Vec.add t.v v_perp
@@ -153,7 +156,7 @@ let get_v_pt t pt =
 let p_of t = Vec.scale t.v t.m
 
 let ke_of t =
-  (0.5 *. t.m *. Vec.mag_sq t.v) +. (0.5 *. t.ang_intertia *. (t.omega **. 2.))
+  (0.5 *. t.m *. Vec.mag_sq t.v) +. (0.5 *. t.ang_inertia *. (t.omega **. 2.))
 
 type collision =
   { t1 : t
@@ -164,6 +167,10 @@ type collision =
   ; debug : float
   }
 [@@deriving sexp_of]
+
+exception Unkown_collision_error of string
+
+let _impulse_min_mag_cushion = 0.01
 
 let get_collision t1 t2 =
   (* Not sure how to handle when there are multiple intersections. For the
@@ -181,20 +188,14 @@ let get_collision t1 t2 =
     let corner_2_dist = closest_dist_to_corner inter inter.edge_2 in
     let is_edge_1_flat = Float.(corner_1_dist > corner_2_dist) in
     let flat_edge = if is_edge_1_flat then inter.edge_1 else inter.edge_2 in
-    let force_angle =
-      Angle.to_radians (Line_like.angle_of flat_edge.ls) +. (Float.pi /. 2.)
-    in
+    let force_angle = Line_like.angle_of flat_edge.ls +. (Float.pi /. 2.) in
     (* acc angle for the flat edge *)
     let flat_edge_acc_angle =
       let starting_point_w_buffer =
-        Vec.add
-          inter.pt
-          (Vec.scale (Vec.unit_vec (Angle.of_radians force_angle)) epsilon)
+        Vec.add inter.pt (Vec.scale (Vec.unit_vec force_angle) epsilon)
       in
       let test_ray =
-        Line_like.ray_of_point_angle
-          starting_point_w_buffer
-          (Angle.of_radians force_angle)
+        Line_like.ray_of_point_angle starting_point_w_buffer force_angle
       in
       let t = if is_edge_1_flat then t1 else t2 in
       let is_hit (edge : Edge.t) =
@@ -210,29 +211,26 @@ let get_collision t1 t2 =
       else flat_edge_acc_angle +. Float.pi
     in
     let t2_acc_angle = t1_acc_angle -. Float.pi in
-    let t1_acc_unit_vec = Vec.unit_vec (Angle.of_radians t1_acc_angle) in
-    let t2_acc_unit_vec = Vec.unit_vec (Angle.of_radians t2_acc_angle) in
+    let t1_acc_unit_vec = Vec.unit_vec t1_acc_angle in
+    let t2_acc_unit_vec = Vec.unit_vec t2_acc_angle in
     (* perp velocity of the intersection points *)
     let s1 = Vec.dot v1 t2_acc_unit_vec in
     let s2 = Vec.dot v2 t2_acc_unit_vec in
     let ei = ke_of t1 +. ke_of t2 in
     (* the theta in torque = F * r * sin(theta). Need a better name *)
-    let get_torque_theta_of r =
-      t1_acc_angle -. Angle.to_radians (Vec.angle_of r)
-    in
+    let get_torque_theta_of r = t1_acc_angle -. Vec.angle_of r in
     let get_k_of t r =
-      Vec.mag r *. Float.sin (get_torque_theta_of r) /. t.ang_intertia
+      Vec.mag r *. Float.sin (get_torque_theta_of r) /. t.ang_inertia
     in
     let k1 = get_k_of t1 r1 in
     let k2 = get_k_of t2 r2 in
     (* Note: this can be made faster if we use Vec.mag_sq *)
-    let impulse_min_mag =
-      (s1 -. s2)
-      /. ((1. /. t1.m)
-         +. (1. /. t2.m)
-         +. (Vec.mag r1 *. k1 *. Float.sin (get_torque_theta_of r1))
-         +. (Vec.mag r2 *. k2 *. Float.sin (get_torque_theta_of r2)))
+    let impulse_min_mag_denom =
+      (1. /. t1.m) +. (1. /. t2.m) +. (Vec.mag r1 *. k1) +. (Vec.mag r2 *. k2)
     in
+    if Float.equal impulse_min_mag_denom 0.
+    then raise (Unkown_collision_error "Got infinite minimum impulse magnitude");
+    let impulse_min_mag = Float.abs ((s1 -. s2) /. impulse_min_mag_denom) in
     let apply_impulse impulse_mag =
       let impulse_1 = Vec.scale t1_acc_unit_vec impulse_mag in
       let impulse_2 = Vec.scale t2_acc_unit_vec impulse_mag in
@@ -245,9 +243,7 @@ let get_collision t1 t2 =
     let get_v_pt t impulse_pt t1_acc_angle =
       Vec.dot (get_v_pt t impulse_pt) (Vec.unit_vec t1_acc_angle)
     in
-    let debug =
-      get_v_pt t2_with_impulse_min inter.pt (Angle.of_radians t1_acc_angle)
-    in
+    let debug = get_v_pt t2_with_impulse_min inter.pt t1_acc_angle in
     (* e_min is wrong *)
     let e_min_1 = ke_of t1_with_impulse_min in
     let e_min_2 = ke_of t2_with_impulse_min in
@@ -257,14 +253,14 @@ let get_collision t1 t2 =
        https://www.wolframalpha.com/input/?i=E+%3D+0.5%28m+*+%28v+%2B+x%2Fm%29%5E2+%2B+M+*+%28V+-+x%2FM%29%5E2+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+-+x+*+K%29%5E2%29%2C+solve+for+x *)
     let impulse_a =
       0.5
-      *. ((t1.ang_intertia *. (k1 **. 2.))
-         +. (t2.ang_intertia *. (k2 **. 2.))
+      *. ((t1.ang_inertia *. (k1 **. 2.))
+         +. (t2.ang_inertia *. (k2 **. 2.))
          +. (1. /. t1.m)
          +. (1. /. t2.m))
     in
     let impulse_b =
-      (t1.ang_intertia *. k1 *. t1.omega)
-      -. (t2.ang_intertia *. k2 *. t2.omega)
+      (t1.ang_inertia *. k1 *. t1.omega)
+      -. (t2.ang_inertia *. k2 *. t2.omega)
       +. Vec.mag t1.v
       -. Vec.mag t2.v
     in
@@ -272,14 +268,40 @@ let get_collision t1 t2 =
       (0.5
       *. ((t1.m *. Vec.mag_sq t1.v)
          +. (t2.m *. Vec.mag_sq t2.v)
-         +. (t1.ang_intertia *. (t1.omega **. 2.))
-         +. (t2.ang_intertia *. (t2.omega **. 2.))))
+         +. (t1.ang_inertia *. (t1.omega **. 2.))
+         +. (t2.ang_inertia *. (t2.omega **. 2.))))
       -. e_final
     in
     (* Not sure if it is always + for the +/- in the quad formula *)
     (* Otherwise seems that this is right *)
     let impulse_mag = quadratic_formula impulse_a impulse_b impulse_c true in
+    if Float.is_nan impulse_mag
+    then
+      raise
+        (Unkown_collision_error
+           (Printf.sprintf
+              "Got nan impulse magnitude.\n\
+               DEBUG INFO\n\
+               Min impulse mag: %f\n\
+               a,b,c: %f, %f, %f\n"
+              impulse_min_mag
+              impulse_a
+              impulse_b
+              impulse_c));
     let t1_final, t2_final = apply_impulse impulse_mag in
+    let check_t_final t =
+      if Float.is_nan t.pos.x
+      then raise (Unkown_collision_error "Got nan x post-collision")
+      else if Float.is_nan t.pos.y
+      then raise (Unkown_collision_error "Got nan y post-collision")
+      else if Float.is_nan t.v.x
+      then raise (Unkown_collision_error "Got nan v.x post-collision")
+      else if Float.is_nan t.v.y
+      then raise (Unkown_collision_error "Got nan v.y post-collision")
+    in
+    check_t_final t1;
+    check_t_final t2;
+    Stdio.printf "Impulse mag: %f\n" impulse_mag;
     Some
       { t1 = t1_final
       ; t2 = t2_final
@@ -295,11 +317,27 @@ let advance t dt =
   ; angle = t.angle +. (t.omega *. dt)
   }
 
-let collide_advance t1 t2 dt =
+let collide_advance t1 t2 _dt =
   match get_collision t1 t2 with
   | None -> t1, t2
   | Some
       { t1; t2; impulse_pt = _; t1_acc_angle = _; impulse_mag = _; debug = _ }
-    -> advance t1 dt, advance t2 dt
+    -> t1, t2
 
 let collide t1 t2 = collide_advance t1 t2 0.
+
+(* will collide two bodies, and advance them the amount for them to no longer be
+   touching *)
+(* the amount it advances them will be a multiple of dt, for calculation reasons *)
+let collide_and_min_bounce t1 t2 dt =
+  match get_collision t1 t2 with
+  | None -> t1, t2
+  | Some
+      { t1; t2; impulse_pt = _; t1_acc_angle = _; impulse_mag = _; debug = _ }
+    ->
+    let rec advance_until_freed t1 t2 =
+      if List.is_empty (intersections t1 t2)
+      then t1, t2
+      else advance_until_freed (advance t1 dt) (advance t2 dt)
+    in
+    advance_until_freed t1 t2

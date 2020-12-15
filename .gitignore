@@ -3,6 +3,8 @@
 *.zo
 *.jpg
 *.png
+*.mov
+*.JPEG
 \#*#
 *.DS_Store
 
@@ -16,4 +18,3 @@ target/
 _build/
 *~
 .merlin
-images/

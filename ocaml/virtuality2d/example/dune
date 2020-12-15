@@ -1,0 +1,6 @@
+(executables
+ (names test)
+ (libraries geo base virtuality2d geo_graph)
+ (modules simple test helpers)
+ (preprocess
+  (pps ppx_jane)))
