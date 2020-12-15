@@ -85,7 +85,10 @@ let _sdl_to_math t { Vec.x; y } =
   let y = -.(Float.of_int h / 2.) - y in
   Vec.create x y
 
-let draw_image t ?(scale = 1.0) (img : Image.t) vec theta =
+let radians_to_degrees x = x *. 180. /. Float.pi
+let _degrees_to_radians x = x *. Float.pi /. 180.
+
+let draw_image t ?(scale = 1.0) (img : Image.t) vec ~angle:theta =
   let dst =
     let open Float.O in
     let w, h =
@@ -106,7 +109,7 @@ let draw_image t ?(scale = 1.0) (img : Image.t) vec theta =
     ~dst
     t.renderer
     img.texture
-    (-.Angle.to_degrees theta)
+    (-.radians_to_degrees theta)
     None
     Sdl.Flip.none
   |> ok_exn
@@ -132,7 +135,7 @@ let draw_line t ~width v1 v2 color =
     ~dst
     t.renderer
     t.pixel
-    (-.Angle.to_degrees theta)
+    (-.radians_to_degrees theta)
     None
     Sdl.Flip.none
   |> ok_exn
