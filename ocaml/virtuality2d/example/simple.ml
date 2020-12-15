@@ -1,15 +1,10 @@
 open Virtuality2d
 open Geo_graph
 open Tsdl
-<<<<<<< HEAD
-let fps = 20.
-let main () = 
-=======
 
 let fps = 20.
 
 let main () =
->>>>>>> 2d78f18c8fb391f6f3422f3482d904b2bd608c24
   let elastic = Material.create ~energy_ret:1. in
   let shape = Shape.create_rect 10. 10. elastic in
   let robot = Body.create shape 1. 1. 5. in
