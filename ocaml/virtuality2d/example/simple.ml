@@ -6,7 +6,7 @@ open Tsdl
 
 let fps = 20.
 
-let main () =
+let run () =
   let elastic = Material.create ~energy_ret:1. in
   let shape = Shape.create_rect 10. 10. elastic in
   let robot = Body.create shape 1. 1. 5. in
@@ -33,10 +33,8 @@ let main () =
       image
       robot.pos
       (Geo.Angle.of_radians robot.angle);
-    world := World.advance (!world) (1. /. fps);
+    world := World.advance !world (1. /. fps);
     Display.present display;
     Sdl.delay (Int32.of_float (1000. /. fps))
   done;
   ()
-
-let () = main ()

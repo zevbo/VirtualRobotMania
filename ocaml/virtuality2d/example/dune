@@ -1,5 +1,5 @@
 (executables
- (names simple)
+ (names test)
  (libraries geo base virtuality2d geo_graph)
  (preprocess
   (pps ppx_jane)))
