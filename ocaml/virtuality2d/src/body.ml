@@ -62,7 +62,7 @@ type intersection =
 
 let get_edges_w_global_pos t =
   let to_global_pos t (ls : Line_like.segment Line_like.t) =
-    Line_like.shift (Line_like.rotate ls (Angle.of_radians t.angle)) t.pos
+    Line_like.shift (Line_like.rotate ls t.angle) t.pos
   in
   let global_edges =
     List.map t.shape.edges ~f:(fun edge ->
@@ -108,9 +108,7 @@ let apply_impulse t impulse rel_force_pos =
   let t = apply_com_impulse t impulse in
   let angle = Vec.angle_with_origin impulse rel_force_pos in
   let r = Vec.mag rel_force_pos in
-  let angular_impulse =
-    Vec.mag impulse *. r *. Float.sin (Angle.to_radians angle)
-  in
+  let angular_impulse = Vec.mag impulse *. r *. Float.sin angle in
   apply_pure_angular_impulse t angular_impulse
 
 let apply_impulse_w_global_pos t impulse pos =

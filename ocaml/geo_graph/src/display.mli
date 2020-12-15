@@ -23,7 +23,7 @@ val present : t -> unit
     {!present}. *)
 
 val clear : t -> Color.t -> unit
-val draw_image : t -> ?scale:float -> Image.t -> Vec.t -> Angle.t -> unit
+val draw_image : t -> ?scale:float -> Image.t -> Vec.t -> angle:float -> unit
 val draw_line : t -> width:float -> Vec.t -> Vec.t -> Color.t -> unit
 
 (** destroy the renderer and the window, and quit SDL *)
