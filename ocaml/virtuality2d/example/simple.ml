@@ -14,6 +14,7 @@ let main () =
     Display.Image.of_bmp_file display "../../../images/test-robot.bmp"
   in
   while true do
+    Display.clear display Color.white;
     Display.draw_image
       ~scale:0.1
       display
@@ -21,6 +22,7 @@ let main () =
       robot.pos
       (Geo.Angle.of_radians robot.angle);
     (*world := World.advance (!world) (1. /. fps);*)
+    Display.present display;
     Sdl.delay (Int32.of_float (1. /. fps))
   done;
   ()
