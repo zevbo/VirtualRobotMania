@@ -4,12 +4,13 @@ open Geo_graph
 open Geo
 open Tsdl
 
-let fps = 20.
+let fps = 50.
 
 let main () =
   let elastic = Material.create ~energy_ret:1. in
-  let shape = Shape.create_rect 10. 10. elastic in
-  let robot = Body.create shape 1. 1. 5. in
+  let scale = 0.5 in
+  let shape = Shape.create_rect (150. *. scale) (112. *. scale) elastic in
+  let robot = Body.create ~m:1. ~ang_intertia:1. ~average_r:5. shape in
   let robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in
   let display = Display.init ~w:500 ~h:500 ~title:"test" in
   let world = ref (World.of_bodies [ robot ]) in
@@ -28,7 +29,7 @@ let main () =
       | _ -> ());
     Display.clear display Color.white;
     Display.draw_image
-      ~scale:1.
+      ~scale
       display
       image
       (List.nth_exn (!world).bodies 0).pos
