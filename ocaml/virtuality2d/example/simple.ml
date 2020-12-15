@@ -1,3 +1,4 @@
+open Core_kernel
 open Virtuality2d
 open Geo_graph
 open Tsdl
@@ -13,17 +14,26 @@ let main () =
   let image =
     Display.Image.of_bmp_file display "../../../images/test-robot.bmp"
   in
+  let event = Sdl.Event.create () in
   while true do
+    if Sdl.poll_event (Some event)
+    then (
+      match Sdl.Event.enum (Sdl.Event.get event Sdl.Event.typ) with
+      | `Key_up ->
+        let key = Sdl.Event.get event Sdl.Event.keyboard_keycode in
+        printf "Key: %s\n%!" (Sdl.get_key_name key);
+        if key = Sdl.K.q then Caml.exit 0
+      | _ -> ());
     Display.clear display Color.white;
     Display.draw_image
-      ~scale:0.1
+      ~scale:1.
       display
       image
       robot.pos
       (Geo.Angle.of_radians robot.angle);
     (*world := World.advance (!world) (1. /. fps);*)
     Display.present display;
-    Sdl.delay (Int32.of_float (1. /. fps))
+    Sdl.delay (Int32.of_float (1000. /. fps))
   done;
   ()
 
