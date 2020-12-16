@@ -172,13 +172,15 @@ exception Unkown_collision_error of string
 
 let _impulse_min_mag_cushion = 0.01
 
-let get_collision t1 t2 =
+let rec get_collision_from_intersections t1 t2 intersections =
   (* Not sure how to handle when there are multiple intersections. For the
      moment, just choosing the first one *)
-  match intersections t1 t2 with
-  | [] -> None
-  | inter :: _ ->
-    (* calculations done as if the collision point on t1 is standing still *)
+  (* calculations done as if the collision point on t1 is standing still *)
+  match intersections with
+  | [] ->
+    Stdio.print_endline "(theoretically) self-resolving collision";
+    None
+  | inter :: tl ->
     let epsilon = 0.0001 in
     let r1 = get_r t1 inter.pt in
     let r2 = get_r t2 inter.pt in
@@ -216,100 +218,125 @@ let get_collision t1 t2 =
     (* perp velocity of the intersection points *)
     let s1 = Vec.dot v1 t2_acc_unit_vec in
     let s2 = Vec.dot v2 t2_acc_unit_vec in
-    let ei = ke_of t1 +. ke_of t2 in
-    (* the theta in torque = F * r * sin(theta). Need a better name *)
-    let get_torque_theta_of r = t1_acc_angle -. Vec.angle_of r in
-    let get_k_of t r =
-      Vec.mag r *. Float.sin (get_torque_theta_of r) /. t.ang_inertia
-    in
-    let k1 = get_k_of t1 r1 in
-    let k2 = get_k_of t2 r2 in
-    (* Note: this can be made faster if we use Vec.mag_sq *)
-    let impulse_min_mag_denom =
-      (1. /. t1.m) +. (1. /. t2.m) +. (Vec.mag r1 *. k1) +. (Vec.mag r2 *. k2)
-    in
-    if Float.equal impulse_min_mag_denom 0.
-    then raise (Unkown_collision_error "Got infinite minimum impulse magnitude");
-    let impulse_min_mag = Float.abs ((s1 -. s2) /. impulse_min_mag_denom) in
-    let apply_impulse impulse_mag =
-      let impulse_1 = Vec.scale t1_acc_unit_vec impulse_mag in
-      let impulse_2 = Vec.scale t2_acc_unit_vec impulse_mag in
-      ( apply_impulse_w_global_pos t1 impulse_1 inter.pt
-      , apply_impulse_w_global_pos t2 impulse_2 inter.pt )
-    in
-    let t1_with_impulse_min, t2_with_impulse_min =
-      apply_impulse impulse_min_mag
-    in
-    let get_v_pt t impulse_pt t1_acc_angle =
-      Vec.dot (get_v_pt t impulse_pt) (Vec.unit_vec t1_acc_angle)
-    in
-    let debug = get_v_pt t2_with_impulse_min inter.pt t1_acc_angle in
-    (* e_min is wrong *)
-    let e_min_1 = ke_of t1_with_impulse_min in
-    let e_min_2 = ke_of t2_with_impulse_min in
-    let e_min = e_min_1 +. e_min_2 in
-    let e_final = (inter.energy_ret *. (ei -. e_min)) +. e_min in
-    (* Link to math:
-       https://www.wolframalpha.com/input/?i=E+%3D+0.5%28m+*+%28v+%2B+x%2Fm%29%5E2+%2B+M+*+%28V+-+x%2FM%29%5E2+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+-+x+*+K%29%5E2%29%2C+solve+for+x *)
-    let impulse_a =
-      0.5
-      *. ((t1.ang_inertia *. (k1 **. 2.))
-         +. (t2.ang_inertia *. (k2 **. 2.))
-         +. (1. /. t1.m)
-         +. (1. /. t2.m))
-    in
-    let impulse_b =
-      (t1.ang_inertia *. k1 *. t1.omega)
-      -. (t2.ang_inertia *. k2 *. t2.omega)
-      +. Vec.mag t1.v
-      -. Vec.mag t2.v
-    in
-    let impulse_c =
-      (0.5
-      *. ((t1.m *. Vec.mag_sq t1.v)
-         +. (t2.m *. Vec.mag_sq t2.v)
-         +. (t1.ang_inertia *. (t1.omega **. 2.))
-         +. (t2.ang_inertia *. (t2.omega **. 2.))))
-      -. e_final
-    in
-    (* Not sure if it is always + for the +/- in the quad formula *)
-    (* Otherwise seems that this is right *)
-    let impulse_mag = quadratic_formula impulse_a impulse_b impulse_c true in
-    if Float.is_nan impulse_mag
-    then
-      raise
-        (Unkown_collision_error
-           (Printf.sprintf
-              "Got nan impulse magnitude.\n\
-               DEBUG INFO\n\
-               Min impulse mag: %f\n\
-               a,b,c: %f, %f, %f\n"
-              impulse_min_mag
-              impulse_a
-              impulse_b
-              impulse_c));
-    let t1_final, t2_final = apply_impulse impulse_mag in
-    let check_t_final t =
-      if Float.is_nan t.pos.x
-      then raise (Unkown_collision_error "Got nan x post-collision")
-      else if Float.is_nan t.pos.y
-      then raise (Unkown_collision_error "Got nan y post-collision")
-      else if Float.is_nan t.v.x
-      then raise (Unkown_collision_error "Got nan v.x post-collision")
-      else if Float.is_nan t.v.y
-      then raise (Unkown_collision_error "Got nan v.y post-collision")
-    in
-    check_t_final t1;
-    check_t_final t2;
-    Stdio.printf "Impulse mag: %f\n" impulse_mag;
-    Some
-      { t1 = t1_final
-      ; t2 = t2_final
-      ; impulse_pt = inter.pt
-      ; t1_acc_angle
-      ; impulse_mag
-      ; debug
-      }
+    if Float.(s2 > s1)
+    then get_collision_from_intersections t1 t2 tl
+    else (
+      let ei = ke_of t1 +. ke_of t2 in
+      (* the theta in torque = F * r * sin(theta). Need a better name *)
+      let get_torque_theta_of r = t1_acc_angle -. Vec.angle_of r in
+      let get_k_of t r =
+        Vec.mag r *. Float.sin (get_torque_theta_of r) /. t.ang_inertia
+      in
+      let k1 = get_k_of t1 r1 in
+      let k2 = get_k_of t2 r2 in
+      (* Note: this can be made faster if we use Vec.mag_sq *)
+      let impulse_min_mag_denom =
+        (1. /. t1.m)
+        +. (1. /. t2.m)
+        +. ((k1 **. 2.) /. t1.ang_inertia)
+        +. ((k2 **. 2.) /. t2.ang_inertia)
+      in
+      if Float.equal impulse_min_mag_denom 0.
+      then
+        raise (Unkown_collision_error "Got infinite minimum impulse magnitude");
+      let impulse_min_mag = Float.abs ((s1 -. s2) /. impulse_min_mag_denom) in
+      let apply_impulse impulse_mag =
+        let impulse_1 = Vec.scale t1_acc_unit_vec impulse_mag in
+        let impulse_2 = Vec.scale t2_acc_unit_vec impulse_mag in
+        ( apply_impulse_w_global_pos t1 impulse_1 inter.pt
+        , apply_impulse_w_global_pos t2 impulse_2 inter.pt )
+      in
+      let t1_with_impulse_min, t2_with_impulse_min =
+        apply_impulse impulse_min_mag
+      in
+      let v_pt_min_1 = get_v_pt t1_with_impulse_min inter.pt in
+      let v_pt_min_2 = get_v_pt t2_with_impulse_min inter.pt in
+      Stdio.printf
+        "min impulse v_pts: (%f, %f), (%f, %f). delta s1, delta s2: %f, %f. \
+         Delta omegas: %f, %f\n"
+        v_pt_min_1.x
+        v_pt_min_1.y
+        v_pt_min_2.x
+        v_pt_min_2.y
+        (Vec.dot v_pt_min_1 t2_acc_unit_vec -. s1)
+        (Vec.dot v_pt_min_2 t2_acc_unit_vec -. s2)
+        (t1_with_impulse_min.omega -. t1.omega)
+        (t2_with_impulse_min.omega -. t2.omega);
+      let get_v_pt t impulse_pt t1_acc_angle =
+        Vec.dot (get_v_pt t impulse_pt) (Vec.unit_vec t1_acc_angle)
+      in
+      let debug = get_v_pt t2_with_impulse_min inter.pt t1_acc_angle in
+      (* e_min is wrong *)
+      let e_min_1 = ke_of t1_with_impulse_min in
+      let e_min_2 = ke_of t2_with_impulse_min in
+      let e_min = e_min_1 +. e_min_2 in
+      let e_final = (inter.energy_ret *. (ei -. e_min)) +. e_min in
+      (* Link to math:
+         https://www.wolframalpha.com/input/?i=E+%3D+0.5%28m+*+%28v+%2B+x%2Fm%29%5E2+%2B+M+*+%28V+-+x%2FM%29%5E2+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+-+x+*+K%29%5E2%29%2C+solve+for+x *)
+      let impulse_a =
+        0.5
+        *. ((t1.ang_inertia *. (k1 **. 2.))
+           +. (t2.ang_inertia *. (k2 **. 2.))
+           +. (1. /. t1.m)
+           +. (1. /. t2.m))
+      in
+      let impulse_b =
+        (t1.ang_inertia *. k1 *. t1.omega)
+        -. (t2.ang_inertia *. k2 *. t2.omega)
+        +. Vec.mag t1.v
+        -. Vec.mag t2.v
+      in
+      let impulse_c =
+        (0.5
+        *. ((t1.m *. Vec.mag_sq t1.v)
+           +. (t2.m *. Vec.mag_sq t2.v)
+           +. (t1.ang_inertia *. (t1.omega **. 2.))
+           +. (t2.ang_inertia *. (t2.omega **. 2.))))
+        -. e_final
+      in
+      (* Not sure if it is always + for the +/- in the quad formula *)
+      (* Otherwise seems that this is right *)
+      let impulse_mag = quadratic_formula impulse_a impulse_b impulse_c true in
+      if Float.is_nan impulse_mag
+      then
+        raise
+          (Unkown_collision_error
+             (Printf.sprintf
+                "Got nan impulse magnitude.\n\
+                 DEBUG INFO\n\
+                 Min impulse mag: %f\n\
+                 a,b,c: %f, %f, %f\n"
+                impulse_min_mag
+                impulse_a
+                impulse_b
+                impulse_c));
+      let t1_final, t2_final = apply_impulse impulse_mag in
+      let check_t_final t =
+        if Float.is_nan t.pos.x
+        then raise (Unkown_collision_error "Got nan x post-collision")
+        else if Float.is_nan t.pos.y
+        then raise (Unkown_collision_error "Got nan y post-collision")
+        else if Float.is_nan t.v.x
+        then raise (Unkown_collision_error "Got nan v.x post-collision")
+        else if Float.is_nan t.v.y
+        then raise (Unkown_collision_error "Got nan v.y post-collision")
+      in
+      check_t_final t1;
+      check_t_final t2;
+      Stdio.printf "Impulse mag: %f\n" impulse_mag;
+      Some
+        { t1 = t1_final
+        ; t2 = t2_final
+        ; impulse_pt = inter.pt
+        ; t1_acc_angle
+        ; impulse_mag
+        ; debug
+        })
+
+let get_collision t1 t2 =
+  match intersections t1 t2 with
+  | [] -> None
+  | intersections -> get_collision_from_intersections t1 t2 intersections
 
 let advance t dt =
   { t with

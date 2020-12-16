@@ -10,7 +10,7 @@ let tpf = tps /. fps
 
 let run () =
   let state = State.create () in
-  let elastic = Material.create ~energy_ret:0. in
+  let elastic = Material.create ~energy_ret:0.4 in
   let _scale = 0.5 in
   let robot_width = 50. in
   let robot_length = 75. in
@@ -22,24 +22,22 @@ let run () =
   let robot =
     Body.create
       ~m:1.
-      ~ang_inertia:200.
-      ~average_r:25.
+      ~ang_inertia:1600.
+      ~average_r:40.
       ~pos:(Vec.create (-50.) 0.)
       shape
   in
   let b2 =
     Body.create
       ~m:1.
-      ~ang_inertia:200.
-      ~average_r:25.
+      ~ang_inertia:1600.
+      ~average_r:40.
       ~v:(Vec.create (-100.) 0.)
       ~pos:(Vec.create 100. 0.)
       ~angle:(-0.1)
       shape
   in
-  let robot_2 =
-    { b2 with angle = Float.pi /. 22.; pos = Vec.create 220.7 0. }
-  in
+  let robot_2 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 220.7 0. } in
   let world = ref (World.of_bodies [ robot; robot_2 ]) in
   let _image =
     Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
