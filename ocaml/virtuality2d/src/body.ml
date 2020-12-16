@@ -4,8 +4,6 @@ open! Base
 type t =
   { shape : Shape.t
   ; m : float
-  ; ang_inertia : float (* for friction's effect on angular velocity *)
-  ; average_r : float
   ; pos : Vec.t
   ; v : Vec.t
   ; angle : float
@@ -27,14 +25,10 @@ let create
     ?(ground_fric_s_c = 0.)
     ?(air_drag_c = 0.)
     ~m
-    ~ang_inertia
-    ~average_r
     shape
   =
   { shape
   ; m
-  ; ang_inertia
-  ; average_r
   ; pos
   ; v
   ; angle
@@ -62,6 +56,9 @@ type intersection =
   ; edge_2 : Edge.t
   }
 [@@deriving sexp_of]
+
+let angular_inertia_of t = t.shape.inertia_over_mass *. t.m
+let average_r_of t = t.shape.average_r
 
 let get_edges_w_global_pos t =
   let to_global_pos t (ls : Line_like.segment Line_like.t) =
@@ -98,14 +95,14 @@ let closest_dist_to_corner inter (edge : Edge.t) =
   Float.min (List.nth_exn dists 0) (List.nth_exn dists 1)
 
 let momentum_of t = Vec.scale t.v t.m
-let angular_momentum_of t = t.omega *. t.ang_inertia
+let angular_momentum_of t = t.omega *. angular_inertia_of t
 
 let apply_com_impulse t impulse =
   { t with v = Vec.add t.v (Vec.scale impulse (1. /. t.m)) }
 
 (* Pure angular_impulse in this case means no net impulse on the com *)
 let apply_pure_angular_impulse t angular_impulse =
-  { t with omega = t.omega +. (angular_impulse /. t.ang_inertia) }
+  { t with omega = t.omega +. (angular_impulse /. angular_inertia_of t) }
 
 let apply_impulse t impulse rel_force_pos =
   let t = apply_com_impulse t impulse in
@@ -130,7 +127,7 @@ let apply_force_w_global_pos t force pos dt =
 let del_v_from_fric fric_c = fric_c *. Consts.dt
 
 let del_omega_from_fric t fric_c =
-  fric_c *. t.average_r *. (t.m /. t.ang_inertia) *. Consts.dt
+  fric_c *. average_r_of t *. (t.m /. angular_inertia_of t) *. Consts.dt
 
 let apply_tangnetial_forces t =
   let del_v_from_fric_s = del_v_from_fric t.ground_fric_s_c in
@@ -156,7 +153,8 @@ let get_v_pt t pt =
 let p_of t = Vec.scale t.v t.m
 
 let ke_of t =
-  (0.5 *. t.m *. Vec.mag_sq t.v) +. (0.5 *. t.ang_inertia *. (t.omega **. 2.))
+  (0.5 *. t.m *. Vec.mag_sq t.v)
+  +. (0.5 *. angular_inertia_of t *. (t.omega **. 2.))
 
 type collision =
   { t1 : t
@@ -219,13 +217,16 @@ let rec get_collision_from_intersections t1 t2 intersections =
     let s1 = Vec.dot v1 t2_acc_unit_vec in
     let s2 = Vec.dot v2 t2_acc_unit_vec in
     if Float.(s2 > s1)
-    then get_collision_from_intersections t1 t2 tl
+    then
+      (* This means that the collision points are moving away from each other
+         natrually *)
+      get_collision_from_intersections t1 t2 tl
     else (
       let ei = ke_of t1 +. ke_of t2 in
       (* the theta in torque = F * r * sin(theta). Need a better name *)
       let get_torque_theta_of r = t1_acc_angle -. Vec.angle_of r in
       let get_k_of t r =
-        Vec.mag r *. Float.sin (get_torque_theta_of r) /. t.ang_inertia
+        Vec.mag r *. Float.sin (get_torque_theta_of r) /. angular_inertia_of t
       in
       let k1 = get_k_of t1 r1 in
       let k2 = get_k_of t2 r2 in
@@ -233,8 +234,8 @@ let rec get_collision_from_intersections t1 t2 intersections =
       let impulse_min_mag_denom =
         (1. /. t1.m)
         +. (1. /. t2.m)
-        +. ((k1 **. 2.) /. t1.ang_inertia)
-        +. ((k2 **. 2.) /. t2.ang_inertia)
+        +. ((k1 **. 2.) /. angular_inertia_of t1)
+        +. ((k2 **. 2.) /. angular_inertia_of t2)
       in
       if Float.equal impulse_min_mag_denom 0.
       then
@@ -275,14 +276,14 @@ let rec get_collision_from_intersections t1 t2 intersections =
          https://www.wolframalpha.com/input/?i=E+%3D+0.5%28m+*+%28v+%2B+x%2Fm%29%5E2+%2B+M+*+%28V+-+x%2FM%29%5E2+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+-+x+*+K%29%5E2%29%2C+solve+for+x *)
       let impulse_a =
         0.5
-        *. ((t1.ang_inertia *. (k1 **. 2.))
-           +. (t2.ang_inertia *. (k2 **. 2.))
+        *. ((angular_inertia_of t1 *. (k1 **. 2.))
+           +. (angular_inertia_of t2 *. (k2 **. 2.))
            +. (1. /. t1.m)
            +. (1. /. t2.m))
       in
       let impulse_b =
-        (t1.ang_inertia *. k1 *. t1.omega)
-        -. (t2.ang_inertia *. k2 *. t2.omega)
+        (angular_inertia_of t1 *. k1 *. t1.omega)
+        -. (angular_inertia_of t2 *. k2 *. t2.omega)
         +. Vec.mag t1.v
         -. Vec.mag t2.v
       in
@@ -290,8 +291,8 @@ let rec get_collision_from_intersections t1 t2 intersections =
         (0.5
         *. ((t1.m *. Vec.mag_sq t1.v)
            +. (t2.m *. Vec.mag_sq t2.v)
-           +. (t1.ang_inertia *. (t1.omega **. 2.))
-           +. (t2.ang_inertia *. (t2.omega **. 2.))))
+           +. (angular_inertia_of t1 *. (t1.omega **. 2.))
+           +. (angular_inertia_of t2 *. (t2.omega **. 2.))))
         -. e_final
       in
       (* Not sure if it is always + for the +/- in the quad formula *)

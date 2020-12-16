@@ -14,30 +14,24 @@ let run () =
   let _scale = 0.5 in
   let robot_width = 50. in
   let robot_length = 75. in
-  let shape = Shape.create_rect robot_length robot_width elastic in
+  let shape =
+    Shape.create_standard_rect robot_length robot_width ~material:elastic
+  in
   (*let robot = Body.create ~m:1. ~ang_inertia:1. ~average_r:40. shape in let
     robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in let robot_2 =
     Body.create ~m:1. ~ang_inertia:1. ~average_r:40. ~pos:(Vec.create 200. 10.)
     shape in*)
-  let robot =
-    Body.create
-      ~m:1.
-      ~ang_inertia:1600.
-      ~average_r:40.
-      ~pos:(Vec.create (-50.) 0.)
-      shape
-  in
+  let robot = Body.create ~m:1. ~pos:(Vec.create (-50.) 0.) shape in
   let b2 =
     Body.create
       ~m:1.
-      ~ang_inertia:1600.
-      ~average_r:40.
       ~v:(Vec.create (-100.) 0.)
       ~pos:(Vec.create 100. 0.)
       ~angle:(-0.1)
       shape
   in
   let robot_2 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 220.7 0. } in
+  printf "inertias %f\n" (Body.angular_inertia_of robot);
   let world = ref (World.of_bodies [ robot; robot_2 ]) in
   let _image =
     Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
