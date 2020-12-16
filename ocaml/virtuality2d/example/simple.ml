@@ -10,7 +10,7 @@ let tpf = tps /. fps
 
 let run () =
   let state = State.create () in
-  let elastic = Material.create ~energy_ret:0.4 in
+  let elastic = Material.create ~energy_ret:0.01 in
   let _scale = 0.5 in
   let robot_width = 50. in
   let robot_length = 75. in
@@ -31,7 +31,6 @@ let run () =
       shape
   in
   let robot_2 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 220.7 0. } in
-  printf "inertias %f\n" (Body.angular_inertia_of robot);
   let world = ref (World.of_bodies [ robot; robot_2 ]) in
   let _image =
     Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
