@@ -1,9 +1,14 @@
 open! Geo
 open! Base
 
+type mass =
+  | Inertial of float
+  | Static
+[@@deriving sexp_of]
+
 type t =
   { shape : Shape.t
-  ; m : float
+  ; m : mass
   ; pos : Vec.t
   ; v : Vec.t
   ; angle : float
@@ -33,6 +38,7 @@ let create
     ~m
     shape
   =
+  let m = if Float.(m = Float.infinity) then Static else Inertial m in
   { shape
   ; m
   ; pos
@@ -62,20 +68,19 @@ let quadratic_formula
   then -.b /. c
   else (
     let discriminant = (b *. b) -. (4. *. a *. c) in
-    let reset_discriminant =
-      Float.(
-        -.discriminant_leniance < discriminant && discriminant_leniance < 0.)
-    in
-    let adjusted_discriminant =
-      if reset_discriminant then 0. else discriminant
-    in
-    if Float.(adjusted_discriminant < 0.) && not allow_imaginary
+    let ignore_imaginary = Float.(-.discriminant_leniance < discriminant) in
+    if Float.(discriminant < 0.)
+       && (not allow_imaginary)
+       && not ignore_imaginary
     then
       raise
-        (Negatrive_discriminant
-           (a, b, c, adjusted_discriminant, discriminant_leniance));
+        (Negatrive_discriminant (a, b, c, discriminant, discriminant_leniance));
+    let discriminant_sqrt = Float.sqrt discriminant in
+    let real_discrim_value =
+      if Float.is_nan discriminant_sqrt then 0. else discriminant_sqrt
+    in
     let numerator =
-      (if use_plus then ( +. ) else ( -. )) (-.b) (Float.sqrt discriminant)
+      (if use_plus then ( +. ) else ( -. )) (-.b) real_discrim_value
     in
     numerator /. (2. *. a))
 
@@ -87,8 +92,46 @@ type intersection =
   }
 [@@deriving sexp_of]
 
-let angular_inertia_of t = t.shape.inertia_over_mass *. t.m
+let ang_inertia_from_mass t m = t.shape.inertia_over_mass *. m
+
+let ang_inertia_of t =
+  match t.m with
+  | Inertial m -> Inertial (ang_inertia_from_mass t m)
+  | Static -> Static
+
+let mass_reciprocal m =
+  match m with
+  | Inertial m -> 1. /. m
+  | Static -> 0.
+
+let decode_mass m ~default =
+  match m with
+  | Inertial m -> m
+  | Static -> default
+
+let get_mass t ~default = decode_mass t.m ~default
+let get_ang_inertia t ~default = decode_mass (ang_inertia_of t) ~default
 let average_r_of t = t.shape.average_r
+
+let apply_speed_restriction t =
+  if (not Float.(t.max_speed = no_max_speed))
+     && Float.(Vec.mag_sq t.v > t.max_speed **. 2.)
+  then { t with v = Vec.scale t.v (t.max_speed /. Vec.mag t.v) }
+  else t
+
+let sign_to_float (sign : Sign.t) =
+  match sign with
+  | Zero -> 0.
+  | Neg -> -1.
+  | Pos -> 1.
+
+let apply_omega_restriction t =
+  if (not Float.(t.max_omega = no_max_speed))
+     && Float.(Float.abs t.omega > t.max_omega)
+  then { t with omega = t.max_omega *. sign_to_float (Float.sign_exn t.omega) }
+  else t
+
+let apply_restrictions t = apply_omega_restriction (apply_speed_restriction t)
 
 let get_edges_w_global_pos t =
   let to_global_pos t (ls : Line_like.segment Line_like.t) =
@@ -124,22 +167,24 @@ let closest_dist_to_corner inter (edge : Edge.t) =
   in
   Float.min (List.nth_exn dists 0) (List.nth_exn dists 1)
 
-let momentum_of t = Vec.scale t.v t.m
-let angular_momentum_of t = t.omega *. angular_inertia_of t
+let momentum_of t = Vec.scale t.v (get_mass t ~default:0.)
+let ang_momentum_of t = t.omega *. get_ang_inertia t ~default:0.
 
 let apply_com_impulse t impulse =
-  { t with v = Vec.add t.v (Vec.scale impulse (1. /. t.m)) }
+  { t with v = Vec.add t.v (Vec.scale impulse (mass_reciprocal t.m)) }
 
-(* Pure angular_impulse in this case means no net impulse on the com *)
-let apply_pure_angular_impulse t angular_impulse =
-  { t with omega = t.omega +. (angular_impulse /. angular_inertia_of t) }
+(* Pure ang_impulse in this case means no net impulse on the com *)
+let apply_pure_ang_impulse t ang_impulse =
+  { t with
+    omega = t.omega +. (ang_impulse *. mass_reciprocal (ang_inertia_of t))
+  }
 
 let apply_impulse t impulse rel_force_pos =
   let t = apply_com_impulse t impulse in
   let angle = Vec.angle_with_origin impulse rel_force_pos in
   let r = Vec.mag rel_force_pos in
-  let angular_impulse = Vec.mag impulse *. r *. Float.sin angle in
-  apply_pure_angular_impulse t angular_impulse
+  let ang_impulse = Vec.mag impulse *. r *. Float.sin angle in
+  apply_pure_ang_impulse t ang_impulse
 
 let apply_impulse_w_global_pos t impulse pos =
   apply_impulse t impulse (Vec.sub pos t.pos)
@@ -157,7 +202,10 @@ let apply_force_w_global_pos t force pos dt =
 let del_v_from_fric fric_c = fric_c *. Consts.dt
 
 let del_omega_from_fric t fric_c =
-  fric_c *. average_r_of t *. (t.m /. angular_inertia_of t) *. Consts.dt
+  match t.m with
+  | Inertial _m ->
+    fric_c *. average_r_of t *. Consts.dt /. t.shape.inertia_over_mass
+  | Static -> 0.
 
 let apply_tangnetial_forces t =
   let del_v_from_fric_s = del_v_from_fric t.ground_fric_s_c in
@@ -180,11 +228,9 @@ let get_v_pt t pt =
   in
   Vec.add t.v v_perp
 
-let p_of t = Vec.scale t.v t.m
-
 let ke_of t =
-  (0.5 *. t.m *. Vec.mag_sq t.v)
-  +. (0.5 *. angular_inertia_of t *. (t.omega **. 2.))
+  (0.5 *. get_mass t ~default:0. *. Vec.mag_sq t.v)
+  +. (0.5 *. get_ang_inertia t ~default:0. *. (t.omega **. 2.))
 
 type collision =
   { t1 : t
@@ -212,8 +258,6 @@ let rec get_collision_from_intersections t1 t2 intersections =
     let epsilon = 0.0001 in
     let r1 = get_r t1 inter.pt in
     let r2 = get_r t2 inter.pt in
-    let v1 = get_v_pt t1 inter.pt in
-    let v2 = get_v_pt t2 inter.pt in
     let corner_1_dist = closest_dist_to_corner inter inter.edge_1 in
     let corner_2_dist = closest_dist_to_corner inter inter.edge_2 in
     let is_edge_1_flat = Float.(corner_1_dist > corner_2_dist) in
@@ -244,8 +288,9 @@ let rec get_collision_from_intersections t1 t2 intersections =
     let t1_acc_unit_vec = Vec.unit_vec t1_acc_angle in
     let t2_acc_unit_vec = Vec.unit_vec t2_acc_angle in
     (* perp velocity of the intersection points *)
-    let s1 = Vec.dot v1 t2_acc_unit_vec in
-    let s2 = Vec.dot v2 t2_acc_unit_vec in
+    let get_s t = Vec.dot (get_v_pt t inter.pt) t2_acc_unit_vec in
+    let s1 = get_s t1 in
+    let s2 = get_s t2 in
     if Float.(s2 > s1)
     then
       (* This means that the collision points are moving away from each other
@@ -256,13 +301,17 @@ let rec get_collision_from_intersections t1 t2 intersections =
       (* the theta in torque = F * r * sin(theta). Need a better name *)
       let get_torque_theta_of r = t1_acc_angle -. Vec.angle_of r in
       let get_k_of t r =
-        Vec.mag r *. Float.sin (get_torque_theta_of r) /. angular_inertia_of t
+        Vec.mag r
+        *. Float.sin (get_torque_theta_of r)
+        *. mass_reciprocal (ang_inertia_of t)
       in
       let k1 = get_k_of t1 r1 in
       let k2 = get_k_of t2 r2 in
       (* this calculation has to be wrong *)
       let delta_s_over_impulse t k =
-        (1. /. t.m) +. ((k **. 2.) *. angular_inertia_of t)
+        match t.m with
+        | Inertial m -> (1. /. m) +. ((k **. 2.) *. ang_inertia_from_mass t m)
+        | Static -> 0.
       in
       let impulse_min_mag_denom =
         delta_s_over_impulse t1 k1 +. delta_s_over_impulse t2 k2
@@ -280,11 +329,14 @@ let rec get_collision_from_intersections t1 t2 intersections =
       let t1_with_impulse_min, t2_with_impulse_min =
         apply_impulse impulse_min_mag
       in
-      (* There's a def problem here because the v_pts aren't equal *)
-      let get_v_pt t impulse_pt t1_acc_angle =
-        Vec.dot (get_v_pt t impulse_pt) (Vec.unit_vec t1_acc_angle)
-      in
-      let debug = get_v_pt t2_with_impulse_min inter.pt t1_acc_angle in
+      Stdio.printf
+        "impulse min s: %f, %f. v1: (%f, %f). omega1: %f\n"
+        (get_s t1_with_impulse_min)
+        (get_s t2_with_impulse_min)
+        t1_with_impulse_min.v.x
+        t1_with_impulse_min.v.y
+        t1_with_impulse_min.omega;
+      let debug = get_s t2_with_impulse_min in
       (* e_min is wrong *)
       let e_min_1 = ke_of t1_with_impulse_min in
       let e_min_2 = ke_of t2_with_impulse_min in
@@ -293,37 +345,36 @@ let rec get_collision_from_intersections t1 t2 intersections =
       assert (Float.(e_min < ei));
       (* Link to math:
          https://www.wolframalpha.com/input/?i=E+%3D+0.5%28m+*+%28v+%2B+x%2Fm%29%5E2+%2B+M+*+%28V+-+x%2FM%29%5E2+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+-+x+*+K%29%5E2%29%2C+solve+for+x *)
+      (* we can default to 0 when static because k & omega will be 0 *)
+      let get_ang_inertia = get_ang_inertia ~default:0. in
       let impulse_a =
         0.5
-        *. ((angular_inertia_of t1 *. (k1 **. 2.))
-           +. (angular_inertia_of t2 *. (k2 **. 2.))
-           +. (1. /. t1.m)
-           +. (1. /. t2.m))
+        *. ((get_ang_inertia t1 *. (k1 **. 2.))
+           +. (get_ang_inertia t2 *. (k2 **. 2.))
+           +. mass_reciprocal t1.m
+           +. mass_reciprocal t2.m)
       in
       let impulse_b =
         -.Float.abs
-            ((angular_inertia_of t1 *. k1 *. t1.omega)
-            -. (angular_inertia_of t2 *. k2 *. t2.omega))
+            ((get_ang_inertia t1 *. k1 *. t1.omega)
+            -. (get_ang_inertia t2 *. k2 *. t2.omega))
         -. Float.abs (Vec.mag t1.v -. Vec.mag t2.v)
       in
+      (* we can default to 0 when static because v will be 0 *)
+      let get_mass = get_mass ~default:0. in
       let impulse_c =
         (0.5
-        *. ((t1.m *. Vec.mag_sq t1.v)
-           +. (t2.m *. Vec.mag_sq t2.v)
-           +. (angular_inertia_of t1 *. (t1.omega **. 2.))
-           +. (angular_inertia_of t2 *. (t2.omega **. 2.))))
+        *. ((get_mass t1 *. Vec.mag_sq t1.v)
+           +. (get_mass t2 *. Vec.mag_sq t2.v)
+           +. (get_ang_inertia t1 *. (t1.omega **. 2.))
+           +. (get_ang_inertia t2 *. (t2.omega **. 2.))))
         -. e_final
       in
-      Stdio.printf
-        "a b c: %f, %f, %f, %f, %f\n"
-        (angular_inertia_of t1 *. k1 *. t1.omega)
-        (angular_inertia_of t2 *. k2 *. t2.omega)
-        (Vec.mag t1.v)
-        (Vec.mag t2.v)
-        impulse_b;
       (* Not sure if it is always + for the +/- in the quad formula *)
       (* Otherwise seems that this is right *)
-      let discriminant_leniance = 0.1 in
+      let discriminant_leniance =
+        0.5 *. Float.max (get_mass t1) (get_mass t2)
+      in
       let impulse_quadratic_formula =
         quadratic_formula ~discriminant_leniance impulse_a impulse_b impulse_c
       in
@@ -362,6 +413,16 @@ let rec get_collision_from_intersections t1 t2 intersections =
       in
       check_t_final t1;
       check_t_final t2;
+      Stdio.printf
+        "inter.energy_ret: %f, %f = %f. e_min: %f. e_i: %f. e_final: %f. \
+         e_final real: %f\n"
+        (List.nth_exn t1.shape.edges 0).material.energy_ret
+        (List.nth_exn t2.shape.edges 0).material.energy_ret
+        inter.energy_ret
+        e_min
+        ei
+        e_final
+        (ke_of t1_final +. ke_of t2_final);
       Some
         { t1 = t1_final
         ; t2 = t2_final
@@ -371,10 +432,13 @@ let rec get_collision_from_intersections t1 t2 intersections =
         ; debug
         })
 
-let is_inert t = Float.(t.max_speed = 0. && t.max_omega = 0.)
+let is_static t =
+  match t.m with
+  | Static -> true
+  | _ -> false
 
 let get_collision t1 t2 =
-  if is_inert t1 && is_inert t2
+  if is_static t1 && is_static t2
   then None
   else (
     match intersections t1 t2 with
@@ -411,23 +475,3 @@ let collide_and_min_bounce t1 t2 dt =
       else advance_until_freed (advance t1 dt) (advance t2 dt)
     in
     advance_until_freed t1 t2
-
-let apply_speed_restriction t =
-  if (not Float.(t.max_speed = no_max_speed))
-     && Float.(Vec.mag_sq t.v > t.max_speed **. 2.)
-  then { t with v = Vec.scale t.v (t.max_speed /. Vec.mag t.v) }
-  else t
-
-let sign_to_float (sign : Sign.t) =
-  match sign with
-  | Zero -> 0.
-  | Neg -> -1.
-  | Pos -> 1.
-
-let apply_omega_restriction t =
-  if (not Float.(t.max_omega = no_max_speed))
-     && Float.(Float.abs t.omega > t.max_omega)
-  then { t with omega = t.max_omega *. sign_to_float (Float.sign_exn t.omega) }
-  else t
-
-let apply_restrictions t = apply_omega_restriction (apply_speed_restriction t)

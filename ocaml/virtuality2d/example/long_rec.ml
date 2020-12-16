@@ -10,7 +10,7 @@ let tpf = tps /. fps
 
 let run () =
   let state = State.create () in
-  let elastic = Material.create ~energy_ret:0.02 in
+  let elastic = Material.create ~energy_ret:0.0025 in
   let _scale = 0.5 in
   let robot_width = 50. in
   let robot_length = 10. in

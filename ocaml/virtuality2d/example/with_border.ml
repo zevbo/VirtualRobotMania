@@ -11,7 +11,7 @@ let tpf = tps /. fps
 let run () =
   let state = State.create () in
   let _elastic = Material.create ~energy_ret:1. in
-  let standard_body = Material.create ~energy_ret:0.03 in
+  let standard_body = Material.create ~energy_ret:0.0 in
   let _inelastic = Material.create ~energy_ret:0.04 in
   let _scale = 0.5 in
   let frame_width = Float.of_int frame_width in
@@ -30,9 +30,8 @@ let run () =
       border_width
       ~material:border_material
   in
-  let border_m = 1000000. in
   let create_border pos shape =
-    Body.create ~m:border_m ~max_speed:0. ~max_omega:0. ~pos shape
+    Body.create ~m:Float.infinity ~max_speed:0. ~max_omega:0. ~pos shape
   in
   let border_1 =
     create_border (Vec.create (frame_width /. 2.) 0.) vertical_border_shape
