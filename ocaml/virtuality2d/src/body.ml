@@ -39,11 +39,33 @@ let create
   ; air_drag_c
   }
 
-let quadratic_formula a b c use_plus =
+(* format is a, b, c, discriminant, discriminant_leniance *)
+exception Negatrive_discriminant of float * float * float * float * float
+
+let quadratic_formula
+    ?(discriminant_leniance = 0.)
+    ?(allow_imaginary = false)
+    a
+    b
+    c
+    use_plus
+  =
   if Float.equal a 0.
   then -.b /. c
   else (
     let discriminant = (b *. b) -. (4. *. a *. c) in
+    let reset_discriminant =
+      Float.(
+        -.discriminant_leniance < discriminant && discriminant_leniance < 0.)
+    in
+    let adjusted_discriminant =
+      if reset_discriminant then 0. else discriminant
+    in
+    if Float.(adjusted_discriminant < 0.) && not allow_imaginary
+    then
+      raise
+        (Negatrive_discriminant
+           (a, b, c, adjusted_discriminant, discriminant_leniance));
     let numerator =
       (if use_plus then ( +. ) else ( -. )) (-.b) (Float.sqrt discriminant)
     in
@@ -252,6 +274,7 @@ let rec get_collision_from_intersections t1 t2 intersections =
       in
       let v_pt_min_1 = get_v_pt t1_with_impulse_min inter.pt in
       let v_pt_min_2 = get_v_pt t2_with_impulse_min inter.pt in
+      (* There's a def problem here because the v_pts aren't equal *)
       Stdio.printf
         "min impulse v_pts: (%f, %f), (%f, %f). delta s1, delta s2: %f, %f. \
          Delta omegas: %f, %f\n"
@@ -297,7 +320,25 @@ let rec get_collision_from_intersections t1 t2 intersections =
       in
       (* Not sure if it is always + for the +/- in the quad formula *)
       (* Otherwise seems that this is right *)
-      let impulse_mag = quadratic_formula impulse_a impulse_b impulse_c true in
+      let discriminant_leniance = 0.1 in
+      let impulse_quadratic_formula =
+        quadratic_formula ~discriminant_leniance impulse_a impulse_b impulse_c
+      in
+      let impulse_mag_with_plus = impulse_quadratic_formula true in
+      let impulse_mag_with_minus = impulse_quadratic_formula false in
+      let get_accuracy impulse_mag =
+        let t1_final, t2_final = apply_impulse impulse_mag in
+        let real_e_final = ke_of t1_final +. ke_of t2_final in
+        Float.abs (real_e_final -. e_final)
+      in
+      let use_plus =
+        Float.(
+          get_accuracy impulse_mag_with_plus
+          < get_accuracy impulse_mag_with_minus)
+      in
+      let impulse_mag =
+        if use_plus then impulse_mag_with_plus else impulse_mag_with_minus
+      in
       if Float.is_nan impulse_mag
       then
         raise
