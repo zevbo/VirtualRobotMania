@@ -12,8 +12,12 @@ type t =
   ; ground_fric_s_c : float
   ; ground_fric_k_c : float
   ; air_drag_c : float
+  ; max_speed : float
+  ; max_omega : float
   }
 [@@deriving sexp_of]
+
+let no_max_speed = -1.
 
 let create
     ?(pos = Vec.origin)
@@ -24,6 +28,8 @@ let create
     ?(ground_fric_k_c = 0.)
     ?(ground_fric_s_c = 0.)
     ?(air_drag_c = 0.)
+    ?(max_speed = no_max_speed)
+    ?(max_omega = no_max_speed)
     ~m
     shape
   =
@@ -37,6 +43,8 @@ let create
   ; ground_fric_k_c
   ; ground_fric_s_c
   ; air_drag_c
+  ; max_speed
+  ; max_omega
   }
 
 (* format is a, b, c, discriminant, discriminant_leniance *)
@@ -252,17 +260,17 @@ let rec get_collision_from_intersections t1 t2 intersections =
       in
       let k1 = get_k_of t1 r1 in
       let k2 = get_k_of t2 r2 in
-      (* Note: this can be made faster if we use Vec.mag_sq *)
+      (* this calculation has to be wrong *)
+      let delta_s_over_impulse t k =
+        (1. /. t.m) +. ((k **. 2.) *. angular_inertia_of t)
+      in
       let impulse_min_mag_denom =
-        (1. /. t1.m)
-        +. (1. /. t2.m)
-        +. ((k1 **. 2.) /. angular_inertia_of t1)
-        +. ((k2 **. 2.) /. angular_inertia_of t2)
+        delta_s_over_impulse t1 k1 +. delta_s_over_impulse t2 k2
       in
       if Float.equal impulse_min_mag_denom 0.
       then
         raise (Unkown_collision_error "Got infinite minimum impulse magnitude");
-      let impulse_min_mag = Float.abs ((s1 -. s2) /. impulse_min_mag_denom) in
+      let impulse_min_mag = (s1 -. s2) /. impulse_min_mag_denom in
       let apply_impulse impulse_mag =
         let impulse_1 = Vec.scale t1_acc_unit_vec impulse_mag in
         let impulse_2 = Vec.scale t2_acc_unit_vec impulse_mag in
@@ -272,20 +280,7 @@ let rec get_collision_from_intersections t1 t2 intersections =
       let t1_with_impulse_min, t2_with_impulse_min =
         apply_impulse impulse_min_mag
       in
-      let v_pt_min_1 = get_v_pt t1_with_impulse_min inter.pt in
-      let v_pt_min_2 = get_v_pt t2_with_impulse_min inter.pt in
       (* There's a def problem here because the v_pts aren't equal *)
-      Stdio.printf
-        "min impulse v_pts: (%f, %f), (%f, %f). delta s1, delta s2: %f, %f. \
-         Delta omegas: %f, %f\n"
-        v_pt_min_1.x
-        v_pt_min_1.y
-        v_pt_min_2.x
-        v_pt_min_2.y
-        (Vec.dot v_pt_min_1 t2_acc_unit_vec -. s1)
-        (Vec.dot v_pt_min_2 t2_acc_unit_vec -. s2)
-        (t1_with_impulse_min.omega -. t1.omega)
-        (t2_with_impulse_min.omega -. t2.omega);
       let get_v_pt t impulse_pt t1_acc_angle =
         Vec.dot (get_v_pt t impulse_pt) (Vec.unit_vec t1_acc_angle)
       in
@@ -295,6 +290,7 @@ let rec get_collision_from_intersections t1 t2 intersections =
       let e_min_2 = ke_of t2_with_impulse_min in
       let e_min = e_min_1 +. e_min_2 in
       let e_final = (inter.energy_ret *. (ei -. e_min)) +. e_min in
+      assert (Float.(e_min < ei));
       (* Link to math:
          https://www.wolframalpha.com/input/?i=E+%3D+0.5%28m+*+%28v+%2B+x%2Fm%29%5E2+%2B+M+*+%28V+-+x%2FM%29%5E2+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+-+x+*+K%29%5E2%29%2C+solve+for+x *)
       let impulse_a =
@@ -305,10 +301,10 @@ let rec get_collision_from_intersections t1 t2 intersections =
            +. (1. /. t2.m))
       in
       let impulse_b =
-        (angular_inertia_of t1 *. k1 *. t1.omega)
-        -. (angular_inertia_of t2 *. k2 *. t2.omega)
-        +. Vec.mag t1.v
-        -. Vec.mag t2.v
+        -.Float.abs
+            ((angular_inertia_of t1 *. k1 *. t1.omega)
+            -. (angular_inertia_of t2 *. k2 *. t2.omega))
+        -. Float.abs (Vec.mag t1.v -. Vec.mag t2.v)
       in
       let impulse_c =
         (0.5
@@ -318,6 +314,13 @@ let rec get_collision_from_intersections t1 t2 intersections =
            +. (angular_inertia_of t2 *. (t2.omega **. 2.))))
         -. e_final
       in
+      Stdio.printf
+        "a b c: %f, %f, %f, %f, %f\n"
+        (angular_inertia_of t1 *. k1 *. t1.omega)
+        (angular_inertia_of t2 *. k2 *. t2.omega)
+        (Vec.mag t1.v)
+        (Vec.mag t2.v)
+        impulse_b;
       (* Not sure if it is always + for the +/- in the quad formula *)
       (* Otherwise seems that this is right *)
       let discriminant_leniance = 0.1 in
@@ -325,20 +328,14 @@ let rec get_collision_from_intersections t1 t2 intersections =
         quadratic_formula ~discriminant_leniance impulse_a impulse_b impulse_c
       in
       let impulse_mag_with_plus = impulse_quadratic_formula true in
-      let impulse_mag_with_minus = impulse_quadratic_formula false in
-      let get_accuracy impulse_mag =
-        let t1_final, t2_final = apply_impulse impulse_mag in
-        let real_e_final = ke_of t1_final +. ke_of t2_final in
-        Float.abs (real_e_final -. e_final)
-      in
-      let use_plus =
-        Float.(
-          get_accuracy impulse_mag_with_plus
-          < get_accuracy impulse_mag_with_minus)
-      in
-      let impulse_mag =
-        if use_plus then impulse_mag_with_plus else impulse_mag_with_minus
-      in
+      (*let impulse_mag_with_minus = impulse_quadratic_formula false in let
+        get_accuracy impulse_mag = let t1_final, t2_final = apply_impulse
+        impulse_mag in let real_e_final = ke_of t1_final +. ke_of t2_final in
+        Float.abs (real_e_final -. e_final) in let use_plus = Float.(
+        get_accuracy impulse_mag_with_plus < get_accuracy
+        impulse_mag_with_minus) in let impulse_mag = if use_plus then
+        impulse_mag_with_plus else impulse_mag_with_minus in*)
+      let impulse_mag = impulse_mag_with_plus in
       if Float.is_nan impulse_mag
       then
         raise
@@ -365,7 +362,6 @@ let rec get_collision_from_intersections t1 t2 intersections =
       in
       check_t_final t1;
       check_t_final t2;
-      Stdio.printf "Impulse mag: %f\n" impulse_mag;
       Some
         { t1 = t1_final
         ; t2 = t2_final
@@ -375,10 +371,15 @@ let rec get_collision_from_intersections t1 t2 intersections =
         ; debug
         })
 
+let is_inert t = Float.(t.max_speed = 0. && t.max_omega = 0.)
+
 let get_collision t1 t2 =
-  match intersections t1 t2 with
-  | [] -> None
-  | intersections -> get_collision_from_intersections t1 t2 intersections
+  if is_inert t1 && is_inert t2
+  then None
+  else (
+    match intersections t1 t2 with
+    | [] -> None
+    | intersections -> get_collision_from_intersections t1 t2 intersections)
 
 let advance t dt =
   { t with
@@ -410,3 +411,23 @@ let collide_and_min_bounce t1 t2 dt =
       else advance_until_freed (advance t1 dt) (advance t2 dt)
     in
     advance_until_freed t1 t2
+
+let apply_speed_restriction t =
+  if (not Float.(t.max_speed = no_max_speed))
+     && Float.(Vec.mag_sq t.v > t.max_speed **. 2.)
+  then { t with v = Vec.scale t.v (t.max_speed /. Vec.mag t.v) }
+  else t
+
+let sign_to_float (sign : Sign.t) =
+  match sign with
+  | Zero -> 0.
+  | Neg -> -1.
+  | Pos -> 1.
+
+let apply_omega_restriction t =
+  if (not Float.(t.max_omega = no_max_speed))
+     && Float.(Float.abs t.omega > t.max_omega)
+  then { t with omega = t.max_omega *. sign_to_float (Float.sign_exn t.omega) }
+  else t
+
+let apply_restrictions t = apply_omega_restriction (apply_speed_restriction t)

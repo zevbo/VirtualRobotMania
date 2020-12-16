@@ -11,6 +11,8 @@ type t =
   ; ground_fric_s_c : float
   ; ground_fric_k_c : float
   ; air_drag_c : float
+  ; max_speed : float
+  ; max_omega : float
   }
 [@@deriving sexp_of]
 
@@ -24,6 +26,8 @@ val create
   -> ?ground_fric_k_c:float
   -> ?ground_fric_s_c:float
   -> ?air_drag_c:float
+  -> ?max_speed:float
+  -> ?max_omega:float
   -> m:float
   -> Shape.t
   -> t
@@ -74,3 +78,4 @@ val collide_advance : t -> t -> float -> t * t
 val collide_and_min_bounce : t -> t -> float -> t * t
 val angular_inertia_of : t -> float
 val average_r_of : t -> float
+val apply_restrictions : t -> t
