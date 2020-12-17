@@ -1,10 +1,13 @@
 open! Geo
 
+type mass =
+  | Inertial of float
+  | Static
+[@@deriving sexp_of]
+
 type t =
   { shape : Shape.t
-  ; m : float
-  ; ang_inertia : float (* for friction's effect on angular velocity *)
-  ; average_r : float
+  ; m : mass
   ; pos : Vec.t
   ; v : Vec.t
   ; angle : float
@@ -13,6 +16,8 @@ type t =
   ; ground_fric_s_c : float
   ; ground_fric_k_c : float
   ; air_drag_c : float
+  ; max_speed : float
+  ; max_omega : float
   }
 [@@deriving sexp_of]
 
@@ -25,19 +30,18 @@ val create
   -> ?ground_drag_c:float
   -> ?ground_fric_k_c:float
   -> ?ground_fric_s_c:float
-  -> ?air_drag_c:float 
+  -> ?air_drag_c:float
+  -> ?max_speed:float
+  -> ?max_omega:float
   -> m:float
-  -> ang_inertia:float
-  -> average_r:float
   -> Shape.t
   -> t
 
-val p_of : t -> Vec.t
 val momentum_of : t -> Vec.t
-val angular_momentum_of : t -> float
+val ang_momentum_of : t -> float
 val apply_tangnetial_forces : t -> t
 val apply_com_impulse : t -> Vec.t -> t
-val apply_pure_angular_impulse : t -> float -> t
+val apply_pure_ang_impulse : t -> float -> t
 val apply_impulse : t -> Vec.t -> Vec.t -> t
 val apply_impulse_w_global_pos : t -> Vec.t -> Vec.t -> t
 val apply_force : t -> Vec.t -> Vec.t -> float -> t
@@ -76,3 +80,8 @@ val collide : t -> t -> t * t
 val advance : t -> float -> t
 val collide_advance : t -> t -> float -> t * t
 val collide_and_min_bounce : t -> t -> float -> t * t
+val ang_inertia_of : t -> mass
+val get_mass : t -> default:float -> float
+val get_ang_inertia : t -> default:float -> float
+val average_r_of : t -> float
+val apply_restrictions : t -> t
