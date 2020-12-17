@@ -18,4 +18,10 @@ let run (tests : (module Test) list) =
        ~summary:"Tests of the physics simulator"
        (List.map ~f:cmd tests))
 
-let () = run [ (module Simple); (module Long_rec); (module With_border) ]
+let () =
+  run
+    [ (module Simple)
+    ; (module Long_rec)
+    ; (module With_border)
+    ; (module Random_bodies_with_border)
+    ]

@@ -3,8 +3,8 @@ open Geo_graph
 open Tsdl
 
 let fps = 20.
-let frame_width = 1000
-let frame_height = 1000
+let frame_width = 700
+let frame_height = 700
 
 module State = struct
   type t =
