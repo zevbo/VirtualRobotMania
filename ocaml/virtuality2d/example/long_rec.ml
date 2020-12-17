@@ -21,17 +21,20 @@ let run () =
     robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in let robot_2 =
     Body.create ~m:1. ~ang_inertia:1. ~average_r:40. ~pos:(Vec.create 200. 10.)
     shape in*)
-  let robot = Body.create ~m:1. ~pos:(Vec.create (-50.) 0.) shape in
+  let robot =
+    Body.create ~m:1. ~pos:(Vec.create (-50.) 0.) ~v:(Vec.create 50. 0.) shape
+  in
   let b2 =
     Body.create
       ~m:1.
-      ~v:(Vec.create (-100.) 0.)
+      ~v:(Vec.create (-50.) 0.)
       ~pos:(Vec.create 100. 0.)
+      ~omega:0.01
       ~angle:(-0.1)
       shape
   in
   let robot_2 =
-    { b2 with angle = Float.pi /. 20.; pos = Vec.create 220.7 0. }
+    { b2 with angle = Float.pi /. -5.; pos = Vec.create 220.7 0. }
   in
   let world = ref (World.of_bodies [ robot; robot_2 ]) in
   let _image =

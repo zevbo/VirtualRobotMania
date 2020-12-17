@@ -7,6 +7,7 @@ open Helpers
 let name = "with-border"
 let tps = 200.
 let tpf = tps /. fps
+let time_multiplier = 1.
 
 let run () =
   let state = State.create () in
@@ -87,5 +88,5 @@ let run () =
   sim_loop state (fun () ->
       draw_robot 0;
       for _ = 0 to Int.of_float tpf do
-        world := World.advance !world (1. /. (tpf *. fps))
+        world := World.advance !world (time_multiplier /. (tpf *. fps))
       done)

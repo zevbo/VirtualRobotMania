@@ -7,10 +7,11 @@ open Helpers
 let name = "simple"
 let tps = 200.
 let tpf = tps /. fps
+let time_multiplier = 1.
 
 let run () =
   let state = State.create () in
-  let elastic = Material.create ~energy_ret:0.01 in
+  let elastic = Material.create ~energy_ret:0.8 in
   let _scale = 0.5 in
   let robot_width = 50. in
   let robot_length = 75. in
@@ -21,7 +22,7 @@ let run () =
     robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in let robot_2 =
     Body.create ~m:1. ~ang_inertia:1. ~average_r:40. ~pos:(Vec.create 200. 10.)
     shape in*)
-  let robot = Body.create ~m:1. ~pos:(Vec.create (-50.) 0.) shape in
+  let robot = Body.create ~m:1. ~pos:(Vec.create (-50.) 0.) ~omega:0.1 shape in
   let b2 =
     Body.create
       ~m:1.
@@ -51,5 +52,5 @@ let run () =
       draw_robot 0;
       draw_robot 1;
       for _ = 0 to Int.of_float tpf do
-        world := World.advance !world (1. /. (tpf *. fps))
+        world := World.advance !world (time_multiplier /. (tpf *. fps))
       done)
