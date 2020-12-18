@@ -25,7 +25,7 @@ val create
   -> ?ground_drag_c:float
   -> ?ground_fric_k_c:float
   -> ?ground_fric_s_c:float
-  -> ?air_drag_c:float 
+  -> ?air_drag_c:float
   -> m:float
   -> ang_inertia:float
   -> average_r:float
@@ -73,6 +73,6 @@ val get_collision : t -> t -> collision option
     returned *)
 val collide : t -> t -> t * t
 
-val advance : t -> float -> t
+val advance : t -> dt:float -> t
 val collide_advance : t -> t -> float -> t * t
 val collide_and_min_bounce : t -> t -> float -> t * t
