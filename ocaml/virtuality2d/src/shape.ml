@@ -11,6 +11,7 @@ type t =
 [@@deriving sexp_of]
 
 let create ~(edges : Edge.t list) ~average_r ~inertia_over_mass =
+  assert (not (Float.is_nan average_r));
   let points =
     List.fold edges ~init:[] ~f:(fun points edge ->
         Line_like.get_p1 edge.ls :: Line_like.get_p2 edge.ls :: points)
@@ -76,14 +77,27 @@ let create_standard_rect ?(com = Vec.origin) width height ~material =
     get_mass_percentage corner *. ((corner.x **. 2.) +. (corner.y **. 2.)) /. 3.
   in
   let average_r_of_section (corner : Vec.t) =
-    let max_angle = Float.abs (Float.atan2 corner.y corner.x) in
-    let sec = 1. /. Float.cos max_angle in
-    let tan = Float.tan max_angle in
-    let integral =
-      (sec *. tan) +. (Float.log (sec +. tan) /. Float.log Float.euler)
-    in
-    Float.abs
-      (get_mass_percentage corner *. integral /. (3. *. corner.x *. corner.y))
+    if Float.(corner.x = 0. && corner.y = 0.)
+    then 0.
+    else (
+      let max_angle = Float.abs (Float.atan2 corner.y corner.x) in
+      let max_angle =
+        if Float.(Float.cos max_angle = 0.)
+        then Float.abs (Float.atan2 corner.x corner.y)
+        else max_angle
+      in
+      let sec = Float.abs (1. /. Float.cos max_angle) in
+      let tan = Float.abs (Float.tan max_angle) in
+      let integral = (sec *. tan) +. Float.log (Float.abs (sec +. tan)) in
+      let r =
+        Float.abs
+          ((corner.x **. 2.)
+          *. get_mass_percentage corner
+          *. integral
+          /. (3. *. corner.y))
+      in
+      assert (not (Float.is_nan r));
+      r)
   in
   let corners = get_corners ~com width height in
   let inertia_over_mass =
