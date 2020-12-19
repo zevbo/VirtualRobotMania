@@ -3,16 +3,23 @@ open Expect_test_helpers_core
 open Geo
 open Virtuality2d
 
-let s1 = Shape.create_rect 100. 100. (Material.create ~energy_ret:1.)
-let s2 = Shape.create_rect 100. 100. (Material.create ~energy_ret:0.)
-let s3 = Shape.create_rect 100. 100. (Material.create ~energy_ret:0.5)
-let b1 = Body.create ~m:1. ~ang_inertia:200. ~average_r:25. s1 
+let s1 =
+  let material = Material.create ~energy_ret:1. in
+  Shape.create_standard_rect 100. 100. ~material
+
+let s2 =
+  let material = Material.create ~energy_ret:0. in
+  Shape.create_standard_rect 100. 100. ~material
+
+let s3 =
+  let material = Material.create ~energy_ret:0.5 in
+  Shape.create_standard_rect 100. 100. ~material
+
+let b1 = Body.create ~m:1. s1
 
 let b2 =
   Body.create
     ~m:1.
-    ~ang_inertia:200.
-    ~average_r:25.
     ~v:(Vec.create (-10.) 0.)
     ~pos:(Vec.create 100. 0.)
     ~angle:(-0.1)
@@ -23,7 +30,7 @@ let b3 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 120.7 0. }
 let%expect_test "impulses" =
   print_s [%sexp ((Body.apply_com_impulse b1 (Vec.create 0. 1.)).v : Vec.t)];
   [%expect {| (0 1) |}];
-  print_s [%sexp ((Body.apply_pure_angular_impulse b1 100.).omega : float)];
+  print_s [%sexp ((Body.apply_pure_ang_impulse b1 100.).omega : float)];
   [%expect {| 0.5 |}];
   print_s
     [%sexp
