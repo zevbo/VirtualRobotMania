@@ -41,7 +41,7 @@ let run () =
     Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
   in
   let draw_robot robot_n =
-    let robot = (List.nth_exn !world.bodies robot_n).body in
+    let robot = (Map.find_exn !world.bodies (World.Id.of_int robot_n)).body in
     let half_length =
       Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
     in
@@ -56,5 +56,5 @@ let run () =
       draw_robot 0;
       draw_robot 1;
       for _ = 0 to Int.of_float tpf do
-        world := World.advance !world (1. /. (tpf *. fps))
+        world := World.advance !world ~dt:(1. /. (tpf *. fps))
       done)
