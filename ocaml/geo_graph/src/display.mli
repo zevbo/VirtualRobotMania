@@ -3,7 +3,9 @@ open! Base
 
 type t
 
-val init : w:int -> h:int -> title:string -> t
+(** Starts up the display, with the provided physical (i.e., screen) and logical
+    dimentions. *)
+val init : physical:int * int -> logical:int * int -> title:string -> t
 
 module Image : sig
   type display := t

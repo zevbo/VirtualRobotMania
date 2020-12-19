@@ -27,10 +27,15 @@ let set_pixel_color t color =
   t.pixel_ba.{0} <- color;
   Sdl.update_texture t.pixel None t.pixel_ba 1 |> ok_exn
 
-let init ~w ~h ~title =
+let init ~physical ~logical ~title =
   let () = ok_exn @@ Sdl.init Sdl.Init.(video + events) in
-  let window = ok_exn @@ Sdl.create_window ~w ~h title Sdl.Window.opengl in
+  let window =
+    let w, h = physical in
+    ok_exn @@ Sdl.create_window ~w ~h title Sdl.Window.opengl
+  in
   let renderer = ok_exn @@ Sdl.create_renderer window in
+  (let w, h = logical in
+   ok_exn @@ Sdl.render_set_logical_size renderer w h);
   let pixel =
     ok_exn
     @@ Sdl.create_texture
@@ -42,7 +47,7 @@ let init ~w ~h ~title =
   in
   let pixel_ba = Bigarray.Array1.create Bigarray.Int32 Bigarray.c_layout 1 in
   let pixel_format = Sdl.alloc_format Sdl.Pixel.format_rgba8888 |> ok_exn in
-  { renderer; window; size = w, h; pixel; pixel_ba; pixel_format }
+  { renderer; window; size = logical; pixel; pixel_ba; pixel_format }
 
 module Image = struct
   type t =
