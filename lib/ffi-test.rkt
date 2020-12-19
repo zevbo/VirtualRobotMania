@@ -1,6 +1,6 @@
 #lang racket
-(require 2htdp/image)
 (require ffi/unsafe ffi/unsafe/define)
+(require 2htdp/image)
 
 (define-ffi-definer define-robot-sim
   (ffi-lib "../ocaml/_build/default/librobot_sim"))
@@ -34,3 +34,4 @@
 (define (loop)
   (void (step))
   (loop))
+(loop)
