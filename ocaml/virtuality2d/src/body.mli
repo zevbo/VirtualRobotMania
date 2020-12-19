@@ -66,7 +66,7 @@ val apply_impulse_w_global_pos : t -> Vec.t -> Vec.t -> t
 val exert_force : t -> Vec.t -> Vec.t -> t
 val exert_force_w_global_pos : t -> Vec.t -> Vec.t -> t
 val exert_ground_friction : t -> t
-val exert_drag : t -> ?medium_v:Vec.t -> ?v_exponent:float -> drag_c:float -> t
+val exert_drag : t -> ?medium_v:Vec.t -> ?v_exponent:float -> float -> t
 val apply_all_forces : ?reset_forces:bool -> t -> float -> t
 val get_edges_w_global_pos : t -> Edge.t list
 val get_v_pt : t -> Vec.t -> Vec.t

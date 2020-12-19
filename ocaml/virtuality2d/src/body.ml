@@ -297,9 +297,10 @@ let apply_drag_force_at_point
     inwards_angle
   =
   let v_pt = get_v_pt { t with v = Vec.sub t.v drag_force.medium_v } force_pt in
+  assert (Float.(abs v_pt.x < 100000.));
   let force_vec = Vec.unit_vec inwards_angle in
-  let v_opposed = Vec.dot v_pt force_vec in
-  if Float.(v_opposed < 0.) && is_closed
+  let v_opposed = Vec.dot v_pt (Vec.scale force_vec (-1.)) in
+  if Float.(v_opposed <= 0.) && is_closed
   then t
   else (
     let force_mag =
@@ -313,21 +314,26 @@ let apply_drag_force_at_point
 let apply_drag_force_on_side dt drag_force del_theta t (edge : Edge.t) =
   let p1 = Line_like.get_p1 edge.ls in
   let p2 = Line_like.get_p2 edge.ls in
-  let angle_1 = Vec.angle_of (Vec.sub p1 t.pos) in
-  let angle_2 = Vec.angle_of (Vec.sub p2 t.pos) in
+  let angle_1 = Vec.angle_of p1 in
+  let angle_2 = Vec.angle_of p2 in
   let perp_angle = Line_like.angle_of edge.ls +. (Float.pi /. 2.) in
   let is_perp_inwards = is_inwards t (Vec.mid_point p1 p2) perp_angle in
   let inwards_angle =
     if is_perp_inwards then perp_angle else perp_angle +. Float.pi
   in
-  let num_samples = Float.round_up ((angle_2 -. angle_1) /. del_theta) in
+  let num_samples =
+    Float.round_up (Float.abs (angle_2 -. angle_1) /. del_theta)
+  in
   let del_l_mag = Vec.dist p1 p2 /. (num_samples +. 1.) in
-  let del_l = Vec.scale (Vec.sub p2 p1) del_l_mag in
+  let del_l = Vec.scale (Vec.to_unit (Vec.sub p2 p1)) del_l_mag in
   let starting_pt = Vec.add p1 (Vec.scale del_l 0.5) in
   let num_point_to_vec num_pt =
     let pt = Vec.add starting_pt (Vec.scale del_l (Float.of_int num_pt)) in
-    assert (Line_like.on_line edge.ls pt);
-    pt
+    let param = Line_like.param_of_proj_point edge.ls pt in
+    let real_pt = Line_like.param_to_point edge.ls param in
+    assert (Line_like.on_line (Line_like.line p1 p2) real_pt);
+    assert (Line_like.on_line edge.ls real_pt);
+    Vec.add t.pos real_pt
   in
   let handle_point t pt =
     apply_drag_force_at_point dt t drag_force pt del_l_mag inwards_angle
@@ -339,14 +345,12 @@ let apply_drag_force_on_side dt drag_force del_theta t (edge : Edge.t) =
 
 let standard_del_theta = Float.pi /. 10.
 
-let apply_drag_force dt t force =
-  match force with
-  | Drag drag_force ->
-    List.fold
-      t.shape.edges
-      ~init:t
-      ~f:(apply_drag_force_on_side dt drag_force standard_del_theta)
-  | _ -> t
+let apply_drag_force _dt t _force =
+  Stdio.printf "Drag force not currently supported\n";
+  t
+
+(* match force with | Drag drag_force -> List.fold t.shape.edges ~init:t
+   ~f:(apply_drag_force_on_side dt drag_force standard_del_theta) | _ -> t*)
 
 let apply_all_forces ?(reset_forces = true) t dt =
   let force_applications =
@@ -361,7 +365,7 @@ let apply_all_forces ?(reset_forces = true) t dt =
 let exert_ground_friction t =
   { t with curr_forces = Ground_frictional :: t.curr_forces }
 
-let exert_drag t ?(medium_v = Vec.origin) ?(v_exponent = 1.) ~drag_c =
+let exert_drag t ?(medium_v = Vec.origin) ?(v_exponent = 1.) drag_c =
   let drag_force = { drag_c; v_exponent; medium_v } in
   { t with curr_forces = Drag drag_force :: t.curr_forces }
 

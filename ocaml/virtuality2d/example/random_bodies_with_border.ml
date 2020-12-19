@@ -73,18 +73,18 @@ let run () =
         ~ground_fric_s_c
         shape
     in
-    let apply_friction body _world = Body.exert_ground_friction body in
-    body, apply_friction
+    let apply_friction body = Body.exert_ground_friction body in
+    let updater body _world = apply_friction body in
+    body, updater
   in
   (*let robot = Body.create ~m:1. ~ang_inertia:1. ~average_r:40. shape in let
     robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in let robot_2 =
     Body.create ~m:1. ~ang_inertia:1. ~average_r:40. ~pos:(Vec.create 200. 10.)
     shape in*)
   let robot_positions =
-    [ Vec.create 175. 175.
-    ; Vec.create 175. (-175.)
-    ; Vec.create (-175.) 175.
-    ; Vec.create (-175.) (-175.)
+    [ (*Vec.create 175. 175. ; Vec.create 175. (-175.) ; Vec.create (-175.) 175.
+        ; *)
+      Vec.create (-175.) (-175.)
     ; Vec.create 0. 0.
     ]
   in
@@ -111,5 +111,6 @@ let run () =
       ignore_it (List.map ~f:draw_robot (List.range 0 (List.length robots)));
       draw_robot 0;
       for _ = 0 to Int.of_float tpf do
-        world := World.advance !world ~dt:(time_multiplier /. (tpf *. fps))
+        world := World.advance !world ~dt:(time_multiplier /. (tpf *. fps));
+        assert (0 > 1)
       done)
