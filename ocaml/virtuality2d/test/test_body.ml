@@ -31,12 +31,12 @@ let%expect_test "impulses" =
   print_s [%sexp ((Body.apply_com_impulse b1 (Vec.create 0. 1.)).v : Vec.t)];
   [%expect {| (0 1) |}];
   print_s [%sexp ((Body.apply_pure_ang_impulse b1 100.).omega : float)];
-  [%expect {| 0.5 |}];
+  [%expect {| 0.06 |}];
   print_s
     [%sexp
       ((Body.apply_impulse b1 (Vec.create 0. 1.) (Vec.create 20. 0.)).omega
         : float)];
-  [%expect {| 0.1 |}]
+  [%expect {| 0.011999999999999999 |}]
 
 let%expect_test "intersections" =
   print_s
@@ -86,22 +86,22 @@ let%expect_test "collisions" =
   in
   print_s [%sexp (get_vels (Body.collide b1 b3) : Vec.t * Vec.t)];
   [%expect {|
-    ((-1.9999989     2.4492922E-16)
-     (-1.1402215E-06 0)) |}];
+    ((0   0)
+     (-10 0)) |}];
   print_s
     [%sexp
       (get_vels (Body.collide { b1 with shape = s2 } { b3 with shape = s2 })
         : Vec.t * Vec.t)];
   [%expect {|
-    ((-0.99999944 1.2246461E-16)
-     (-1.0000006  0)) |}];
+    ((-4.9999997 6.1232336E-16)
+     (-5.0000003 0)) |}];
   print_s
     [%sexp
       (get_vels (Body.collide { b1 with shape = s3 } { b3 with shape = s3 })
         : Vec.t * Vec.t)];
   [%expect {|
-    ((-1.7071058  2.0906017E-16)
-     (-0.29289419 0)) |}];
+    ((-1.464466 1.7934536E-16)
+     (-8.535534 0)) |}];
   print_s
     [%sexp
       (List.map
@@ -126,14 +126,14 @@ let%expect_test "collisions" =
          { b3 with pos = Vec.create 120. 40.0; shape = s2 })
   in
   print_s [%sexp (get_v_pt collided_bodies_1 : float * float)];
-  [%expect {| (1.805132940270928 1.8051328614213928) |}];
+  [%expect {| (6.6597760384188938 6.6597763049789664) |}];
   print_s [%sexp (collided_bodies_1.t1.omega : float)];
-  [%expect {| 0.039565950208509927 |}];
+  [%expect {| 0.081564945734665745 |}];
   print_s
     [%sexp
       (get_vels (collided_bodies_1.t1, collided_bodies_1.t2) : Vec.t * Vec.t)];
   [%expect {|
-    ((-0.19437628 2.3804229E-17)
-     (-1.8056237  0)) |}];
+    ((-3.3392118 4.089355E-16)
+     (-6.6607882 0)) |}];
   print_s [%sexp (collided_bodies_1.impulse_pt : Vec.t)];
   [%expect {| (50 40.710678) |}]
