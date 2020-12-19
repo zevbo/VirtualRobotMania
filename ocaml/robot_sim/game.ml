@@ -28,12 +28,16 @@ module State = struct
           ~title:"Virtual Robotics Arena"
     }
 
+  let rand_around_zero x = Random.float (x *. 2.) -. x
+
   let add_bot t =
     let world, id =
       World.add_body
         t.world
         (Body.create
-           ~pos:(Vec.create (Random.float 1000.) (Random.float 1000.))
+           ~v:(Vec.create (rand_around_zero 500.) (rand_around_zero 500.))
+           ~angle:(Random.float (2. *. Float.pi))
+           ~pos:(Vec.create (rand_around_zero 350.) (rand_around_zero 350.))
            ~m:1.
            (Shape.create_standard_rect
               30.
@@ -53,14 +57,36 @@ module State = struct
         if key = Sdl.K.q then Caml.exit 0
       | _ -> ())
 
+  let status_s sexp =
+    let data =
+      String.concat
+        ~sep:"\n"
+        [ Time.to_string_abs_trimmed ~zone:Time.Zone.utc (Time.now ())
+        ; Sexp.to_string_hum sexp
+        ]
+    in
+    Out_channel.write_all "/tmp/status.sexp" ~data
+
   let step t =
     handle_events t;
     let dt = 1. /. fps in
-    for _i = 1 to 500 do
+    for _i = 1 to 10 do
       t.world <- World.advance t.world ~dt:(dt /. 50.)
     done;
     Display.clear t.display Color.white;
-    (* do any actual rendering here *)
+    let robot_width = 50. in
+    let robot_length = 75. in
+    Map.iter t.world.bodies ~f:(fun robot ->
+        let half_length =
+          Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
+        in
+        status_s [%sexp (robot : Body.t)];
+        Display.draw_line
+          ~width:robot_width
+          t.display
+          (Vec.add robot.pos half_length)
+          (Vec.sub robot.pos half_length)
+          Color.black);
     Display.present t.display;
     (match t.last_step_end with
     | None -> ()
