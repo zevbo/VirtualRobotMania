@@ -13,12 +13,14 @@ module State = struct
     ; mutable last_step_end : Time.t option
           (** The last time step was called. Used to make sure that the step can
               be elongated to match a single animation frame *)
+    ; mutable images : Display.Image.t Map.M(World.Id).t
     ; event : Sdl.event
     ; display : Display.t
     }
 
   let create () =
     { world = World.empty
+    ; images = Map.empty (module World.Id)
     ; event = Sdl.Event.create ()
     ; last_step_end = None
     ; display =
@@ -71,8 +73,14 @@ module State = struct
       let time_left_ms = Float.max 0. (target_delay_ms -. elapsed_ms) in
       Sdl.delay (Int32.of_float time_left_ms));
     t.last_step_end <- Some (Time.now ())
+
+  let load_bot_image t id string =
+    let id = World.Id.of_int id in
+    let png = Png.load string [ Load_only_the_first_frame ] in
+    Filename.temp_dir_name
 end
 
 let state = Lazy.from_fun State.create
 let add_bot () = State.add_bot (force state)
 let step () = State.step (force state)
+let load_bot_image id string = State.load_bot_image (force state) id string
