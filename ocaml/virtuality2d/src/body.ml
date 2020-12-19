@@ -25,6 +25,7 @@ type drag_force =
 type force =
   | Normal of normal_force
   | Ground_frictional
+  | Drag of drag_force
 [@@deriving sexp_of]
 
 type t =
@@ -160,6 +161,14 @@ let get_edges_w_global_pos t =
   in
   global_edges
 
+let is_inwards t pt angle =
+  let test_ray = Line_like.ray_of_point_angle pt angle in
+  let is_hit (edge : Edge.t) =
+    Option.is_some (Line_like.intersection edge.ls test_ray)
+    && not (Line_like.on_line edge.ls pt)
+  in
+  List.length (List.filter ~f:is_hit (get_edges_w_global_pos t)) % 2 = 1
+
 let intersections t1 t2 =
   (* create and do_intersect in Line_like and use here *)
   List.filter_map
@@ -205,6 +214,18 @@ let apply_impulse t impulse rel_force_pos =
 
 let apply_impulse_w_global_pos t impulse pos =
   apply_impulse t impulse (Vec.sub pos t.pos)
+
+let get_r t pt = Vec.sub pt t.pos
+
+let get_v_pt t pt =
+  let r = get_r t pt in
+  let v_perp =
+    Vec.scale
+      (* rotating r by pi/2 *)
+      (Vec.to_unit (Vec.rotate r (Float.pi /. 2.)))
+      (t.omega *. Vec.mag r)
+  in
+  Vec.add t.v v_perp
 
 (* *)
 let exert_force t force rel_force_pos =
@@ -265,14 +286,45 @@ let apply_ground_frictional_force dt t force =
   | Ground_frictional -> apply_ground_friction t dt
   | _ -> t
 
-(* let apply_drag_force dt t force = match force with | Drag drag_force -> let
-   rel_v = Vec.sub t.v drag_force.medium_v in
+(* k and n are for df/dt = kv^n *)
+(*let apply_drag_force_at_point ?(is_closed = true) dt t drag_force force_pt
+  length inwards_angle = let v_pt = get_v_pt { t with v = Vec.sub t.v
+  drag_force.medium_v } force_pt in assert (Float.(abs v_pt.x < 100000.)); let
+  force_vec = Vec.unit_vec inwards_angle in let v_opposed = Vec.dot v_pt
+  (Vec.scale force_vec (-1.)) in if Float.(v_opposed <= 0.) && is_closed then t
+  else ( let force_mag = length *. drag_force.drag_c *. (Float.abs v_opposed **.
+  drag_force.v_exponent) in let force = Vec.scale force_vec force_mag in
+  apply_impulse_w_global_pos t (Vec.scale force dt) force_pt)
 
-   | _ -> t*)
+  let apply_drag_force_on_side dt drag_force del_theta t (edge : Edge.t) = let
+  p1 = Line_like.get_p1 edge.ls in let p2 = Line_like.get_p2 edge.ls in let
+  angle_1 = Vec.angle_of p1 in let angle_2 = Vec.angle_of p2 in let perp_angle =
+  Line_like.angle_of edge.ls +. (Float.pi /. 2.) in let is_perp_inwards =
+  is_inwards t (Vec.mid_point p1 p2) perp_angle in let inwards_angle = if
+  is_perp_inwards then perp_angle else perp_angle +. Float.pi in let num_samples
+  = Float.round_up (Float.abs (angle_2 -. angle_1) /. del_theta) in let
+  del_l_mag = Vec.dist p1 p2 /. (num_samples +. 1.) in let del_l = Vec.scale
+  (Vec.to_unit (Vec.sub p2 p1)) del_l_mag in let starting_pt = Vec.add p1
+  (Vec.scale del_l 0.5) in let num_point_to_vec num_pt = let pt = Vec.add
+  starting_pt (Vec.scale del_l (Float.of_int num_pt)) in let param =
+  Line_like.param_of_proj_point edge.ls pt in let real_pt =
+  Line_like.param_to_point edge.ls param in assert (Line_like.on_line
+  (Line_like.line p1 p2) real_pt); assert (Line_like.on_line edge.ls real_pt);
+  Vec.add t.pos real_pt in let handle_point t pt = apply_drag_force_at_point dt
+  t drag_force pt del_l_mag inwards_angle in let points = List.map (List.range 0
+  (Int.of_float num_samples)) ~f:num_point_to_vec in List.fold points ~init:t
+  ~f:handle_point*)
+
+let apply_drag_force _dt t _force =
+  Stdio.printf "Drag force not currently supported\n";
+  t
+
+(* match force with | Drag drag_force -> List.fold t.shape.edges ~init:t
+   ~f:(apply_drag_force_on_side dt drag_force standard_del_theta) | _ -> t*)
 
 let apply_all_forces ?(reset_forces = true) t dt =
   let force_applications =
-    [ apply_normal_force; apply_ground_frictional_force ]
+    [ apply_normal_force; apply_ground_frictional_force; apply_drag_force ]
   in
   let use_force_application t force_application =
     List.fold t.curr_forces ~init:t ~f:(force_application dt)
@@ -283,17 +335,9 @@ let apply_all_forces ?(reset_forces = true) t dt =
 let exert_ground_friction t =
   { t with curr_forces = Ground_frictional :: t.curr_forces }
 
-let get_r t pt = Vec.sub pt t.pos
-
-let get_v_pt t pt =
-  let r = get_r t pt in
-  let v_perp =
-    Vec.scale
-      (* rotating r by pi/2 *)
-      (Vec.to_unit (Vec.rotate r (Float.pi /. 2.)))
-      (t.omega *. Vec.mag r)
-  in
-  Vec.add t.v v_perp
+let exert_drag t ?(medium_v = Vec.origin) ?(v_exponent = 1.) drag_c =
+  let drag_force = { drag_c; v_exponent; medium_v } in
+  { t with curr_forces = Drag drag_force :: t.curr_forces }
 
 let ke_of t =
   (0.5 *. get_mass t ~default:0. *. Vec.mag_sq t.v)
@@ -320,7 +364,6 @@ let rec get_collision_from_intersections t1 t2 intersections =
   match intersections with
   | [] -> None
   | inter :: tl ->
-    let epsilon = 0.0001 in
     let r1 = get_r t1 inter.pt in
     let r2 = get_r t2 inter.pt in
     let corner_1_dist = closest_dist_to_corner inter inter.edge_1 in
@@ -330,19 +373,9 @@ let rec get_collision_from_intersections t1 t2 intersections =
     let force_angle = Line_like.angle_of flat_edge.ls +. (Float.pi /. 2.) in
     (* acc angle for the flat edge *)
     let flat_edge_acc_angle =
-      let starting_point_w_buffer =
-        Vec.add inter.pt (Vec.scale (Vec.unit_vec force_angle) epsilon)
-      in
-      let test_ray =
-        Line_like.ray_of_point_angle starting_point_w_buffer force_angle
-      in
       let t = if is_edge_1_flat then t1 else t2 in
-      let is_hit (edge : Edge.t) =
-        Option.is_some (Line_like.intersection edge.ls test_ray)
-      in
-      if List.length (List.filter ~f:is_hit (get_edges_w_global_pos t)) % 2 = 1
-      then force_angle
-      else force_angle +. Float.pi
+      let is_inwards = is_inwards t inter.pt force_angle in
+      if is_inwards then force_angle else force_angle +. Float.pi
     in
     let t1_acc_angle =
       if is_edge_1_flat

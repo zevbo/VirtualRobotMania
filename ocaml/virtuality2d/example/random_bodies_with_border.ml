@@ -15,8 +15,8 @@ let run () =
   let standard_body = Material.create ~energy_ret:0.8 in
   let _inelastic = Material.create ~energy_ret:0.04 in
   let _scale = 0.5 in
-  let frame_width = Float.of_int frame_width in
-  let frame_height = Float.of_int frame_height in
+  let frame_width = Float.of_int (fst frame) in
+  let frame_height = Float.of_int (snd frame) in
   let border_width = 5. in
   let border_material = Material.create ~energy_ret:0.8 in
   let vertical_border_shape =
@@ -60,7 +60,7 @@ let run () =
     let random_vel () = Random.float_range (-160.) 160. in
     let v = Vec.create (random_vel ()) (random_vel ()) in
     let angle = Random.float_range 0. (2. *. Float.pi) in
-    let ground_fric_k_c = 0.2 in
+    let ground_fric_k_c = 0. in
     let ground_fric_s_c = ground_fric_k_c in
     let body =
       Body.create
@@ -73,18 +73,18 @@ let run () =
         ~ground_fric_s_c
         shape
     in
-    let apply_friction body _world = Body.exert_ground_friction body in
-    body, apply_friction
+    let apply_friction body = Body.exert_ground_friction body in
+    let updater body _world = apply_friction body in
+    body, updater
   in
   (*let robot = Body.create ~m:1. ~ang_inertia:1. ~average_r:40. shape in let
     robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in let robot_2 =
     Body.create ~m:1. ~ang_inertia:1. ~average_r:40. ~pos:(Vec.create 200. 10.)
     shape in*)
   let robot_positions =
-    [ Vec.create 175. 175.
-    ; Vec.create 175. (-175.)
-    ; Vec.create (-175.) 175.
-    ; Vec.create (-175.) (-175.)
+    [ (*Vec.create 175. 175. ; Vec.create 175. (-175.) ; Vec.create (-175.) 175.
+        ; *)
+      Vec.create (-175.) (-175.)
     ; Vec.create 0. 0.
     ]
   in
@@ -111,5 +111,6 @@ let run () =
       ignore_it (List.map ~f:draw_robot (List.range 0 (List.length robots)));
       draw_robot 0;
       for _ = 0 to Int.of_float tpf do
-        world := World.advance !world ~dt:(time_multiplier /. (tpf *. fps))
+        world := World.advance !world ~dt:(time_multiplier /. (tpf *. fps));
+        assert (0 > 1)
       done)

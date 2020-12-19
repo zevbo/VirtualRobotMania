@@ -3,8 +3,7 @@ open Geo_graph
 open Tsdl
 
 let fps = 20.
-let frame_width = 700
-let frame_height = 700
+let frame = 700, 700
 
 module State = struct
   type t =
@@ -14,7 +13,7 @@ module State = struct
 
   let create () =
     { event = Sdl.Event.create ()
-    ; display = Display.init ~w:frame_width ~h:frame_height ~title:"test"
+    ; display = Display.init ~logical:frame ~physical:frame ~title:"test"
     }
 end
 

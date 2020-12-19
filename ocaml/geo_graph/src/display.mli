@@ -3,7 +3,9 @@ open! Base
 
 type t
 
-val init : w:int -> h:int -> title:string -> t
+(** Starts up the display, with the provided physical (i.e., screen) and logical
+    dimentions. *)
+val init : physical:int * int -> logical:int * int -> title:string -> t
 
 module Image : sig
   type display := t
@@ -23,7 +25,24 @@ val present : t -> unit
     {!present}. *)
 
 val clear : t -> Color.t -> unit
-val draw_image : t -> ?scale:float -> Image.t -> Vec.t -> angle:float -> unit
+
+val draw_image
+  :  t
+  -> ?scale:float
+  -> Image.t
+  -> center:Vec.t
+  -> angle:float
+  -> unit
+
+val draw_image_wh
+  :  t
+  -> w:float
+  -> h:float
+  -> Image.t
+  -> center:Vec.t
+  -> angle:float
+  -> unit
+
 val draw_line : t -> width:float -> Vec.t -> Vec.t -> Color.t -> unit
 
 (** destroy the renderer and the window, and quit SDL *)

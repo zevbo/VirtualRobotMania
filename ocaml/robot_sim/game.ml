@@ -6,8 +6,7 @@ open Geo_graph
 
 module State = struct
   let fps = 20.
-  let frame_width = 700
-  let frame_height = 700
+  let frame = 700, 700
 
   type t =
     { mutable world : World.t
@@ -24,8 +23,8 @@ module State = struct
     ; last_step_end = None
     ; display =
         Display.init
-          ~w:frame_width
-          ~h:frame_height
+          ~physical:frame
+          ~logical:frame
           ~title:"Virtual Robotics Arena"
     }
 
