@@ -1,4 +1,2 @@
-let g = 9.81
-
-(* in ticks *)
-let dt = 0.1
+(* gravity, not in m/s^2 so we can make it whatever we want *)
+let g = 100.

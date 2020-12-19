@@ -1,67 +1,58 @@
 open! Base
 
-module Id : sig
-  type t
+type t = { bodies : world_body list }
 
-  include Comparable.S with type t := t
+and updater = Body.t -> t -> Body.t
 
-  val to_int : t -> int
-  val of_int : int -> t
-  val succ : t -> t
-  val zero : t
-end = struct
-  module T = struct
-    type t = int [@@deriving sexp, compare]
-  end
-
-  include T
-  include Comparable.Make (T)
-
-  let succ = Int.succ
-  let to_int = Fn.id
-  let of_int = Fn.id
-  let zero = zero
-end
-
-type t =
-  { next_id : Id.t
-  ; bodies : Body.t Map.M(Id).t
+(* these spec_updaters are all applid at the same time, which means its inputted
+   world doesn't update until all the functions have run *)
+and world_body =
+  { body : Body.t
+  ; updaters : updater list
   }
+[@@deriving fields]
 
-let empty = { bodies = Map.empty (module Id); next_id = Id.zero }
-let bodies t = t.bodies
-
-let add_body t body =
-  let id = t.next_id in
-  let t =
-    { bodies = Map.add_exn t.bodies ~key:id ~data:body
-    ; next_id = Id.succ t.next_id
-    }
-  in
-  id, t
-
-let remove_body t id = { t with bodies = Map.remove t.bodies id }
-
-(* TODO: If objects get stuck, we might want a small bounce *)
-let collide_bodies bodies =
-  let ids = Map.keys bodies |> Sequence.of_list in
-  let pairs =
-    Sequence.cartesian_product ids ids
-    |> Sequence.filter ~f:(fun (x, y) -> Id.( > ) x y)
-  in
-  Sequence.fold pairs ~init:bodies ~f:(fun bodies (id1, id2) ->
-      let b1, b2 =
-        Body.collide (Map.find_exn bodies id1) (Map.find_exn bodies id2)
-      in
-      let bodies = Map.set bodies ~key:id1 ~data:b1 in
-      let bodies = Map.set bodies ~key:id2 ~data:b2 in
-      bodies)
-
-let advance t ~dt =
-  { t with
-    bodies =
-      collide_bodies t.bodies |> Map.map ~f:(fun body -> Body.advance body ~dt)
-  }
+let create_world_body body updaters = { body; updaters }
+let create () = { bodies = [] }
+let of_world_bodies world_bodies = { bodies = world_bodies }
 
 let of_bodies bodies =
-  List.fold bodies ~init:empty ~f:(fun acc body -> snd (add_body acc body))
+  of_world_bodies (List.map bodies ~f:(fun body -> { body; updaters = [] }))
+
+let add_world_body t world_body = { bodies = world_body :: t.bodies }
+
+let add_body t ?(updaters = []) body =
+  { bodies = { body; updaters } :: t.bodies }
+
+(* TODO: If objects get stuck, we might want a small bounce *)
+let rec collide_bodies bodies =
+  match bodies with
+  | [] -> []
+  | first_body :: tl ->
+    (* I'm confused about this... *)
+    let new_first_body, new_tl =
+      List.fold_map tl ~init:first_body ~f:Body.collide
+    in
+    new_first_body :: collide_bodies new_tl
+
+let apply_updaters t world_body =
+  let apply_updater body updater = updater body t in
+  { world_body with
+    body = List.fold world_body.updaters ~init:world_body.body ~f:apply_updater
+  }
+
+let advance t dt =
+  let spec_updated = List.map t.bodies ~f:(apply_updaters t) in
+  let collided = collide_bodies (List.map spec_updated ~f:body) in
+  let restricted = List.map ~f:Body.apply_restrictions collided in
+  let advanced = List.map restricted ~f:(fun body -> Body.advance body ~dt) in
+  let final_world_bodies =
+    List.map2 advanced (List.map t.bodies ~f:updaters) ~f:create_world_body
+  in
+  match final_world_bodies with
+  | Ok final_world_bodies -> { bodies = final_world_bodies }
+  | Unequal_lengths ->
+    raise
+      (Failure
+         "somehow in world.advance, the vodies and worlds have different \
+          lengths on 52")

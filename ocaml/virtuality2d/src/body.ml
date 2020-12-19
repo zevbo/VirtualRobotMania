@@ -6,6 +6,27 @@ type mass =
   | Static
 [@@deriving sexp_of]
 
+(* this doesn't necessarily correspond to mechanics types such as normal,
+   frictional and spring. Its only for functional differences in their
+   application to a body *)
+type normal_force =
+  { force : Vec.t
+  ; rel_force_pos : Vec.t
+  }
+[@@deriving sexp_of]
+
+type drag_force =
+  { drag_c : float
+  ; v_exponent : float
+  ; medium_v : Vec.t
+  }
+[@@deriving sexp_of]
+
+type force =
+  | Normal of normal_force
+  | Ground_frictional
+[@@deriving sexp_of]
+
 type t =
   { shape : Shape.t
   ; m : mass
@@ -19,6 +40,7 @@ type t =
   ; air_drag_c : float
   ; max_speed : float
   ; max_omega : float
+  ; curr_forces : force list
   }
 [@@deriving sexp_of]
 
@@ -51,6 +73,7 @@ let create
   ; air_drag_c
   ; max_speed
   ; max_omega
+  ; curr_forces = []
   }
 
 (* format is a, b, c, discriminant, discriminant_leniance *)
@@ -65,7 +88,7 @@ let quadratic_formula
     use_plus
   =
   if Float.equal a 0.
-  then -.b /. c
+  then -.c /. b
   else (
     let discriminant = (b *. b) -. (4. *. a *. c) in
     let ignore_imaginary = Float.(-.discriminant_leniance < discriminant) in
@@ -119,16 +142,10 @@ let apply_speed_restriction t =
   then { t with v = Vec.scale t.v (t.max_speed /. Vec.mag t.v) }
   else t
 
-let sign_to_float (sign : Sign.t) =
-  match sign with
-  | Zero -> 0.
-  | Neg -> -1.
-  | Pos -> 1.
-
 let apply_omega_restriction t =
   if (not Float.(t.max_omega = no_max_speed))
      && Float.(Float.abs t.omega > t.max_omega)
-  then { t with omega = t.max_omega *. sign_to_float (Float.sign_exn t.omega) }
+  then { t with omega = Float.copysign t.max_omega t.omega }
   else t
 
 let apply_restrictions t = apply_omega_restriction (apply_speed_restriction t)
@@ -189,32 +206,82 @@ let apply_impulse t impulse rel_force_pos =
 let apply_impulse_w_global_pos t impulse pos =
   apply_impulse t impulse (Vec.sub pos t.pos)
 
-let apply_force t force rel_force_pos dt =
-  apply_impulse t (Vec.scale force dt) rel_force_pos
+(* *)
+let exert_force t force rel_force_pos =
+  let normal_force = Normal { force; rel_force_pos } in
+  { t with curr_forces = normal_force :: t.curr_forces }
 
-let apply_force_w_global_pos t force pos dt =
-  apply_impulse t (Vec.scale force dt) (Vec.sub pos t.pos)
+let exert_force_w_global_pos t force pos =
+  let normal_force = Normal { force; rel_force_pos = Vec.sub pos t.pos } in
+  { t with curr_forces = normal_force :: t.curr_forces }
 
 (* Currently assuming that friction/drag act essentially indepenedintly on
-   angular and tangential velocity even though that is not the case However, to
+   angular and tangential velocity even though that is not the case. However, to
    determine if friction is static or kinetic, we did that with angular and
    tangential velocity at the same time *)
-let del_v_from_fric fric_c = fric_c *. Consts.dt
+let fric_force_mag normal fric_c = fric_c *. normal
 
-let del_omega_from_fric t fric_c =
-  match t.m with
-  | Inertial _m ->
-    fric_c *. average_r_of t *. Consts.dt /. t.shape.inertia_over_mass
-  | Static -> 0.
+let ground_fric_force_mag t fric_c =
+  fric_force_mag (Consts.g *. get_mass t ~default:0.) fric_c
 
-let apply_tangnetial_forces t =
-  let del_v_from_fric_s = del_v_from_fric t.ground_fric_s_c in
-  let del_omega_from_fric_s = del_omega_from_fric t t.ground_fric_s_c in
-  if Float.(
-       del_v_from_fric_s ** 2. > Vec.mag_sq t.v
-       && del_omega_from_fric_s > t.omega)
-  then { t with v = Vec.origin; omega = 0. }
-  else t
+let ground_fric_torque_mag t fric_c =
+  fric_c *. average_r_of t *. Consts.g *. get_mass t ~default:0.
+
+let is_static_friction ?(dt = 0.) t =
+  Vec.equals ~epsilon:0. t.v Vec.origin
+  || Float.(
+       Vec.mag_sq t.v <= dt *. ground_fric_force_mag t t.ground_fric_s_c
+       && abs t.omega <= dt *. ground_fric_torque_mag t t.ground_fric_s_c)
+
+let apply_ground_friction_with_c t dt fric_c =
+  let t =
+    apply_com_impulse
+      t
+      (Vec.scale (Vec.to_unit t.v) (-.dt *. ground_fric_force_mag t fric_c))
+  in
+  let t =
+    if Float.(t.omega = 0.)
+    then t
+    else
+      apply_pure_ang_impulse
+        t
+        (-.Float.copysign (ground_fric_torque_mag t fric_c *. dt) t.omega)
+  in
+  t
+
+let apply_ground_friction t dt =
+  if is_static_friction t ~dt
+  then apply_ground_friction_with_c t dt t.ground_fric_s_c
+  else apply_ground_friction_with_c t dt t.ground_fric_k_c
+
+let apply_normal_force dt t force =
+  match force with
+  | Normal normal_force ->
+    apply_impulse t (Vec.scale normal_force.force dt) normal_force.rel_force_pos
+  | _ -> t
+
+let apply_ground_frictional_force dt t force =
+  match force with
+  | Ground_frictional -> apply_ground_friction t dt
+  | _ -> t
+
+(* let apply_drag_force dt t force = match force with | Drag drag_force -> let
+   rel_v = Vec.sub t.v drag_force.medium_v in
+
+   | _ -> t*)
+
+let apply_all_forces ?(reset_forces = true) t dt =
+  let force_applications =
+    [ apply_normal_force; apply_ground_frictional_force ]
+  in
+  let use_force_application t force_application =
+    List.fold t.curr_forces ~init:t ~f:(force_application dt)
+  in
+  let t = List.fold force_applications ~init:t ~f:use_force_application in
+  if reset_forces then { t with curr_forces = [] } else t
+
+let exert_ground_friction t =
+  { t with curr_forces = Ground_frictional :: t.curr_forces }
 
 let get_r t pt = Vec.sub pt t.pos
 
@@ -437,6 +504,7 @@ let get_collision t1 t2 =
     | intersections -> get_collision_from_intersections t1 t2 intersections)
 
 let advance t ~dt =
+  let t = apply_all_forces t dt in
   { t with
     pos = Vec.add t.pos (Vec.scale t.v dt)
   ; angle = t.angle +. (t.omega *. dt)
