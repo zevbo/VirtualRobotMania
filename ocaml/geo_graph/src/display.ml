@@ -31,7 +31,7 @@ let init ~physical ~logical ~title =
   let () = ok_exn @@ Sdl.init Sdl.Init.(video + events) in
   let window =
     let w, h = physical in
-    ok_exn @@ Sdl.create_window ~w ~h title Sdl.Window.opengl
+    ok_exn @@ Sdl.create_window ~w ~h title Sdl.Window.(opengl + resizable)
   in
   let renderer = ok_exn @@ Sdl.create_renderer window in
   (let w, h = logical in
