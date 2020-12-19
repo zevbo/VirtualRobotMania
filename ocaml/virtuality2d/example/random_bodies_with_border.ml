@@ -31,7 +31,10 @@ let run () =
       border_width
       ~material:border_material
   in
-  let create_border pos shape = Body.create ~m:Float.infinity ~pos shape in
+  let create_border pos shape =
+    let body = Body.create ~m:Float.infinity ~pos shape in
+    World.create_world_body body []
+  in
   let border_1 =
     create_border (Vec.create (frame_width /. 2.) 0.) vertical_border_shape
   in
@@ -53,11 +56,25 @@ let run () =
         robot_width
         ~material:standard_body
     in
-    let omega = Random.float_range (-0.3) 0.3 in
+    let omega = Random.float_range (-1.) 1. in
     let random_vel () = Random.float_range (-160.) 160. in
     let v = Vec.create (random_vel ()) (random_vel ()) in
     let angle = Random.float_range 0. (2. *. Float.pi) in
-    Body.create ~m:1. ~pos ~v ~omega ~angle shape
+    let ground_fric_k_c = 0.2 in
+    let ground_fric_s_c = ground_fric_k_c in
+    let body =
+      Body.create
+        ~m:1.
+        ~pos
+        ~v
+        ~omega
+        ~angle
+        ~ground_fric_k_c
+        ~ground_fric_s_c
+        shape
+    in
+    let apply_friction body _world = Body.exert_ground_friction body in
+    World.create_world_body body [ apply_friction ]
   in
   (*let robot = Body.create ~m:1. ~ang_inertia:1. ~average_r:40. shape in let
     robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in let robot_2 =
@@ -73,13 +90,13 @@ let run () =
   in
   let robots = List.map robot_positions ~f:create_random in
   let borders = [ border_1; border_2; border_3; border_4 ] in
-  let world = ref (World.of_bodies (List.append robots borders)) in
+  let world = ref (World.of_world_bodies (List.append robots borders)) in
   let _image =
     Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
   in
   let ignore_it _ = () in
   let draw_robot robot_n =
-    let robot = List.nth_exn !world.bodies robot_n in
+    let robot = (List.nth_exn !world.bodies robot_n).body in
     let half_length =
       Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
     in

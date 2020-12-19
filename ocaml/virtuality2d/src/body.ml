@@ -15,6 +15,13 @@ type normal_force =
   }
 [@@deriving sexp_of]
 
+type drag_force =
+  { drag_c : float
+  ; v_exponent : float
+  ; medium_v : Vec.t
+  }
+[@@deriving sexp_of]
+
 type force =
   | Normal of normal_force
   | Ground_frictional
@@ -81,7 +88,7 @@ let quadratic_formula
     use_plus
   =
   if Float.equal a 0.
-  then -.b /. c
+  then -.c /. b
   else (
     let discriminant = (b *. b) -. (4. *. a *. c) in
     let ignore_imaginary = Float.(-.discriminant_leniance < discriminant) in
@@ -135,16 +142,10 @@ let apply_speed_restriction t =
   then { t with v = Vec.scale t.v (t.max_speed /. Vec.mag t.v) }
   else t
 
-let sign_to_float (sign : Sign.t) =
-  match sign with
-  | Zero -> 0.
-  | Neg -> -1.
-  | Pos -> 1.
-
 let apply_omega_restriction t =
   if (not Float.(t.max_omega = no_max_speed))
      && Float.(Float.abs t.omega > t.max_omega)
-  then { t with omega = t.max_omega *. sign_to_float (Float.sign_exn t.omega) }
+  then { t with omega = Float.copysign t.max_omega t.omega }
   else t
 
 let apply_restrictions t = apply_omega_restriction (apply_speed_restriction t)
@@ -239,11 +240,12 @@ let apply_ground_friction_with_c t dt fric_c =
       (Vec.scale (Vec.to_unit t.v) (-.dt *. ground_fric_force_mag t fric_c))
   in
   let t =
-    apply_pure_ang_impulse
-      t
-      (-.sign_to_float (Float.sign_exn t.omega)
-      *. ground_fric_torque_mag t fric_c
-      *. dt)
+    if Float.(t.omega = 0.)
+    then t
+    else
+      apply_pure_ang_impulse
+        t
+        (-.Float.copysign (ground_fric_torque_mag t fric_c *. dt) t.omega)
   in
   t
 
@@ -252,26 +254,28 @@ let apply_ground_friction t dt =
   then apply_ground_friction_with_c t dt t.ground_fric_s_c
   else apply_ground_friction_with_c t dt t.ground_fric_k_c
 
+let apply_normal_force dt t force =
+  match force with
+  | Normal normal_force ->
+    apply_impulse t (Vec.scale normal_force.force dt) normal_force.rel_force_pos
+  | _ -> t
+
+let apply_ground_frictional_force dt t force =
+  match force with
+  | Ground_frictional -> apply_ground_friction t dt
+  | _ -> t
+
+(* let apply_drag_force dt t force = match force with | Drag drag_force -> let
+   rel_v = Vec.sub t.v drag_force.medium_v in
+
+   | _ -> t*)
+
 let apply_all_forces ?(reset_forces = true) t dt =
-  let apply_normal_forces t force =
-    match force with
-    | Normal normal_force ->
-      apply_impulse
-        t
-        (Vec.scale normal_force.force dt)
-        normal_force.rel_force_pos
-    | _ -> t
-  in
-  let apply_ground_frictional_forces t force =
-    match force with
-    | Ground_frictional -> apply_ground_friction t dt
-    | _ -> t
-  in
   let force_applications =
-    [ apply_normal_forces; apply_ground_frictional_forces ]
+    [ apply_normal_force; apply_ground_frictional_force ]
   in
   let use_force_application t force_application =
-    List.fold t.curr_forces ~init:t ~f:force_application
+    List.fold t.curr_forces ~init:t ~f:(force_application dt)
   in
   let t = List.fold force_applications ~init:t ~f:use_force_application in
   if reset_forces then { t with curr_forces = [] } else t
