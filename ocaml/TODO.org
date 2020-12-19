@@ -1,8 +1,9 @@
-* Geo_graph [0/3]
+* Geo_graph [3/3]
 
-- [ ] Allow an image to be scaled to a certain width and a certain height
-- [ ] Support separate display-size and logical-size
-- [ ] Allow resize of display
+- [X] Allow an image to be scaled to a certain width and a certain
+  height (added draw_image_wh)
+- [X] Support separate display-size and logical-size
+- [X] Allow resize of display
 
 * Engine [0/2]
 

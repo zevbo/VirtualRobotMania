@@ -27,10 +27,15 @@ let set_pixel_color t color =
   t.pixel_ba.{0} <- color;
   Sdl.update_texture t.pixel None t.pixel_ba 1 |> ok_exn
 
-let init ~w ~h ~title =
+let init ~physical ~logical ~title =
   let () = ok_exn @@ Sdl.init Sdl.Init.(video + events) in
-  let window = ok_exn @@ Sdl.create_window ~w ~h title Sdl.Window.opengl in
+  let window =
+    let w, h = physical in
+    ok_exn @@ Sdl.create_window ~w ~h title Sdl.Window.(opengl + resizable)
+  in
   let renderer = ok_exn @@ Sdl.create_renderer window in
+  (let w, h = logical in
+   ok_exn @@ Sdl.render_set_logical_size renderer w h);
   let pixel =
     ok_exn
     @@ Sdl.create_texture
@@ -42,7 +47,7 @@ let init ~w ~h ~title =
   in
   let pixel_ba = Bigarray.Array1.create Bigarray.Int32 Bigarray.c_layout 1 in
   let pixel_format = Sdl.alloc_format Sdl.Pixel.format_rgba8888 |> ok_exn in
-  { renderer; window; size = w, h; pixel; pixel_ba; pixel_format }
+  { renderer; window; size = logical; pixel; pixel_ba; pixel_format }
 
 module Image = struct
   type t =
@@ -88,18 +93,12 @@ let _sdl_to_math t { Vec.x; y } =
 let radians_to_degrees x = x *. 180. /. Float.pi
 let _degrees_to_radians x = x *. Float.pi /. 180.
 
-let draw_image t ?(scale = 1.0) (img : Image.t) vec ~angle:theta =
+let draw_image_wh t ~w ~h (img : Image.t) ~(center : Vec.t) ~angle:theta =
+  let open Float.O in
   let dst =
-    let open Float.O in
-    let w, h =
-      let w, h = img.size in
-      let adj x = Float.of_int x * scale in
-      adj w, adj h
-    in
     let corner =
-      let { Vec.x; y } = vec in
       (* Why is it + h/2 for y? *)
-      math_to_sdl t (Vec.create (x - (w / 2.)) (y + (h / 2.)))
+      math_to_sdl t (Vec.create (center.x - (w / 2.)) (center.y + (h / 2.)))
     in
     let { Vec.x; y } = corner in
     let round = Float.iround_nearest_exn in
@@ -113,6 +112,15 @@ let draw_image t ?(scale = 1.0) (img : Image.t) vec ~angle:theta =
     None
     Sdl.Flip.none
   |> ok_exn
+
+let draw_image t ?(scale = 1.0) (img : Image.t) ~center ~angle =
+  let open Float.O in
+  let w, h =
+    let w, h = img.size in
+    let adj x = Float.of_int x * scale in
+    adj w, adj h
+  in
+  draw_image_wh t ~w ~h img ~center ~angle
 
 let draw_line t ~width v1 v2 color =
   let round = Float.iround_nearest_exn in
