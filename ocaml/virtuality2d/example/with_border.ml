@@ -74,7 +74,7 @@ let run () =
     Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
   in
   let draw_robot robot_n =
-    let robot = (Map.find_exn !world.bodies (World.Id.of_int robot_n)).body in
+    let robot = Map.find_exn !world.bodies (World.Id.of_int robot_n) in
     let half_length =
       Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
     in

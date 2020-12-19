@@ -38,7 +38,7 @@ let run () =
   in
   let draw_robot robot_n =
     let robot_n = World.Id.of_int robot_n in
-    let robot = (Map.find_exn !world.bodies robot_n).body in
+    let robot = Map.find_exn !world.bodies robot_n in
     let half_length =
       Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
     in

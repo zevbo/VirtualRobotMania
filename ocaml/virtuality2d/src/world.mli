@@ -9,20 +9,16 @@ module Id : sig
   val of_int : int -> t
 end
 
-type t = { bodies : world_body Map.M(Id).t }
-
-and updater = Body.t -> t -> Body.t
-
-and world_body =
-  { body : Body.t
-  ; updater : updater
+type t =
+  { bodies : Body.t Map.M(Id).t
+  ; updaters : (Body.t -> t -> Body.t) Map.M(Id).t
   }
-[@@deriving fields]
 
-val create_world_body : ?updater:updater -> Body.t -> world_body
-val create : unit -> t
-val of_world_bodies : world_body list -> t
+type updater := Body.t -> t -> Body.t
+
+val empty : t
+val null_updater : updater
 val of_bodies : Body.t list -> t
+val of_bodies_and_updaters : (Body.t * updater) list -> t
 val add_body : t -> ?updater:updater -> Body.t -> t
-val add_world_body : t -> world_body -> t
 val advance : t -> dt:float -> t
