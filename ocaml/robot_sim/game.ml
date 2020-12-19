@@ -31,6 +31,8 @@ module State = struct
     }
 
   let rand_around_zero x = Random.float (x *. 2.) -. x
+  let robot_width = 50.
+  let robot_length = 75.
 
   let add_bot t =
     let world, id =
@@ -42,8 +44,8 @@ module State = struct
            ~pos:(Vec.create (rand_around_zero 350.) (rand_around_zero 350.))
            ~m:1.
            (Shape.create_standard_rect
-              30.
-              100.
+              robot_width
+              robot_length
               ~material:(Material.create ~energy_ret:0.3)))
     in
     t.world <- world;
@@ -76,8 +78,6 @@ module State = struct
       t.world <- World.advance t.world ~dt:(dt /. 50.)
     done;
     Display.clear t.display Color.white;
-    let robot_width = 50. in
-    let robot_length = 75. in
     Map.iter t.world.bodies ~f:(fun robot ->
         let half_length =
           Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
@@ -102,8 +102,13 @@ module State = struct
 
   let load_bot_image t id string =
     let id = World.Id.of_int id in
-    let png = Png.load string [ Load_only_the_first_frame ] in
-    Filename.temp_dir_name
+    let tmp = Caml.Filename.temp_file "image" "bmp" in
+    Png.load string [ Load_only_the_first_frame ] |> Bmp.save tmp [];
+    let image = Display.Image.of_bmp_file t.display tmp in
+    t.images
+      <- Map.update t.images id ~f:(fun old_image ->
+             Option.iter old_image ~f:Display.Image.destroy;
+             image)
 end
 
 let state = Lazy.from_fun State.create
