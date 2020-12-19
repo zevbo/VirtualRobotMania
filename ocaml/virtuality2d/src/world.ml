@@ -44,9 +44,10 @@ let add_body t ?(updater = null_updater) body =
     | None -> Id.zero
     | Some (x, _) -> Id.succ x
   in
-  { bodies = Map.set t.bodies ~key:id ~data:body
-  ; updaters = Map.set t.updaters ~key:id ~data:updater
-  }
+  ( { bodies = Map.set t.bodies ~key:id ~data:body
+    ; updaters = Map.set t.updaters ~key:id ~data:updater
+    }
+  , id )
 
 (* TODO: If objects get stuck, we might want a small bounce *)
 let collide_bodies bodies =
