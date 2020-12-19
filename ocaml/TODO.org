@@ -1,0 +1,22 @@
+* Geo_graph [0/3]
+
+- [ ] Allow an image to be scaled to a certain width and a certain height
+- [ ] Support separate display-size and logical-size
+- [ ] Allow resize of display
+
+* Engine [0/2]
+
+- [ ] Add API for handing over image-files to engine
+- [ ] Smooth-out animation? i.e., do multiple rounds of display per
+      Racket tick.
+- [ ] Only update status file once a second
+
+* Racket [1/2]
+
+- [X] Hello-world racket-driven game
+- [ ] Generate images
+
+* Design [0/2]
+
+- [ ] Propose an API for the game (i.e., what sensors, what actuators,
+  etc., are supplied by the game.)
