@@ -11,7 +11,8 @@ module Id : sig
   val of_int : int -> t
 end
 
-val create : unit -> t
+val empty : t
+val of_bodies : Body.t list -> t
 val add_body : t -> Body.t -> Id.t * t
 val remove_body : t -> Id.t -> t
 val bodies : t -> Body.t Map.M(Id).t

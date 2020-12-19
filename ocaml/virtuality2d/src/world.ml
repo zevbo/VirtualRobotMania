@@ -28,7 +28,7 @@ type t =
   ; bodies : Body.t Map.M(Id).t
   }
 
-let create () = { bodies = Map.empty (module Id); next_id = Id.zero }
+let empty = { bodies = Map.empty (module Id); next_id = Id.zero }
 let bodies t = t.bodies
 
 let add_body t body =
@@ -62,3 +62,6 @@ let advance t ~dt =
     bodies =
       collide_bodies t.bodies |> Map.map ~f:(fun body -> Body.advance body ~dt)
   }
+
+let of_bodies bodies =
+  List.fold bodies ~init:empty ~f:(fun acc body -> snd (add_body acc body))
