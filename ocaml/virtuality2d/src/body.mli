@@ -11,9 +11,17 @@ type normal_force =
   }
 [@@deriving sexp_of]
 
+type drag_force =
+  { drag_c : float
+  ; v_exponent : float
+  ; medium_v : Vec.t
+  }
+[@@deriving sexp_of]
+
 type force =
   | Normal of normal_force
   | Ground_frictional
+  | Drag of drag_force
 [@@deriving sexp_of]
 
 type t =
@@ -58,6 +66,7 @@ val apply_impulse_w_global_pos : t -> Vec.t -> Vec.t -> t
 val exert_force : t -> Vec.t -> Vec.t -> t
 val exert_force_w_global_pos : t -> Vec.t -> Vec.t -> t
 val exert_ground_friction : t -> t
+val exert_drag : t -> ?medium_v:Vec.t -> ?v_exponent:float -> drag_c:float -> t
 val apply_all_forces : ?reset_forces:bool -> t -> float -> t
 val get_edges_w_global_pos : t -> Edge.t list
 val get_v_pt : t -> Vec.t -> Vec.t

@@ -60,7 +60,7 @@ let run () =
     let random_vel () = Random.float_range (-160.) 160. in
     let v = Vec.create (random_vel ()) (random_vel ()) in
     let angle = Random.float_range 0. (2. *. Float.pi) in
-    let ground_fric_k_c = 0.2 in
+    let ground_fric_k_c = 0. in
     let ground_fric_s_c = ground_fric_k_c in
     let body =
       Body.create
