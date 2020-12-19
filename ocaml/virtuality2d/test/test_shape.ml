@@ -59,7 +59,7 @@ let%expect_test _ =
          (width  100)
          (height 100)
          (center (-10 -200))))
-       (average_r         NAN)
+       (average_r         329.42232233707648)
        (inertia_over_mass 67066.666666666672)) |}];
   print_s [%sexp (s2.bounding_box : Rect.t)];
   [%expect {|
