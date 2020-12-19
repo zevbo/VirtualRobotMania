@@ -503,7 +503,7 @@ let get_collision t1 t2 =
     | [] -> None
     | intersections -> get_collision_from_intersections t1 t2 intersections)
 
-let advance t dt =
+let advance t ~dt =
   let t = apply_all_forces t dt in
   { t with
     pos = Vec.add t.pos (Vec.scale t.v dt)
@@ -531,6 +531,6 @@ let collide_and_min_bounce t1 t2 dt =
     let rec advance_until_freed t1 t2 =
       if List.is_empty (intersections t1 t2)
       then t1, t2
-      else advance_until_freed (advance t1 dt) (advance t2 dt)
+      else advance_until_freed (advance t1 ~dt) (advance t2 ~dt)
     in
     advance_until_freed t1 t2
