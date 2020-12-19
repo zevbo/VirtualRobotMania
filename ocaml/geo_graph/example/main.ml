@@ -41,7 +41,19 @@ let main () =
       (Vec.create (-150.) (-150.))
       (Vec.create (-250.) (-50.))
       (Color.rgb 10 250 10);
-    Display.draw_image display image (Vec.create 0. 0.) ~angle:theta ~scale:0.05;
+    Display.draw_image_wh
+      display
+      image
+      ~center:(Vec.create 200. 0.)
+      ~w:300.
+      ~h:100.
+      ~angle:(theta *. 2.);
+    Display.draw_image
+      display
+      image
+      ~center:(Vec.create 0. 0.)
+      ~angle:theta
+      ~scale:0.05;
     Display.present display;
     (* 5ms *)
     Sdl.delay 5l

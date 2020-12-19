@@ -88,18 +88,12 @@ let _sdl_to_math t { Vec.x; y } =
 let radians_to_degrees x = x *. 180. /. Float.pi
 let _degrees_to_radians x = x *. Float.pi /. 180.
 
-let draw_image t ?(scale = 1.0) (img : Image.t) vec ~angle:theta =
+let draw_image_wh t ~w ~h (img : Image.t) ~(center : Vec.t) ~angle:theta =
+  let open Float.O in
   let dst =
-    let open Float.O in
-    let w, h =
-      let w, h = img.size in
-      let adj x = Float.of_int x * scale in
-      adj w, adj h
-    in
     let corner =
-      let { Vec.x; y } = vec in
       (* Why is it + h/2 for y? *)
-      math_to_sdl t (Vec.create (x - (w / 2.)) (y + (h / 2.)))
+      math_to_sdl t (Vec.create (center.x - (w / 2.)) (center.y + (h / 2.)))
     in
     let { Vec.x; y } = corner in
     let round = Float.iround_nearest_exn in
@@ -113,6 +107,15 @@ let draw_image t ?(scale = 1.0) (img : Image.t) vec ~angle:theta =
     None
     Sdl.Flip.none
   |> ok_exn
+
+let draw_image t ?(scale = 1.0) (img : Image.t) ~center ~angle =
+  let open Float.O in
+  let w, h =
+    let w, h = img.size in
+    let adj x = Float.of_int x * scale in
+    adj w, adj h
+  in
+  draw_image_wh t ~w ~h img ~center ~angle
 
 let draw_line t ~width v1 v2 color =
   let round = Float.iround_nearest_exn in
