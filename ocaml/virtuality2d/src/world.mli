@@ -1,18 +1,24 @@
-type t = { bodies : world_body list }
+open Base
 
-and updater = Body.t -> t -> Body.t
+module Id : sig
+  type t
 
-and world_body =
-  { body : Body.t
-  ; updaters : updater list
+  include Comparable.S with type t := t
+
+  val to_int : t -> int
+  val of_int : int -> t
+end
+
+type t =
+  { bodies : Body.t Map.M(Id).t
+  ; updaters : (Body.t -> t -> Body.t) Map.M(Id).t
   }
-[@@deriving fields]
 
-val create_world_body : Body.t -> updater list -> world_body
-val create : unit -> t
+type updater := Body.t -> t -> Body.t
+
+val empty : t
+val null_updater : updater
 val of_bodies : Body.t list -> t
-val add_body : t -> ?updaters:updater list -> Body.t -> t
-val of_world_bodies : world_body list -> t
-val add_world_body : t -> world_body -> t
-val collide_bodies : Body.t list -> Body.t list
-val advance : t -> float -> t
+val of_bodies_and_updaters : (Body.t * updater) list -> t
+val add_body : t -> ?updater:updater -> Body.t -> t
+val advance : t -> dt:float -> t

@@ -99,7 +99,7 @@ val get_collision : t -> t -> collision option
     returned *)
 val collide : t -> t -> t * t
 
-val advance : t -> float -> t
+val advance : t -> dt:float -> t
 val collide_advance : t -> t -> float -> t * t
 val collide_and_min_bounce : t -> t -> float -> t * t
 val ang_inertia_of : t -> mass

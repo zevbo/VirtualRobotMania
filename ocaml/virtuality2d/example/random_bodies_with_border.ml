@@ -33,7 +33,7 @@ let run () =
   in
   let create_border pos shape =
     let body = Body.create ~m:Float.infinity ~pos shape in
-    World.create_world_body body []
+    body, World.null_updater
   in
   let border_1 =
     create_border (Vec.create (frame_width /. 2.) 0.) vertical_border_shape
@@ -74,7 +74,7 @@ let run () =
         shape
     in
     let apply_friction body _world = Body.exert_ground_friction body in
-    World.create_world_body body [ apply_friction ]
+    body, apply_friction
   in
   (*let robot = Body.create ~m:1. ~ang_inertia:1. ~average_r:40. shape in let
     robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in let robot_2 =
@@ -90,13 +90,13 @@ let run () =
   in
   let robots = List.map robot_positions ~f:create_random in
   let borders = [ border_1; border_2; border_3; border_4 ] in
-  let world = ref (World.of_world_bodies (List.append robots borders)) in
+  let world = ref (World.of_bodies_and_updaters (List.append robots borders)) in
   let _image =
     Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
   in
   let ignore_it _ = () in
   let draw_robot robot_n =
-    let robot = (List.nth_exn !world.bodies robot_n).body in
+    let robot = Map.find_exn !world.bodies (World.Id.of_int robot_n) in
     let half_length =
       Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
     in
@@ -111,5 +111,5 @@ let run () =
       ignore_it (List.map ~f:draw_robot (List.range 0 (List.length robots)));
       draw_robot 0;
       for _ = 0 to Int.of_float tpf do
-        world := World.advance !world (time_multiplier /. (tpf *. fps))
+        world := World.advance !world ~dt:(time_multiplier /. (tpf *. fps))
       done)
