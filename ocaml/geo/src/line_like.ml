@@ -1,4 +1,4 @@
-open! Base
+open! Core_kernel
 
 type line = Line [@@deriving sexp]
 type segment = Segment [@@deriving sexp]
@@ -55,7 +55,9 @@ module With_epsilon (Epsilon : Epsilon) = struct
     is_t_on && Vec.equals pt expected_pt ~epsilon
 
   let param_of t pt =
-    if on_line t pt then Some (param_of_proj_point t pt) else None
+    if on_line { base = t.base; dir_vec = t.dir_vec; flips = [] } pt
+    then Some (param_of_proj_point t pt)
+    else None
 
   exception Bad_line_like_parameter of string
 
@@ -100,20 +102,20 @@ include With_epsilon (struct
   let epsilon = 0.00001
 end)
 
-let line p1 p2 = create_w_flip_points p1 (Vec.sub p2 p1) []
+let line p1 p2 : line t = create_w_flip_points p1 (Vec.sub p2 p1) []
 
 let line_of_point_angle p angle =
   line p (Vec.add (Vec.rotate (Vec.create 1. 0.) angle) p)
 
 let line_of_point_slope p slope = line_of_point_angle p (Float.atan slope)
-let ray p1 p2 = create_w_flip_points p2 (Vec.sub p2 p1) [ p1 ]
+let ray p1 p2 : ray t = create_w_flip_points p2 (Vec.sub p2 p1) [ p1 ]
 
 let ray_of_point_angle p angle =
   ray p (Vec.add (Vec.rotate (Vec.create 1. 0.) angle) p)
 
 let ray_of_point_slope p slope = ray_of_point_angle p (Float.atan slope)
 
-let segment p1 p2 =
+let segment p1 p2 : segment t =
   create_w_flip_points (Vec.mid_point p1 p2) (Vec.sub p1 p2) [ p1; p2 ]
 
 let get_p1 (t : segment t) = List.nth_exn (flip_points_of t) 0
@@ -123,3 +125,21 @@ let turn t turn_by = { t with dir_vec = Vec.rotate t.dir_vec turn_by }
 
 let rotate t rotate_by =
   turn { t with base = Vec.rotate t.base rotate_by } rotate_by
+
+let project t pt = param_to_point t (param_of_proj_point t pt)
+let dist_sq_line_to_pt (t : line t) pt = Vec.dist_sq pt (project t pt)
+let to_line t = line_of_point_angle t.base (Vec.angle_of t.dir_vec)
+
+let dist_sq_to_pt t (pt : Vec.t) =
+  if is_param_on t (param_of_proj_point t pt)
+  then dist_sq_line_to_pt (to_line t) pt
+  else (
+    let distances = List.map (flip_points_of t) ~f:(Vec.dist pt) in
+    match List.min_elt ~compare:Float.compare distances with
+    | Some distance -> distance
+    | None ->
+      raise
+        (Failure
+           "Somehow found line like with no flip points and with an off param"))
+
+let dist_to_pt t pt = Float.sqrt (dist_sq_to_pt t pt)

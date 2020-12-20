@@ -50,7 +50,7 @@ let add_body t ?(updater = null_updater) body =
   , id )
 
 (* TODO: If objects get stuck, we might want a small bounce *)
-let collide_bodies bodies =
+let collide_bodies dt bodies =
   let ids = Sequence.of_list (Map.keys bodies) in
   let pairs =
     Sequence.cartesian_product ids ids
@@ -59,7 +59,7 @@ let collide_bodies bodies =
   Sequence.fold pairs ~init:bodies ~f:(fun bodies (i1, i2) ->
       let b1 = Map.find_exn bodies i1 in
       let b2 = Map.find_exn bodies i2 in
-      let b1, b2 = Body.collide b1 b2 in
+      let b1, b2 = Body.collide dt b1 b2 in
       bodies |> Map.set ~key:i1 ~data:b1 |> Map.set ~key:i2 ~data:b2)
 
 let update t id body =
@@ -71,7 +71,7 @@ let advance t ~dt =
   let bodies =
     t.bodies
     |> Map.mapi ~f:(fun ~key:id ~data:body -> update t id body)
-    |> collide_bodies
+    |> collide_bodies dt
     |> Map.map ~f:Body.apply_restrictions
     |> Map.map ~f:(Body.advance ~dt)
   in

@@ -84,20 +84,20 @@ let%expect_test "collisions" =
     match bodies with
     | body1, body2 -> body1.v, body2.v
   in
-  print_s [%sexp (get_vels (Body.collide b1 b3) : Vec.t * Vec.t)];
+  print_s [%sexp (get_vels (Body.collide 0.1 b1 b3) : Vec.t * Vec.t)];
   [%expect {|
     ((0   0)
      (-10 0)) |}];
   print_s
     [%sexp
-      (get_vels (Body.collide { b1 with shape = s2 } { b3 with shape = s2 })
+      (get_vels (Body.collide 0.1 { b1 with shape = s2 } { b3 with shape = s2 })
         : Vec.t * Vec.t)];
   [%expect {|
     ((-4.9999997 6.1232336E-16)
      (-5.0000003 0)) |}];
   print_s
     [%sexp
-      (get_vels (Body.collide { b1 with shape = s3 } { b3 with shape = s3 })
+      (get_vels (Body.collide 0.1 { b1 with shape = s3 } { b3 with shape = s3 })
         : Vec.t * Vec.t)];
   [%expect {|
     ((-1.464466 1.7934536E-16)
@@ -122,6 +122,7 @@ let%expect_test "collisions" =
   let collided_bodies_1 =
     Option.value_exn
       (Body.get_collision
+         0.1
          { b1 with shape = s2 }
          { b3 with pos = Vec.create 120. 40.0; shape = s2 })
   in

@@ -43,6 +43,8 @@ val get_p2 : segment t -> Vec.t
 val shift : 'a t -> Vec.t -> 'a t
 val turn : 'a t -> float -> 'a t
 val rotate : 'a t -> float -> 'a t
+val dist_sq_to_pt : 'a t -> Vec.t -> float
+val dist_to_pt : 'a t -> Vec.t -> float
 
 (** These functions depend on some epsilon tolerance value *)
 module type Epsilon_dependent = sig

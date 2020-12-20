@@ -1,19 +1,30 @@
 open Core
+open Tsdl
 
 let run () =
-  let module Game = Robot_sim.Game in
-  for _ = 0 to 20 do
-    ignore (Game.add_bot () : int)
-  done;
-  let rec loop last_time =
+  let module Game = Robot_sim.Ctf_sim in
+  Game.set_motors 0.8 1.;
+  let rec loop () =
     Game.step ();
-    let now = Time.now () in
-    printf
-      "#### %s ####\n%!"
-      (Time.Span.to_string_hum (Time.diff now last_time));
-    loop now
+    let key_state = Sdl.get_keyboard_state () in
+    let w = key_state.{Sdl.Scancode.w} in
+    let s = key_state.{Sdl.Scancode.s} in
+    let u = key_state.{Sdl.Scancode.up} in
+    let d = key_state.{Sdl.Scancode.down} in
+    let move_by = 0.01 in
+    let l_input =
+      Game.l_input ()
+      +. (move_by *. if w = 1 then 1. else if s = 1 then -1. else 0.)
+    in
+    let r_input =
+      Game.r_input ()
+      +. (move_by *. if u = 1 then 1. else if d = 1 then -1. else 0.)
+    in
+    (*Stdio.printf "inputs: %f, %f\n" l_input r_input; *)
+    Game.set_motors l_input r_input;
+    loop ()
   in
-  loop (Time.now ())
+  loop ()
 
 let () =
   Command.basic
