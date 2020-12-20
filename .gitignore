@@ -18,3 +18,5 @@ target/
 _build/
 *~
 .merlin
+bot-images/*.png
+bot-images/*.PNG

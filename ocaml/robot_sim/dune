@@ -1,5 +1,6 @@
 (library
  (name robot_sim)
- (libraries ctf core_kernel geo geo_graph virtuality2d)
+ (libraries ctf camlimages.all core_kernel geo geo_graph virtuality2d
+   protocol_server)
  (preprocess
   (pps ppx_jane)))
