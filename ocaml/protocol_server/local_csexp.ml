@@ -25,8 +25,8 @@ let encode sexp =
   let sexp_string = Csexp.to_string sexp in
   let length = String.length sexp_string in
   let bytes = Bytes.create (length + 2) in
-  Bytes.set bytes 0 (Char.of_int_exn (length land 0xFF));
-  Bytes.set bytes 1 (Char.of_int_exn ((length lsr 8) land 0xFF));
+  Bytes.set bytes 0 (Char.of_int_exn ((length lsr 8) land 0xFF));
+  Bytes.set bytes 1 (Char.of_int_exn (length land 0xFF));
   Bytes.From_string.blito ~src:sexp_string ~dst:bytes ~dst_pos:2 ();
   bytes
 
@@ -34,5 +34,24 @@ let decode_length bytes =
   let b0 = Bytes.get bytes 0 |> Char.to_int in
   let b1 = Bytes.get bytes 1 |> Char.to_int in
   (b0 lsl 8) + b1
+
+let%expect_test "encode and decode match" =
+  let round_trip sexp =
+    let encoded = encode sexp in
+    let length = Bytes.create 2 in
+    Bytes.blito ~src:encoded ~dst:length ~src_len:2 ();
+    let length = decode_length length in
+    let csexp = Bytes.subo ~pos:2 ~len:length encoded in
+    let parsed_sexp =
+      match Csexp.parse_string (Bytes.to_string csexp) with
+      | Ok x -> x
+      | Error _ ->
+        raise_s
+          [%message "Failed to parse string" (csexp : Bytes.t) (length : int)]
+    in
+    [%test_eq: Sexp.t] sexp parsed_sexp
+  in
+  round_trip
+    (Sexp.List [ Atom "foo\nbar"; List [ Atom "A"; Atom "b"; Atom "see!" ] ])
 
 include Csexp

@@ -1,6 +1,6 @@
 open! Core
 
-(** Represnts a call that can be executed over the network, with an input and
+(** Represents a call that can be executed over the network, with an input and
     output type *)
 
 type 'a sexpable := (module Sexpable with type t = 'a)
