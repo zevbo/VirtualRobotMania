@@ -15,5 +15,7 @@ let command name impl =
 let () =
   Command.group
     ~summary:"Game engine server"
-    [ command "test" Test_game.Implementation.group ]
+    [ command "test" Test_game.Implementation.group
+    ; command "ctf" Ctf.Implementation.group
+    ]
   |> Command.run
