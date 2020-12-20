@@ -10,7 +10,6 @@ let run_with_pipefile ~pipefile =
   let%bind client = Client.connect_aggressively ~filename:pipefile in
   log_s [%message "Connected"];
   let dispatch x = Client.dispatch client x in
-  let module Game = Robot_sim.Game in
   let%bind () =
     log_s [%message "starting dispatch"];
     Deferred.Sequence.iter (Sequence.range 0 5) ~f:(fun _ ->

@@ -1,13 +1,18 @@
 open! Core
+open! Async
 
 type t =
   | T :
       { rpc : ('a, 'b) Call.t
-      ; f : 'a -> 'b
+      ; f : 'a -> 'b Deferred.t
       }
       -> t [@unboxed]
 
-let create rpc f = T { rpc; f }
+let create rpc f =
+  let f x = return (f x) in
+  T { rpc; f }
+
+let create' rpc f = T { rpc; f }
 
 module Group = struct
   type impl = t
@@ -28,7 +33,8 @@ module Group = struct
           [%message
             "Failure parsing query sexp" (rpc_name : string) (exn : Exn.t)]
       | query ->
-        (match impl.f query with
+        let%bind response = impl.f query in
+        (match response with
         | exception exn ->
           raise_s
             [%message "Implementation raised" (rpc_name : string) (exn : Exn.t)]
@@ -41,7 +47,7 @@ module Group = struct
                 "Failure creating response sexp"
                   (rpc_name : string)
                   (exn : Exn.t)]
-          | sexp -> sexp)))
+          | sexp -> return sexp)))
 
   let handle_query (t : t) (sexp : Sexp.t) =
     let rpc_name, body =

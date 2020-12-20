@@ -1,55 +1,21 @@
 #lang racket
 (require 2htdp/image)
-(require racket/unix-socket)
-(require racket/system)
-(require csexp)
-
-(define (encode-length n)
-  (bytes
-   (bitwise-bit-field n 8 16)
-   (bitwise-bit-field n 0 8)
-   ))
-
-(define (decode-length bytes)
-  (+
-   (arithmetic-shift (bytes-ref bytes 0) 8)
-   (bytes-ref bytes 1)))
-
-(struct conn (r w))
-
-(define (conn-close c)
-  (close-output-port (conn-w c))
-  (close-input-port (conn-r c)))
-
-(define (rpc c message)
-  (define w-bytes (csexp->bytes message))
-  (define w-length (encode-length (bytes-length w-bytes)))
-  (write-bytes w-length (conn-w c))
-  (write-bytes w-bytes (conn-w c))
-  (flush-output (conn-w c))
-  (define read-length (decode-length (read-bytes 2 (conn-r c))))
-  (bytes->csexp (read-bytes read-length (conn-r c))))
-
-(define (connect-loop pipename)
-  (with-handlers
-    ([exn:fail? (lambda (exn) (sleep 0.1) (connect-loop pipename))])
-    (define-values (r w) (unix-socket-connect pipename))
-    (conn r w)))
-
-(define (launch-and-connect)
-  (define pipename (path->string (make-temporary-file "game-~a.pipe")))
-  (system (string-append
-           "(cd $(git rev-parse --show-toplevel)/ocaml; "
-           "dune exec -- game_server/main.exe " pipename ") &"))
-  (connect-loop pipename))
+(require "engine-connect.rkt")
 
 (define c (launch-and-connect))
 
-(rpc c '(#"add-bot" ()))
-(rpc c '(#"add-bot" ()))
-(rpc c '(#"add-bot" ()))
-(rpc c '(#"add-bot" ()))
-(rpc c '(#"add-bot" ()))
+(define (set-robot-image i image)
+  (define file (make-temporary-file "image-~a.png"))
+  (println file)
+  (save-image image file)
+  (rpc c `(#"load-bot-image"
+           (,(string->bytes/latin-1 (~v i))
+            ,(path->bytes file))))
+  #;(delete-file file))
+
+(for ([i (in-range 30)])
+  (set-robot-image i (square 30 'solid 'red))
+  (rpc c '(#"add-bot" ())))
 (define (loop)
   (rpc c '(#"step" ()))
   (loop))
