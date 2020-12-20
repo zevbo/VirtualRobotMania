@@ -5,17 +5,17 @@
 - [X] Support separate display-size and logical-size
 - [X] Allow resize of display
 
-* Engine [0/2]
+* Engine [1/3]
 
-- [ ] Add API for handing over image-files to engine
+- [X] Add API for handing over image-files to engine
 - [ ] Smooth-out animation? i.e., do multiple rounds of display per
       Racket tick.
 - [ ] Only update status file once a second
 
-* Racket [1/2]
+* Racket [2/2]
 
 - [X] Hello-world racket-driven game
-- [ ] Generate images
+- [X] Generate images
 
 * Design [0/2]
 
