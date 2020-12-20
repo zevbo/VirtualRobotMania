@@ -55,6 +55,24 @@ module Image = struct
     ; size : int * int
     }
 
+  let pixel display color =
+    let color =
+      let r, g, b = Color.to_tuple color in
+      Sdl.map_rgba display.pixel_format r g b 255
+    in
+    display.pixel_ba.{0} <- color;
+    let texture =
+      ok_exn
+      @@ Sdl.create_texture
+           ~w:1
+           ~h:1
+           display.renderer
+           Sdl.Pixel.format_rgba8888
+           Sdl.Texture.access_streaming
+    in
+    ok_exn (Sdl.update_texture texture None display.pixel_ba 1);
+    { texture; size = 1, 1 }
+
   let of_bmp_file display file =
     let surface = ok_exn (Sdl.load_bmp file) in
     let size = Sdl.get_surface_size surface in
