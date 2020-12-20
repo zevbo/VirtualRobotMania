@@ -13,8 +13,14 @@
             ,(path->bytes file))))
   #;(delete-file file))
 
+(define (rand-color)
+  (color (random 0 256) (random 0 256) (random 0 256) (random 0 256)))
+
 (for ([i (in-range 30)])
-  (set-robot-image i (square 30 'solid 'red))
+  (set-robot-image
+   i
+   (overlay (circle 10 'solid (rand-color))
+            (square 30 'solid (rand-color))))
   (rpc c '(#"add-bot" ())))
 (define (loop)
   (rpc c '(#"step" ()))

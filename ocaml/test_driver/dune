@@ -1,4 +1,4 @@
 (executable
  (name test_driver)
- (libraries robot_sim core async protocol_server)
+ (libraries robot_sim core async csexp_rpc)
  (preprocess (pps ppx_jane)))

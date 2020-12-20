@@ -1,5 +1,5 @@
 open! Core
-module Call = Protocol_server.Call
+module Call = Csexp_rpc.Call
 
 let step = Call.create "step" (module Unit) (module Unit)
 let add_bot = Call.create "add-bot" (module Unit) (module Int)

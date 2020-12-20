@@ -1,5 +1,5 @@
 (library
  (name robot_sim)
- (libraries core_kernel geo geo_graph virtuality2d protocol_server)
+ (libraries core_kernel geo geo_graph virtuality2d csexp_rpc)
  (preprocess
   (pps ppx_jane)))
