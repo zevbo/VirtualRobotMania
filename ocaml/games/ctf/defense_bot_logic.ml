@@ -6,7 +6,7 @@ let gen_updater _state (defense_bot : State.Defense_bot.t) dt =
     Set_motors.apply_motor_force
       body
       ~dt
-      ~bot_height:Bodies.bot_height
+      ~bot_height:Body_consts.Bots.height
       ~force_over_input:Ctf_consts.defense_force_over_input
       ~air_resistance_c:Ctf_consts.air_resistance_c
       ~side_fric_k:Ctf_consts.side_fric_k

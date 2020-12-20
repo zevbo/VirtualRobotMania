@@ -425,11 +425,12 @@ let _parallel_intersection
       ; edge_2 = e2_after
       })
 
-let intersections ?(dt = 0.) t1 t2 =
+let intersections ?(allow_blacklist = false) ?(dt = 0.) t1 t2 =
   (* create and do_intersect in Line_like and use here *)
   let _void = dt in
-  if Set.mem t1.black_list t2.collision_group
-     || Set.mem t2.black_list t1.collision_group
+  if (Set.mem t1.black_list t2.collision_group
+     || Set.mem t2.black_list t1.collision_group)
+     && not allow_blacklist
   then []
   else (
     let normal_intersections =

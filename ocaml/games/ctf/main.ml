@@ -5,14 +5,17 @@ module Sdl = Tsdl.Sdl
 open Geo_graph
 
 let fps = 20.
-let frame = Int.of_float Bodies.frame_width, Int.of_float Bodies.frame_height
+
+let frame =
+  Int.of_float Ctf_consts.frame_width, Int.of_float Ctf_consts.frame_height
+
 let dt = 1. /. fps
 let dt_sim = dt /. 50.
 
 let init () =
   let world = World.empty in
   let world =
-    List.fold Bodies.border ~init:world ~f:(fun world border_edge ->
+    List.fold (Bodies.border ()) ~init:world ~f:(fun world border_edge ->
         fst (World.add_body world border_edge))
   in
   let offense_robot_state = State.Offense_bot.create () in
@@ -31,13 +34,13 @@ let init () =
     World.add_body
       world
       ~updater:(Offense_bot_logic.gen_updater state offense_robot_state dt_sim)
-      Bodies.offense_bot
+      (Bodies.offense_bot ())
   in
   let world, defense_body_id =
     World.add_body
       world
       ~updater:(Defense_bot_logic.gen_updater state defense_robot_state dt_sim)
-      Bodies.defense_bot
+      (Bodies.defense_bot ())
   in
   state.world <- world;
   let robot_image =

@@ -86,7 +86,12 @@ type intersection =
   }
 [@@deriving sexp_of]
 
-val intersections : ?dt:float -> t -> t -> intersection list
+val intersections
+  :  ?allow_blacklist:bool
+  -> ?dt:float
+  -> t
+  -> t
+  -> intersection list
 
 type collision =
   { t1 : t
