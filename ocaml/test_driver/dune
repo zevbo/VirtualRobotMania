@@ -1,5 +1,5 @@
 (executable
  (name test_driver)
- (libraries tsdl robot_sim core async)
+ (libraries tsdl test_game core async)
  (preprocess
   (pps ppx_jane)))

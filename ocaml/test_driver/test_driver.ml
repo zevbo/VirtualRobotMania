@@ -44,14 +44,18 @@ let with_existing_engine =
     (let%map_open.Command pipefile = anon ("pipefile" %: Filename.arg_type) in
      fun () -> run_with_pipefile ~pipefile)
 
-let _launch_engine =
+let launch_engine =
   Command.async
     ~summary:"Launch a server automatically"
     (let%map_open.Command () = return () in
      fun () -> run ())
 
-let () = Ctf_tester.run ()
+(* let () = Ctf_tester.run () *)
 
-(*Command.group ~summary:"For testing out the Engine API for Racket, but from
-  OCaml" [ "with-existing-engine", with_existing_engine ; "launch-engine",
-  launch_engine ] |> Command.run*)
+let () =
+  Command.group
+    ~summary:"For testing out the Engine API for Racket, but from\n  OCaml"
+    [ "with-existing-engine", with_existing_engine
+    ; "launch-engine", launch_engine
+    ]
+  |> Command.run
