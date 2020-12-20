@@ -22,4 +22,5 @@ let defense_bot () =
     ~m:Ctf_consts.Bots.mass
     ~angle:(Float.pi -. Ctf_consts.Bots.start_angle)
     ~collision_group:Ctf_consts.Bots.Defense.coll_group
+    ~black_list:Ctf_consts.Bots.Defense.black_list
     Ctf_consts.Bots.shape
