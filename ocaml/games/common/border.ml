@@ -7,6 +7,7 @@ let generate_border
     ?(border_width = default_border_width)
     ?(shift = Vec.origin)
     ~energy_ret
+    ~collision_group
     width
     height
   =
@@ -18,7 +19,11 @@ let generate_border
     Shape.create_standard_rect width border_width ~material:border_material
   in
   let create_border pos shape =
-    Body.create ~m:Float.infinity ~pos:(Vec.add pos shift) shape
+    Body.create
+      ~m:Float.infinity
+      ~pos:(Vec.add pos shift)
+      ~collision_group
+      shape
   in
   let create_vertical sign =
     create_border

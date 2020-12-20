@@ -1,4 +1,5 @@
 open! Geo
+open Base
 
 type mass =
   | Inertial of float
@@ -38,6 +39,8 @@ type t =
   ; air_drag_c : float
   ; max_speed : float
   ; max_omega : float
+  ; collision_group : int
+  ; black_list : Set.M(Int).t
   ; curr_forces : force list
   }
 [@@deriving sexp_of]
@@ -54,6 +57,8 @@ val create
   -> ?air_drag_c:float
   -> ?max_speed:float
   -> ?max_omega:float
+  -> ?black_list:int list
+  -> collision_group:int
   -> m:float
   -> Shape.t
   -> t

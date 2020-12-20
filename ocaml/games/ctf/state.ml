@@ -11,6 +11,7 @@ type t =
   ; mutable last_step_end : Time.t option
         (** The last time step was called. Used to make sure that the step can
             be elongated to match a single animation frame *)
+  ; mutable images : Display.Image.t Map.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
   ; offense_robot_state : Offense_robot_state.t
@@ -26,23 +27,38 @@ let create () =
         fst (World.add_body world border_edge))
   in
   let offense_robot_state = Offense_robot_state.create () in
-  let world =
-    fst
-      (World.add_body
-         world
-         ~updater:(Offense_robot_state.gen_updater offense_robot_state dt_sim)
-         Bodies.bot1)
+  let defense_robot_state = Offense_robot_state.create () in
+  let world, offense_body_id =
+    World.add_body
+      world
+      ~updater:(Offense_robot_state.gen_updater offense_robot_state dt_sim)
+      Bodies.offense_bot
   in
-  { world
-  ; event = Sdl.Event.create ()
-  ; last_step_end = None
-  ; display =
-      Display.init
-        ~physical:frame
-        ~logical:frame
-        ~title:"Virtual Robotics Arena"
-  ; offense_robot_state
-  }
+  let world, defense_body_id =
+    World.add_body
+      world
+      ~updater:(Offense_robot_state.gen_updater defense_robot_state dt_sim)
+      Bodies.defense_bot
+  in
+  let t =
+    { world
+    ; event = Sdl.Event.create ()
+    ; last_step_end = None
+    ; images = Map.empty (module World.Id)
+    ; display =
+        Display.init
+          ~physical:frame
+          ~logical:frame
+          ~title:"Virtual Robotics Arena"
+    ; offense_robot_state
+    }
+  in
+  let robot_image =
+    Display.Image.of_bmp_file t.display "../../images/test-robot.bmp"
+  in
+  t.images <- Map.update t.images ~f:(fun _ -> robot_image) offense_body_id;
+  t.images <- Map.update t.images ~f:(fun _ -> robot_image) defense_body_id;
+  t
 
 (** Handle any keyboard or other events *)
 let handle_events t =
@@ -54,7 +70,7 @@ let handle_events t =
       if key = Sdl.K.q then Caml.exit 0
     | _ -> ())
 
-let status_s sexp =
+let _status_s sexp =
   let data =
     String.concat
       ~sep:"\n"
@@ -69,22 +85,20 @@ let step t =
   for _i = 1 to 10 do
     t.world <- World.advance t.world ~dt:dt_sim
   done;
-  let robot_image =
-    Display.Image.of_bmp_file t.display "../../images/test-robot.bmp"
-  in
   Display.clear t.display Color.white;
-  Map.iter t.world.bodies ~f:(fun robot ->
-      match robot.m with
-      | Inertial _ ->
-        status_s [%sexp (robot : Body.t)];
+  Map.iteri t.world.bodies ~f:(fun ~key:id ~data:robot ->
+      match Map.find t.images id with
+      | Some image ->
+        let w = robot.shape.bounding_box.width in
+        let h = robot.shape.bounding_box.height in
         Display.draw_image_wh
           t.display
-          ~w:Bodies.bot_width
-          ~h:Bodies.bot_height
-          robot_image
+          ~w
+          ~h
+          image
           ~center:robot.pos
           ~angle:robot.angle
-      | Static -> ());
+      | None -> ());
   Display.present t.display;
   (match t.last_step_end with
   | None -> ()

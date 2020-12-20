@@ -1,6 +1,7 @@
 open Virtuality2d
 
-val bot1 : Body.t
+val offense_bot : Body.t
+val defense_bot : Body.t
 val border : Body.t list
 val bot_width : float
 val bot_height : float

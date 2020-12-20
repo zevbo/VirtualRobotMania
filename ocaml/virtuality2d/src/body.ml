@@ -42,6 +42,8 @@ type t =
   ; air_drag_c : float
   ; max_speed : float
   ; max_omega : float
+  ; collision_group : int
+  ; black_list : Set.M(Int).t
   ; curr_forces : force list
   }
 [@@deriving sexp_of]
@@ -59,10 +61,13 @@ let create
     ?(air_drag_c = 0.)
     ?(max_speed = no_max_speed)
     ?(max_omega = no_max_speed)
+    ?(black_list = [])
+    ~collision_group
     ~m
     shape
   =
   let m = if Float.(m = Float.infinity) then Static else Inertial m in
+  let cmp = Set.comparator_s (Set.empty (module Int)) in
   { shape
   ; m
   ; pos
@@ -75,6 +80,8 @@ let create
   ; air_drag_c
   ; max_speed
   ; max_omega
+  ; black_list = Set.of_list cmp black_list
+  ; collision_group
   ; curr_forces = []
   }
 
@@ -421,35 +428,39 @@ let _parallel_intersection
 let intersections ?(dt = 0.) t1 t2 =
   (* create and do_intersect in Line_like and use here *)
   let _void = dt in
-  let normal_intersections =
-    List.filter_map
-      (List.cartesian_product
-         (get_edges_w_global_pos t1)
-         (get_edges_w_global_pos t2))
-      ~f:(fun (e1, e2) ->
-        match Line_like.intersection e1.ls e2.ls with
-        | Some pt ->
-          Some
-            { pt
-            ; energy_ret = Material.energy_ret_of e1.material e2.material
-            ; edge_1 = e1
-            ; edge_2 = e2
-            }
-        | None -> None)
-  in
-  (*if Float.O.(dt = 0.) then normal_intersections else ( let advance = advance
-    ~apply_forces:false ~dt:(0. -. dt) in let get_edge_pairs t = let t_prev =
-    advance t in let zipped = List.zip (get_edges_w_global_pos t_prev)
-    (get_edges_w_global_pos t) in match zipped with | Ok zipped -> zipped |
-    Unequal_lengths -> raise (Failure "Get_edges_w_global_pos returned different
-    lengths for t and \ t_prev. If you got here, something really weird has
-    happened.") in let parallel_intersections = List.filter_map
-    (List.cartesian_product (get_edge_pairs t1) (get_edge_pairs t2)) ~f:(fun
-    ((e1_before, e1_after), (e2_before, e2_after)) -> match
-    parallel_intersection e1_before e2_before e1_after e2_after with | Some
-    inter -> Some inter | None -> None) in List.append normal_intersections
-    parallel_intersections)*)
-  normal_intersections
+  if Set.mem t1.black_list t2.collision_group
+     || Set.mem t2.black_list t1.collision_group
+  then []
+  else (
+    let normal_intersections =
+      List.filter_map
+        (List.cartesian_product
+           (get_edges_w_global_pos t1)
+           (get_edges_w_global_pos t2))
+        ~f:(fun (e1, e2) ->
+          match Line_like.intersection e1.ls e2.ls with
+          | Some pt ->
+            Some
+              { pt
+              ; energy_ret = Material.energy_ret_of e1.material e2.material
+              ; edge_1 = e1
+              ; edge_2 = e2
+              }
+          | None -> None)
+    in
+    (*if Float.O.(dt = 0.) then normal_intersections else ( let advance =
+      advance ~apply_forces:false ~dt:(0. -. dt) in let get_edge_pairs t = let
+      t_prev = advance t in let zipped = List.zip (get_edges_w_global_pos
+      t_prev) (get_edges_w_global_pos t) in match zipped with | Ok zipped ->
+      zipped | Unequal_lengths -> raise (Failure "Get_edges_w_global_pos
+      returned different lengths for t and \ t_prev. If you got here, something
+      really weird has happened.") in let parallel_intersections =
+      List.filter_map (List.cartesian_product (get_edge_pairs t1)
+      (get_edge_pairs t2)) ~f:(fun ((e1_before, e1_after), (e2_before,
+      e2_after)) -> match parallel_intersection e1_before e2_before e1_after
+      e2_after with | Some inter -> Some inter | None -> None) in List.append
+      normal_intersections parallel_intersections)*)
+    normal_intersections)
 
 let ke_of t =
   (0.5 *. get_mass t ~default:0. *. Vec.mag_sq t.v)

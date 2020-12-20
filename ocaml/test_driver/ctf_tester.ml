@@ -3,7 +3,7 @@ open Tsdl
 
 let run () =
   let module Game = Robot_sim.Ctf_sim in
-  Game.set_motors 0.8 1.;
+  Game.set_motors 1. 1.;
   let rec loop () : unit =
     Game.step ();
     let key_state = Sdl.get_keyboard_state () in

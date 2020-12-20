@@ -1,3 +1,4 @@
 let air_resistance_c = 1.
-let force_over_input = 500.
+let offense_force_over_input = 500.
+let defense_force_over_input = offense_force_over_input *. 0.8
 let side_fric_k = 100000.

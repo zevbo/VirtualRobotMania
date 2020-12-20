@@ -14,7 +14,7 @@ let gen_updater t dt =
       body
       ~dt
       ~bot_height:Bodies.bot_height
-      ~force_over_input:Ctf_consts.offense_force_over_input
+      ~force_over_input:Ctf_consts.defense_force_over_input
       ~air_resistance_c:Ctf_consts.air_resistance_c
       ~side_fric_k:Ctf_consts.side_fric_k
       t.l_input
