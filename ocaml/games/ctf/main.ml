@@ -14,9 +14,6 @@ let dt_sim_dt = 10.
 let dt_sim = dt /. dt_sim_dt
 let speed_constant = 0.2
 
-let robot_image state =
-  Display.Image.of_bmp_file state.display "../../images/test-robot.bmp"
-
 let init () =
   let world = World.empty in
   let world =
@@ -49,11 +46,6 @@ let init () =
       (defense_robot_state, defense_body_id)
   in
   state.world <- world;
-  let robot_image = robot_image state in
-  state.images
-    <- Map.update state.images ~f:(fun _ -> robot_image) offense_body_id;
-  state.images
-    <- Map.update state.images ~f:(fun _ -> robot_image) defense_body_id;
   state
 
 (** Handle any keyboard or other events *)
@@ -165,6 +157,5 @@ let shoot_laser state =
     let updater = Laser_logic.gen_updater () in
     let world, laser_id = World.add_body state.world ~updater laser_body in
     state.world <- world;
-    state.images
-      <- Map.update state.images laser_id ~f:(fun _ -> robot_image state);
+    state.images <- Map.update state.images laser_id ~f:(fun _ -> state.laser);
     (fst state.defense_bot).last_fire_ts <- state.ts)

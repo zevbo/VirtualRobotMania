@@ -1,5 +1,5 @@
 (executable
  (name test_driver)
- (libraries tsdl test_game core async)
+ (libraries tsdl test_game core async ctf)
  (preprocess
   (pps ppx_jane)))

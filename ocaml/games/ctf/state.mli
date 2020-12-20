@@ -32,6 +32,7 @@ type t =
   ; defense_bot : Defense_bot.t * World.Id.t
   ; mutable ts : float
   ; mutable on_offense_bot : bool
+  ; laser : Display.Image.t
   }
 
 val create
@@ -41,3 +42,6 @@ val create
   -> Offense_bot.t * World.Id.t
   -> Defense_bot.t * World.Id.t
   -> t
+
+val load_offense_image : t -> string -> unit Async.Deferred.t
+val load_defense_image : t -> string -> unit Async.Deferred.t

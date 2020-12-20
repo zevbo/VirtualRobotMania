@@ -34,6 +34,7 @@ type t =
   ; defense_bot : Defense_bot.t * World.Id.t
   ; mutable ts : float
   ; mutable on_offense_bot : bool
+  ; laser : Display.Image.t
   }
 
 let create world images display offense_bot defense_bot =
@@ -46,4 +47,30 @@ let create world images display offense_bot defense_bot =
   ; defense_bot
   ; ts = 0.
   ; on_offense_bot = true
+  ; laser = Display.Image.pixel display Color.red
   }
+
+let load_bot_image t id imagefile =
+  let open Async in
+  let bmpfile = Caml.Filename.temp_file "image" ".bmp" in
+  let%bind () =
+    Process.run_expect_no_output_exn
+      ~prog:"convert"
+      ~args:[ imagefile; bmpfile ]
+      ()
+  in
+  let image = Display.Image.of_bmp_file t.display bmpfile in
+  let%bind () = Unix.unlink bmpfile in
+  t.images
+    <- Map.update t.images id ~f:(fun old_image ->
+           Option.iter old_image ~f:Display.Image.destroy;
+           image);
+  return ()
+
+let load_defense_image t imagefile =
+  let id = snd t.defense_bot in
+  load_bot_image t id imagefile
+
+let load_offense_image t imagefile =
+  let id = snd t.offense_bot in
+  load_bot_image t id imagefile
