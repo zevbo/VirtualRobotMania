@@ -28,6 +28,8 @@ type t =
   ; event : Sdl.event
   ; display : Display.t
   ; offense_bot : Offense_bot.t
+  ; defense_bot : Defense_bot.t
+  ; mutable on_offense_bot : bool
   }
 
 val create
@@ -35,4 +37,5 @@ val create
   -> Display.Image.t Map.M(World.Id).t
   -> Display.t
   -> Offense_bot.t
+  -> Defense_bot.t
   -> t

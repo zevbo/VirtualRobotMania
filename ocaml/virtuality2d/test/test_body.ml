@@ -15,7 +15,7 @@ let s3 =
   let material = Material.create ~energy_ret:0.5 in
   Shape.create_standard_rect 100. 100. ~material
 
-let b1 = Body.create ~m:1. s1
+let b1 = Body.create ~m:1. ~collision_group:0 s1
 
 let b2 =
   Body.create
@@ -23,6 +23,7 @@ let b2 =
     ~v:(Vec.create (-10.) 0.)
     ~pos:(Vec.create 100. 0.)
     ~angle:(-0.1)
+    ~collision_group:0
     s1
 
 let b3 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 120.7 0. }

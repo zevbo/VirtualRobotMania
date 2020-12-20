@@ -29,4 +29,6 @@ module Laser = struct
   let color = Color.red
   let coll_group = 3
   let black_list = [ 1 ]
+  let material = Material.create ~energy_ret:1.
+  let shape = Shape.create_standard_rect length width ~material
 end

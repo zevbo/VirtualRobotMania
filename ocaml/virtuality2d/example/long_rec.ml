@@ -21,7 +21,12 @@ let run () =
     Body.create ~m:1. ~ang_inertia:1. ~average_r:40. ~pos:(Vec.create 200. 10.)
     shape in*)
   let robot =
-    Body.create ~m:1. ~pos:(Vec.create (-50.) 0.) ~v:(Vec.create 50. 0.) shape
+    Body.create
+      ~m:1.
+      ~pos:(Vec.create (-50.) 0.)
+      ~v:(Vec.create 50. 0.)
+      ~collision_group:0
+      shape
   in
   let b2 =
     Body.create
@@ -30,6 +35,7 @@ let run () =
       ~pos:(Vec.create 100. 0.)
       ~omega:0.01
       ~angle:(-0.1)
+      ~collision_group:0
       shape
   in
   let robot_2 =

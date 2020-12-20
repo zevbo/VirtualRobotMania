@@ -32,7 +32,13 @@ let run () =
       ~material:border_material
   in
   let create_border pos shape =
-    Body.create ~m:Float.infinity ~max_speed:0. ~max_omega:0. ~pos shape
+    Body.create
+      ~m:Float.infinity
+      ~max_speed:0.
+      ~max_omega:0.
+      ~collision_group:0
+      ~pos
+      shape
   in
   let border_1 =
     create_border (Vec.create (frame_width /. 2.) 0.) vertical_border_shape
@@ -55,13 +61,16 @@ let run () =
     robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in let robot_2 =
     Body.create ~m:1. ~ang_inertia:1. ~average_r:40. ~pos:(Vec.create 200. 10.)
     shape in*)
-  let _robot = Body.create ~m:1. ~pos:(Vec.create (-50.) 0.) shape in
+  let _robot =
+    Body.create ~m:1. ~collision_group:0 ~pos:(Vec.create (-50.) 0.) shape
+  in
   let b2 =
     Body.create
       ~m:1.
       ~v:(Vec.create (-100.) 0.)
       ~pos:(Vec.create 100. 0.)
       ~angle:(-0.1)
+      ~collision_group:0
       shape
   in
   let robot_2 =

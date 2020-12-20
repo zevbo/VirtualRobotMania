@@ -30,13 +30,17 @@ type t =
   ; event : Sdl.event
   ; display : Display.t
   ; offense_bot : Offense_bot.t
+  ; defense_bot : Defense_bot.t
+  ; mutable on_offense_bot : bool
   }
 
-let create world images display offense_bot =
+let create world images display offense_bot defense_bot =
   { world
   ; last_step_end = None
   ; images
   ; event = Sdl.Event.create ()
   ; display
   ; offense_bot
+  ; defense_bot
+  ; on_offense_bot = true
   }

@@ -29,6 +29,7 @@ let init () =
          ~logical:frame
          ~title:"Virtual Robotics Arena")
       offense_robot_state
+      defense_robot_state
   in
   let world, offense_body_id =
     World.add_body
@@ -115,3 +116,5 @@ let set_motors state l_input r_input =
 
 let l_input state = state.offense_bot.l_input
 let r_input state = state.offense_bot.r_input
+let make_on_offense_bot state = state.on_offense_bot <- true
+let make_off_offense_bot state = state.on_offense_bot <- false

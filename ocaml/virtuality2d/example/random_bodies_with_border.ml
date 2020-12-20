@@ -32,7 +32,7 @@ let run () =
       ~material:border_material
   in
   let create_border pos shape =
-    let body = Body.create ~m:Float.infinity ~pos shape in
+    let body = Body.create ~m:Float.infinity ~collision_group:0 ~pos shape in
     body, World.null_updater
   in
   let border_1 =
@@ -71,6 +71,7 @@ let run () =
         ~angle
         ~ground_fric_k_c
         ~ground_fric_s_c
+        ~collision_group:0
         shape
     in
     let apply_friction body = Body.exert_ground_friction body in
