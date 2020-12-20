@@ -4,11 +4,8 @@
 
 (define c (launch-and-connect))
 
-(rpc c '(#"add-bot" ()))
-(rpc c '(#"add-bot" ()))
-(rpc c '(#"add-bot" ()))
-(rpc c '(#"add-bot" ()))
-(rpc c '(#"add-bot" ()))
+(for ([i (in-range 30)])
+  (rpc c '(#"add-bot" ())))
 (define (loop)
   (rpc c '(#"step" ()))
   (loop))
