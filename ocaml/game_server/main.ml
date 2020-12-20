@@ -7,10 +7,11 @@ module Implementation = Protocol_server.Implementation
 let impls =
   let state = Lazy.from_fun Game_state.create in
   let impl = Implementation.create in
+  let impl' = Implementation.create' in
   Protocol_server.Implementation.Group.create
     [ impl Protocol.step (fun () -> Game_state.step (force state))
     ; impl Protocol.add_bot (fun () -> Game_state.add_bot (force state))
-    ; impl Protocol.load_bot_image (fun (id, path) ->
+    ; impl' Protocol.load_bot_image (fun (id, path) ->
           Game_state.load_bot_image (force state) id path)
     ]
 

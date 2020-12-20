@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open Geo
 open Virtuality2d
 module Sdl = Tsdl.Sdl
@@ -70,6 +70,8 @@ let status_s sexp =
   in
   Out_channel.write_all "/tmp/status.sexp" ~data
 
+let () = ignore status_s
+
 let step t =
   handle_events t;
   let dt = 1. /. fps in
@@ -77,17 +79,26 @@ let step t =
     t.world <- World.advance t.world ~dt:(dt /. 50.)
   done;
   Display.clear t.display Color.white;
-  Map.iter t.world.bodies ~f:(fun robot ->
-      let half_length =
-        Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
-      in
-      status_s [%sexp (robot : Body.t)];
-      Display.draw_line
-        ~width:robot_width
-        t.display
-        (Vec.add robot.pos half_length)
-        (Vec.sub robot.pos half_length)
-        Color.black);
+  Map.iteri t.world.bodies ~f:(fun ~key:id ~data:robot ->
+      match Map.find t.images id with
+      | Some image ->
+        Display.draw_image_wh
+          t.display
+          image
+          ~w:robot_width
+          ~h:robot_length
+          ~center:robot.pos
+          ~angle:robot.angle
+      | None ->
+        let half_length =
+          Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
+        in
+        Display.draw_line
+          ~width:robot_width
+          t.display
+          (Vec.add robot.pos half_length)
+          (Vec.sub robot.pos half_length)
+          Color.black);
   Display.present t.display;
   (match t.last_step_end with
   | None -> ()
@@ -99,12 +110,21 @@ let step t =
     Sdl.delay (Int32.of_float time_left_ms));
   t.last_step_end <- Some (Time.now ())
 
-let load_bot_image t id string =
+open! Async
+
+let load_bot_image t id imagefile =
   let id = World.Id.of_int id in
-  let tmp = Caml.Filename.temp_file "image" "bmp" in
-  Png.load string [ Load_only_the_first_frame ] |> Bmp.save tmp [];
-  let image = Display.Image.of_bmp_file t.display tmp in
+  let bmpfile = Caml.Filename.temp_file "image" ".bmp" in
+  let%bind () =
+    Process.run_expect_no_output_exn
+      ~prog:"convert"
+      ~args:[ imagefile; bmpfile ]
+      ()
+  in
+  let image = Display.Image.of_bmp_file t.display bmpfile in
+  let%bind () = Unix.unlink bmpfile in
   t.images
     <- Map.update t.images id ~f:(fun old_image ->
            Option.iter old_image ~f:Display.Image.destroy;
-           image)
+           image);
+  return ()

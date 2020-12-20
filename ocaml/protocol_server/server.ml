@@ -23,18 +23,21 @@ let server impl_group ~filename =
       (Tcp.Where_to_listen.of_file filename)
       (fun addr r w ->
         log_s [%message "Connection opened" (addr : Socket.Address.Unix.t)];
-        don't_wait_for
-          (let%bind () = Reader.close_finished r in
-           log_s [%message "Connection closed. Exiting."];
-           exit 0);
         let rec loop () =
-          let%bind sexp =
-            let context = "server " ^ Socket.Address.Unix.to_string addr in
-            Async_csexp.read ~context r Fn.id
-          in
-          let response = Implementation.Group.handle_query impl_group sexp in
-          Async_csexp.write w response;
-          loop ()
+          if Reader.is_closed r
+          then return ()
+          else (
+            let%bind sexp =
+              let context = "server " ^ Socket.Address.Unix.to_string addr in
+              Async_csexp.read ~context r Fn.id
+            in
+            log_s [%message "received query" (sexp : Sexp.t)];
+            let%bind response =
+              Implementation.Group.handle_query impl_group sexp
+            in
+            Async_csexp.write w response;
+            log_s [%message "wrote resp" (response : Sexp.t)];
+            loop ())
         in
         loop ())
   in
