@@ -496,10 +496,10 @@ let rec get_collision_from_intersections t1 t2 intersections =
     let is_edge_1_flat = Float.(snd corner_1 > snd corner_2) in
     let flat_edge = if is_edge_1_flat then inter.edge_1 else inter.edge_2 in
     let sharp_corner = if is_edge_1_flat then fst corner_2 else fst corner_1 in
-    let max_min_escape_v = 200. in
+    let max_min_escape_v = 300. in
     let min_escape_v =
       Float.min
-        ((Line_like.dist_sq_to_pt flat_edge.ls sharp_corner **. 2.) /. 200.)
+        ((Line_like.dist_sq_to_pt flat_edge.ls sharp_corner **. 2.) /. 100.)
         max_min_escape_v
     in
     (*let min_escape_v = if is_static t1 || is_static t2 then min_escape_v else
