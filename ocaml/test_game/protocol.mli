@@ -1,5 +1,5 @@
 open! Core
-module Call := Protocol_server.Call
+module Call := Csexp_rpc.Call
 
 (** RPCs for interacting with the game engine. *)
 

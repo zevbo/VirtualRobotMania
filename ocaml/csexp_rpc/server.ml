@@ -2,7 +2,7 @@ open! Core
 open! Async
 open! Import
 
-let server impl_group ~filename =
+let run impl_group ~filename =
   let () =
     Log.Global.set_output
       [ Log.Output.file `Sexp_hum ~filename:"/tmp/game-engine.log" ]
