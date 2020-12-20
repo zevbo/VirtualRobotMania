@@ -46,8 +46,7 @@ module Group = struct
   let handle_query (t : t) (sexp : Sexp.t) =
     let rpc_name, body =
       match sexp with
-      | Atom rpc_name -> rpc_name, Sexp.unit
-      | List (Atom rpc_name :: args) -> rpc_name, Sexp.List args
+      | List [ Atom rpc_name; body ] -> rpc_name, body
       | _ ->
         raise_s [%message "Can't extract rpc-name from query" (sexp : Sexp.t)]
     in

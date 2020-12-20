@@ -1,12 +1,35 @@
-open Core
+open! Core
+open! Async
+module Client = Protocol_server.Client
+module Protocol = Robot_sim.Protocol
 
-let run () =
+let log_s = Log.Global.error_s
+
+let rec wait_for_file filename =
+  let%bind exists = Sys.file_exists_exn filename in
+  if exists
+  then return ()
+  else (
+    let%bind () = Clock.after (Time.Span.of_ms 10.) in
+    wait_for_file filename)
+
+let run ~pipefile =
+  (* let filename = Filename.temp_file "game" ".pipe" in printf "starting\n";
+     log_s [%message "tmpfile for pipe" (filename : string)]; let _exec_finished
+     = Async.Process.run_exn ~prog:"dune" ~args:[ "exec"; "--";
+     "game_server/main.exe"; filename ] () in log_s [%message "waiting for
+     file"]; let%bind () = wait_for_file filename in log_s [%message "file
+     loaded"]; *)
+  let dispatch = Client.dispatch ~filename:pipefile in
   let module Game = Robot_sim.Game in
-  for _ = 0 to 20 do
-    ignore (Game.add_bot () : int)
-  done;
+  let%bind () =
+    log_s [%message "starting dispatch"];
+    Deferred.Sequence.iter (Sequence.range 0 20) ~f:(fun _ ->
+        let%bind (_ : int) = dispatch Protocol.add_bot () in
+        return ())
+  in
   let rec loop last_time =
-    Game.step ();
+    let%bind () = dispatch Protocol.step () in
     let now = Time.now () in
     printf
       "#### %s ####\n%!"
@@ -16,8 +39,8 @@ let run () =
   loop (Time.now ())
 
 let () =
-  Command.basic
+  Command.async
     ~summary:"Test out API we plan to expose to Racket"
-    (let%map_open.Command () = return () in
-     fun () -> run ())
+    (let%map_open.Command pipefile = anon ("pipefile" %: Filename.arg_type) in
+     fun () -> run ~pipefile)
   |> Command.run
