@@ -1,7 +1,7 @@
 open! Base
 
 module Id : sig
-  type t
+  type t [@@deriving sexp]
 
   include Comparable.S with type t := t
 
@@ -17,6 +17,7 @@ type t =
   { bodies : Body.t Map.M(Id).t
   ; updaters : (Body.t -> t -> Body.t) Map.M(Id).t
   }
+[@@deriving sexp_of]
 
 let null_updater body _ = body
 let empty = { bodies = Map.empty (module Id); updaters = Map.empty (module Id) }

@@ -11,6 +11,7 @@ module Image : sig
   type display := t
   type t
 
+  val pixel : display -> Color.t -> t
   val of_bmp_file : display -> string -> t
   val destroy : t -> unit
   val size : t -> int * int

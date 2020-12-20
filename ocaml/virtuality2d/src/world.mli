@@ -13,6 +13,7 @@ type t =
   { bodies : Body.t Map.M(Id).t
   ; updaters : (Body.t -> t -> Body.t) Map.M(Id).t
   }
+[@@deriving sexp_of]
 
 type updater := Body.t -> t -> Body.t
 

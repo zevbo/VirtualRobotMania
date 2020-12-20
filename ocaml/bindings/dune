@@ -1,5 +1,0 @@
-(library
- (name bindings)
- (libraries ctypes robot_sim)
- (modules
-  (:standard \ apply_bindings)))

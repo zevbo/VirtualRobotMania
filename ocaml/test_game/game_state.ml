@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open Geo
 open Virtuality2d
 module Sdl = Tsdl.Sdl
@@ -9,6 +9,7 @@ let frame = 700, 700
 
 type t =
   { mutable world : World.t
+  ; mutable last_status : Time.t
   ; mutable last_step_end : Time.t option
         (** The last time step was called. Used to make sure that the step can
             be elongated to match a single animation frame *)
@@ -20,6 +21,7 @@ type t =
 let create () =
   { world = World.empty
   ; images = Map.empty (module World.Id)
+  ; last_status = Time.epoch
   ; event = Sdl.Event.create ()
   ; last_step_end = None
   ; display =
@@ -61,15 +63,20 @@ let handle_events t =
       if key = Sdl.K.q then Caml.exit 0
     | _ -> ())
 
-let status_s sexp =
-  let data =
-    String.concat
-      ~sep:"\n"
-      [ Time.to_string_abs_trimmed ~zone:Time.Zone.utc (Time.now ())
-      ; Sexp.to_string_hum sexp
-      ]
-  in
-  Out_channel.write_all "/tmp/status.sexp" ~data
+let status_s t sexp =
+  let now = Time.now () in
+  if Time.Span.( > ) (Time.diff now t.last_status) (Time.Span.of_sec 0.5)
+  then (
+    t.last_status <- now;
+    let sexp = force sexp in
+    let data =
+      String.concat
+        ~sep:"\n"
+        [ Time.to_string_abs_trimmed ~zone:Time.Zone.utc (Time.now ())
+        ; Sexp.to_string_hum sexp
+        ]
+    in
+    Out_channel.write_all "/tmp/status.sexp" ~data)
 
 let step t =
   handle_events t;
@@ -78,17 +85,27 @@ let step t =
     t.world <- World.advance t.world ~dt:(dt /. 50.)
   done;
   Display.clear t.display Color.white;
-  Map.iter t.world.bodies ~f:(fun robot ->
-      let half_length =
-        Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
-      in
-      status_s [%sexp (robot : Body.t)];
-      Display.draw_line
-        ~width:robot_width
-        t.display
-        (Vec.add robot.pos half_length)
-        (Vec.sub robot.pos half_length)
-        Color.black);
+  status_s t (lazy [%sexp (t.world : World.t)]);
+  Map.iteri t.world.bodies ~f:(fun ~key:id ~data:robot ->
+      match Map.find t.images id with
+      | Some image ->
+        Display.draw_image_wh
+          t.display
+          image
+          ~w:robot_width
+          ~h:robot_length
+          ~center:robot.pos
+          ~angle:robot.angle
+      | None ->
+        let half_length =
+          Vec.rotate (Vec.create (robot_length /. 2.) 0.) robot.angle
+        in
+        Display.draw_line
+          ~width:robot_width
+          t.display
+          (Vec.add robot.pos half_length)
+          (Vec.sub robot.pos half_length)
+          Color.black);
   Display.present t.display;
   (match t.last_step_end with
   | None -> ()
@@ -100,12 +117,21 @@ let step t =
     Sdl.delay (Int32.of_float time_left_ms));
   t.last_step_end <- Some (Time.now ())
 
-let load_bot_image t id string =
+open! Async
+
+let load_bot_image t id imagefile =
   let id = World.Id.of_int id in
-  let tmp = Caml.Filename.temp_file "image" "bmp" in
-  Png.load string [ Load_only_the_first_frame ] |> Bmp.save tmp [];
-  let image = Display.Image.of_bmp_file t.display tmp in
+  let bmpfile = Caml.Filename.temp_file "image" ".bmp" in
+  let%bind () =
+    Process.run_expect_no_output_exn
+      ~prog:"convert"
+      ~args:[ imagefile; bmpfile ]
+      ()
+  in
+  let image = Display.Image.of_bmp_file t.display bmpfile in
+  let%bind () = Unix.unlink bmpfile in
   t.images
     <- Map.update t.images id ~f:(fun old_image ->
            Option.iter old_image ~f:Display.Image.destroy;
-           image)
+           image);
+  return ()

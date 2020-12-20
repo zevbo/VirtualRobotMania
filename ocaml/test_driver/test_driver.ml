@@ -1,20 +1,15 @@
 open! Core
 open! Async
-module Client = Protocol_server.Client
-module Protocol = Robot_sim.Protocol
+module Client = Csexp_rpc.Client
+module Protocol = Test_game.Protocol
 
 let log_s = Log.Global.error_s
 
-let rec wait_for_connection filename =
-  if%bind Client.can_connect ~filename
-  then return ()
-  else (
-    let%bind () = Clock.after (Time.Span.of_ms 10.) in
-    wait_for_connection filename)
-
 let run_with_pipefile ~pipefile =
-  let dispatch = Client.dispatch ~filename:pipefile in
-  let module Game = Robot_sim.Game in
+  log_s [%message "Connecting"];
+  let%bind client = Client.connect_aggressively ~filename:pipefile in
+  log_s [%message "Connected"];
+  let dispatch x = Client.dispatch client x in
   let%bind () =
     log_s [%message "starting dispatch"];
     Deferred.Sequence.iter (Sequence.range 0 5) ~f:(fun _ ->
@@ -41,9 +36,6 @@ let run () =
       ~args:[ "exec"; "--"; "game_server/main.exe"; filename ]
       ()
   in
-  log_s [%message "waiting for connection"];
-  let%bind () = wait_for_connection filename in
-  log_s [%message "connection is up"];
   run_with_pipefile ~pipefile:filename
 
 let with_existing_engine =

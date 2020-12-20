@@ -1,5 +1,5 @@
 (library
- (name protocol_server)
+ (name csexp_rpc)
  (inline_tests)
  (libraries core async csexp)
  (preprocess
