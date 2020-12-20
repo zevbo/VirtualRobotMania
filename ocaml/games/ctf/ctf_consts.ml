@@ -5,7 +5,7 @@ let frame_width = 500.
 let frame_height = 500.
 
 module Border = struct
-  let energy_ret = 1.1
+  let energy_ret = 1.4
   let coll_group = 0
 end
 
