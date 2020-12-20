@@ -1,4 +1,5 @@
 (executable
  (name test_driver)
- (libraries test_game core async csexp_rpc)
- (preprocess (pps ppx_jane)))
+ (libraries tsdl test_game core async ctf)
+ (preprocess
+  (pps ppx_jane)))

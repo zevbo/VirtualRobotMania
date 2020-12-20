@@ -44,6 +44,7 @@ let add_bot t =
          ~angle:(Random.float (2. *. Float.pi))
          ~pos:(Vec.create (rand_around_zero 350.) (rand_around_zero 350.))
          ~m:1.
+         ~collision_group:0
          (Shape.create_standard_rect
             robot_width
             robot_length

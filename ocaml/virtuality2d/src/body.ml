@@ -24,6 +24,7 @@ type drag_force =
 
 type force =
   | Normal of normal_force
+  | Pure_torque of float
   | Ground_frictional
   | Drag of drag_force
 [@@deriving sexp_of]
@@ -41,6 +42,8 @@ type t =
   ; air_drag_c : float
   ; max_speed : float
   ; max_omega : float
+  ; collision_group : int
+  ; black_list : Set.M(Int).t
   ; curr_forces : force list
   }
 [@@deriving sexp_of]
@@ -58,10 +61,13 @@ let create
     ?(air_drag_c = 0.)
     ?(max_speed = no_max_speed)
     ?(max_omega = no_max_speed)
+    ?(black_list = [])
+    ~collision_group
     ~m
     shape
   =
   let m = if Float.(m = Float.infinity) then Static else Inertial m in
+  let cmp = Set.comparator_s (Set.empty (module Int)) in
   { shape
   ; m
   ; pos
@@ -74,6 +80,8 @@ let create
   ; air_drag_c
   ; max_speed
   ; max_omega
+  ; black_list = Set.of_list cmp black_list
+  ; collision_group
   ; curr_forces = []
   }
 
@@ -169,29 +177,33 @@ let is_inwards t pt angle =
   in
   List.length (List.filter ~f:is_hit (get_edges_w_global_pos t)) % 2 = 1
 
-let intersections t1 t2 =
-  (* create and do_intersect in Line_like and use here *)
-  List.filter_map
-    (List.cartesian_product
-       (get_edges_w_global_pos t1)
-       (get_edges_w_global_pos t2))
-    ~f:(fun (e1, e2) ->
-      match Line_like.intersection e1.ls e2.ls with
-      | Some pt ->
-        Some
-          { pt
-          ; energy_ret = Material.energy_ret_of e1.material e2.material
-          ; edge_1 = e1
-          ; edge_2 = e2
-          }
-      | None -> None)
+let parallel_turn_left (e1 : Edge.t) (e2 : Edge.t) =
+  let connector =
+    Line_like.line (Line_like.get_p1 e1.ls) (Line_like.get_p1 e2.ls)
+  in
+  let dif =
+    Vec.normalize_angle
+      (Line_like.angle_of connector -. Line_like.angle_of e1.ls)
+  in
+  if Float.O.(dif = 0.) then 0. else if Float.O.(dif > 0.) then 1. else -1.
 
 let closest_dist_to_corner inter (edge : Edge.t) =
   let flip_points = Line_like.flip_points_of edge.ls in
   let dists =
-    List.map flip_points ~f:(fun flip_point -> Vec.dist inter.pt flip_point)
+    List.map flip_points ~f:(fun flip_point ->
+        flip_point, Vec.dist inter.pt flip_point)
   in
-  Float.min (List.nth_exn dists 0) (List.nth_exn dists 1)
+  let sorted =
+    List.sort dists ~compare:(fun (_pt1, dist1) (_pt2, dist2) ->
+        Float.compare dist1 dist2)
+  in
+  match sorted with
+  | closest_pd :: _tl -> closest_pd
+  | [] ->
+    raise
+      (Failure
+         "Somehow there was only one flip point of an edge in \
+          closest_dist_to_corner")
 
 let momentum_of t = Vec.scale t.v (get_mass t ~default:0.)
 let ang_momentum_of t = t.omega *. get_ang_inertia t ~default:0.
@@ -228,13 +240,16 @@ let get_v_pt t pt =
   Vec.add t.v v_perp
 
 (* *)
-let exert_force t force rel_force_pos =
+let exert_force t (force : Vec.t) rel_force_pos =
   let normal_force = Normal { force; rel_force_pos } in
   { t with curr_forces = normal_force :: t.curr_forces }
 
 let exert_force_w_global_pos t force pos =
   let normal_force = Normal { force; rel_force_pos = Vec.sub pos t.pos } in
   { t with curr_forces = normal_force :: t.curr_forces }
+
+let exert_pure_torque t torque =
+  { t with curr_forces = Pure_torque torque :: t.curr_forces }
 
 (* Currently assuming that friction/drag act essentially indepenedintly on
    angular and tangential velocity even though that is not the case. However, to
@@ -278,7 +293,20 @@ let apply_ground_friction t dt =
 let apply_normal_force dt t force =
   match force with
   | Normal normal_force ->
-    apply_impulse t (Vec.scale normal_force.force dt) normal_force.rel_force_pos
+    let t =
+      apply_impulse
+        t
+        (Vec.scale normal_force.force dt)
+        normal_force.rel_force_pos
+    in
+    (*Stdio.printf "force: (%f, %f). v: (%f, %f)\n" normal_force.force.x
+      normal_force.force.y t.v.x t.v.y;*)
+    t
+  | _ -> t
+
+let apply_pure_torque dt t force =
+  match force with
+  | Pure_torque torque -> apply_pure_ang_impulse t (dt *. torque)
   | _ -> t
 
 let apply_ground_frictional_force dt t force =
@@ -315,19 +343,22 @@ let apply_ground_frictional_force dt t force =
   (Int.of_float num_samples)) ~f:num_point_to_vec in List.fold points ~init:t
   ~f:handle_point*)
 
-let apply_drag_force _dt t _force =
-  Stdio.printf "Drag force not currently supported\n";
-  t
+let apply_drag_force _dt t _force = t
 
 (* match force with | Drag drag_force -> List.fold t.shape.edges ~init:t
    ~f:(apply_drag_force_on_side dt drag_force standard_del_theta) | _ -> t*)
 
 let apply_all_forces ?(reset_forces = true) t dt =
   let force_applications =
-    [ apply_normal_force; apply_ground_frictional_force; apply_drag_force ]
+    [ apply_normal_force
+    ; apply_pure_torque
+    ; apply_ground_frictional_force
+    ; apply_drag_force
+    ]
   in
   let use_force_application t force_application =
-    List.fold t.curr_forces ~init:t ~f:(force_application dt)
+    let t = List.fold t.curr_forces ~init:t ~f:(force_application dt) in
+    t
   in
   let t = List.fold force_applications ~init:t ~f:use_force_application in
   if reset_forces then { t with curr_forces = [] } else t
@@ -336,8 +367,99 @@ let exert_ground_friction t =
   { t with curr_forces = Ground_frictional :: t.curr_forces }
 
 let exert_drag t ?(medium_v = Vec.origin) ?(v_exponent = 1.) drag_c =
+  Stdio.printf "Drag force not currently supported\n";
   let drag_force = { drag_c; v_exponent; medium_v } in
   { t with curr_forces = Drag drag_force :: t.curr_forces }
+
+let advance ?(apply_forces = true) t ~dt =
+  let t = if apply_forces then apply_all_forces t dt else t in
+  { t with
+    pos = Vec.add t.pos (Vec.scale t.v dt)
+  ; angle = t.angle +. (t.omega *. dt)
+  }
+
+let _parallel_intersection
+    (e1_before : Edge.t)
+    (e2_before : Edge.t)
+    (e1_after : Edge.t)
+    (e2_after : Edge.t)
+  =
+  (* this is probably gonna slow us down because we already calculated these
+     intersections *)
+  (* we can almost certianly eliminate it *)
+  let inter_1 = lazy (Line_like.intersection e1_before.ls e2_before.ls) in
+  let inter_2 = lazy (Line_like.intersection e1_after.ls e2_after.ls) in
+  if Float.O.(
+       parallel_turn_left e1_before e2_before
+       = parallel_turn_left e1_after e2_after)
+     || Option.is_none (force inter_1)
+     || Option.is_none (force inter_2)
+  then None
+  else (
+    let get_param_bound (edge : Edge.t) is_p1 =
+      Line_like.param_of_proj_point
+        edge.ls
+        ((if is_p1 then Line_like.get_p1 else Line_like.get_p2) edge.ls)
+    in
+    let param_bound_11 = get_param_bound e1_after true in
+    let param_bound_21 = get_param_bound e1_after false in
+    let param_bound_12 = get_param_bound e2_after true in
+    let param_bound_22 = get_param_bound e2_after false in
+    let params =
+      [ param_bound_11; param_bound_12; param_bound_21; param_bound_22 ]
+    in
+    let sorted_params = List.sort params ~compare:Float.compare in
+    (* These exns are safe because params we already know has length 3 *)
+    assert (List.length sorted_params = 4);
+    let param_min = List.nth_exn sorted_params 1 in
+    let param_max = List.nth_exn sorted_params 2 in
+    let min_pt = Line_like.param_to_point e1_after.ls param_min in
+    let max_pt = Line_like.param_to_point e1_after.ls param_max in
+    let pt = Vec.mid_point min_pt max_pt in
+    Some
+      { pt
+      ; energy_ret = Material.energy_ret_of e1_after.material e2_after.material
+      ; edge_1 = e1_after
+      ; edge_2 = e2_after
+      })
+
+let intersections ?(allow_blacklist = false) ?(dt = 0.) t1 t2 =
+  (* create and do_intersect in Line_like and use here *)
+  let _void = dt in
+  if (Set.mem t1.black_list t2.collision_group
+     || Set.mem t2.black_list t1.collision_group)
+     && not allow_blacklist
+  then []
+  else (
+    let normal_intersections =
+      List.filter_map
+        (List.cartesian_product
+           (get_edges_w_global_pos t1)
+           (get_edges_w_global_pos t2))
+        ~f:(fun (e1, e2) ->
+          match Line_like.intersection e1.ls e2.ls with
+          | Some pt ->
+            Some
+              { pt
+              ; energy_ret = Material.energy_ret_of e1.material e2.material
+              ; edge_1 = e1
+              ; edge_2 = e2
+              }
+          | None -> None)
+    in
+    (*if Float.O.(dt = 0.) then normal_intersections else ( let advance =
+      advance ~apply_forces:false ~dt:(0. -. dt) in let get_edge_pairs t = let
+      t_prev = advance t in let zipped = List.zip (get_edges_w_global_pos
+      t_prev) (get_edges_w_global_pos t) in match zipped with | Ok zipped ->
+      zipped | Unequal_lengths -> raise (Failure "Get_edges_w_global_pos
+      returned different lengths for t and \ t_prev. If you got here, something
+      really weird has happened.") in let parallel_intersections =
+      List.filter_map (List.cartesian_product (get_edge_pairs t1)
+      (get_edge_pairs t2)) ~f:(fun ((e1_before, e1_after), (e2_before,
+      e2_after)) -> match parallel_intersection e1_before e2_before e1_after
+      e2_after with | Some inter -> Some inter | None -> None) in List.append
+      normal_intersections parallel_intersections)*)
+    normal_intersections)
 
 let ke_of t =
   (0.5 *. get_mass t ~default:0. *. Vec.mag_sq t.v)
@@ -353,9 +475,12 @@ type collision =
   }
 [@@deriving sexp_of]
 
-exception Unkown_collision_error of string
+let is_static t =
+  match t.m with
+  | Static -> true
+  | _ -> false
 
-let _impulse_min_mag_cushion = 0.01
+exception Unkown_collision_error of string
 
 let rec get_collision_from_intersections t1 t2 intersections =
   (* Not sure how to handle when there are multiple intersections. For the
@@ -366,10 +491,19 @@ let rec get_collision_from_intersections t1 t2 intersections =
   | inter :: tl ->
     let r1 = get_r t1 inter.pt in
     let r2 = get_r t2 inter.pt in
-    let corner_1_dist = closest_dist_to_corner inter inter.edge_1 in
-    let corner_2_dist = closest_dist_to_corner inter inter.edge_2 in
-    let is_edge_1_flat = Float.(corner_1_dist > corner_2_dist) in
+    let corner_1 = closest_dist_to_corner inter inter.edge_1 in
+    let corner_2 = closest_dist_to_corner inter inter.edge_2 in
+    let is_edge_1_flat = Float.(snd corner_1 > snd corner_2) in
     let flat_edge = if is_edge_1_flat then inter.edge_1 else inter.edge_2 in
+    let sharp_corner = if is_edge_1_flat then fst corner_2 else fst corner_1 in
+    let max_min_escape_v = 200. in
+    let min_escape_v =
+      Float.min
+        ((Line_like.dist_sq_to_pt flat_edge.ls sharp_corner **. 2.) /. 200.)
+        max_min_escape_v
+    in
+    (*let min_escape_v = if is_static t1 || is_static t2 then min_escape_v else
+      0. in*)
     let force_angle = Line_like.angle_of flat_edge.ls +. (Float.pi /. 2.) in
     (* acc angle for the flat edge *)
     let flat_edge_acc_angle =
@@ -389,7 +523,8 @@ let rec get_collision_from_intersections t1 t2 intersections =
     let get_s t = Vec.dot (get_v_pt t inter.pt) t2_acc_unit_vec in
     let s_1 = get_s t1 in
     let s_2 = get_s t2 in
-    if Float.(s_2 > s_1)
+    let required_dif = s_1 -. s_2 +. min_escape_v in
+    if Float.(required_dif <= 0.)
     then
       (* This means that the collision points are moving away from each other
          natrually *)
@@ -417,7 +552,7 @@ let rec get_collision_from_intersections t1 t2 intersections =
       if Float.equal impulse_min_mag_denom 0.
       then
         raise (Unkown_collision_error "Got infinite minimum impulse magnitude");
-      let impulse_min_mag = (s_1 -. s_2) /. impulse_min_mag_denom in
+      let impulse_min_mag = required_dif /. impulse_min_mag_denom in
       let apply_impulse impulse_mag =
         let impulse_1 = Vec.scale t1_acc_unit_vec impulse_mag in
         let impulse_2 = Vec.scale t2_acc_unit_vec impulse_mag in
@@ -432,8 +567,10 @@ let rec get_collision_from_intersections t1 t2 intersections =
       let e_min_1 = ke_of t1_with_impulse_min in
       let e_min_2 = ke_of t2_with_impulse_min in
       let e_min = e_min_1 +. e_min_2 in
-      let e_final = (inter.energy_ret *. (ei -. e_min)) +. e_min in
-      assert (Float.(e_min < ei));
+      let e_final =
+        Float.max e_min (((inter.energy_ret **. 2.) *. (ei -. e_min)) +. e_min)
+      in
+      (*assert (Float.(e_min < ei));*)
       (* Link to math:
          https://www.wolframalpha.com/input/?i=2E+%3D+m+*+%28%28v+%2B+x%2Fm%29%5E2+%2B+s%5E2%29+%2B+M+*+%28%28V+-+x%2FM%29%5E2+%2B+s%5E2%29+%2B+i+*+%28w+%2B+x+*+k%29%5E2+%2B+L+*+%28W+-+x+*+K%29%5E2%2C+solve+for+x *)
       (* we can default to 0 when static because k & omega will be 0 *)
@@ -502,18 +639,6 @@ let rec get_collision_from_intersections t1 t2 intersections =
                 impulse_b
                 impulse_c));
       let t1_final, t2_final = apply_impulse impulse_mag in
-      let check_t_final t =
-        if Float.is_nan t.pos.x
-        then raise (Unkown_collision_error "Got nan x post-collision")
-        else if Float.is_nan t.pos.y
-        then raise (Unkown_collision_error "Got nan y post-collision")
-        else if Float.is_nan t.v.x
-        then raise (Unkown_collision_error "Got nan v.x post-collision")
-        else if Float.is_nan t.v.y
-        then raise (Unkown_collision_error "Got nan v.y post-collision")
-      in
-      check_t_final t1;
-      check_t_final t2;
       Some
         { t1 = t1_final
         ; t2 = t2_final
@@ -523,47 +648,17 @@ let rec get_collision_from_intersections t1 t2 intersections =
         ; debug
         })
 
-let is_static t =
-  match t.m with
-  | Static -> true
-  | _ -> false
-
-let get_collision t1 t2 =
+let get_collision dt t1 t2 =
   if is_static t1 && is_static t2
   then None
   else (
-    match intersections t1 t2 with
+    match intersections t1 t2 ~dt with
     | [] -> None
     | intersections -> get_collision_from_intersections t1 t2 intersections)
 
-let advance t ~dt =
-  let t = apply_all_forces t dt in
-  { t with
-    pos = Vec.add t.pos (Vec.scale t.v dt)
-  ; angle = t.angle +. (t.omega *. dt)
-  }
-
-let collide_advance t1 t2 _dt =
-  match get_collision t1 t2 with
+let collide dt t1 t2 =
+  match get_collision dt t1 t2 with
   | None -> t1, t2
   | Some
       { t1; t2; impulse_pt = _; t1_acc_angle = _; impulse_mag = _; debug = _ }
     -> t1, t2
-
-let collide t1 t2 = collide_advance t1 t2 0.
-
-(* will collide two bodies, and advance them the amount for them to no longer be
-   touching *)
-(* the amount it advances them will be a multiple of dt, for calculation reasons *)
-let collide_and_min_bounce t1 t2 dt =
-  match get_collision t1 t2 with
-  | None -> t1, t2
-  | Some
-      { t1; t2; impulse_pt = _; t1_acc_angle = _; impulse_mag = _; debug = _ }
-    ->
-    let rec advance_until_freed t1 t2 =
-      if List.is_empty (intersections t1 t2)
-      then t1, t2
-      else advance_until_freed (advance t1 ~dt) (advance t2 ~dt)
-    in
-    advance_until_freed t1 t2

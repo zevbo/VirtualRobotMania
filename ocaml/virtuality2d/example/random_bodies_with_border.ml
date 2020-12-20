@@ -12,13 +12,13 @@ let time_multiplier = 1.
 let run () =
   let state = State.create () in
   let _elastic = Material.create ~energy_ret:1. in
-  let standard_body = Material.create ~energy_ret:0.8 in
+  let standard_body = Material.create ~energy_ret:0.7 in
   let _inelastic = Material.create ~energy_ret:0.04 in
   let _scale = 0.5 in
   let frame_width = Float.of_int (fst frame) in
   let frame_height = Float.of_int (snd frame) in
-  let border_width = 5. in
-  let border_material = Material.create ~energy_ret:0.8 in
+  let border_width = 50. in
+  let border_material = Material.create ~energy_ret:0.7 in
   let vertical_border_shape =
     Shape.create_standard_rect
       border_width
@@ -32,7 +32,7 @@ let run () =
       ~material:border_material
   in
   let create_border pos shape =
-    let body = Body.create ~m:Float.infinity ~pos shape in
+    let body = Body.create ~m:Float.infinity ~collision_group:0 ~pos shape in
     body, World.null_updater
   in
   let border_1 =
@@ -71,6 +71,7 @@ let run () =
         ~angle
         ~ground_fric_k_c
         ~ground_fric_s_c
+        ~collision_group:0
         shape
     in
     let apply_friction body = Body.exert_ground_friction body in
@@ -82,9 +83,10 @@ let run () =
     Body.create ~m:1. ~ang_inertia:1. ~average_r:40. ~pos:(Vec.create 200. 10.)
     shape in*)
   let robot_positions =
-    [ (*Vec.create 175. 175. ; Vec.create 175. (-175.) ; Vec.create (-175.) 175.
-        ; *)
-      Vec.create (-175.) (-175.)
+    [ Vec.create 175. 175.
+    ; Vec.create 175. (-175.)
+    ; Vec.create (-175.) 175.
+    ; Vec.create (-175.) (-175.)
     ; Vec.create 0. 0.
     ]
   in
@@ -111,6 +113,5 @@ let run () =
       ignore_it (List.map ~f:draw_robot (List.range 0 (List.length robots)));
       draw_robot 0;
       for _ = 0 to Int.of_float tpf do
-        world := World.advance !world ~dt:(time_multiplier /. (tpf *. fps));
-        assert (0 > 1)
+        world := World.advance !world ~dt:(time_multiplier /. (tpf *. fps))
       done)

@@ -1,0 +1,5 @@
+(library
+ (name common)
+ (libraries core_kernel geo geo_graph virtuality2d)
+ (preprocess
+  (pps ppx_jane)))

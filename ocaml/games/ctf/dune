@@ -1,0 +1,5 @@
+(library
+ (name ctf)
+ (libraries core_kernel common geo geo_graph virtuality2d csexp_rpc)
+ (preprocess
+  (pps ppx_jane)))

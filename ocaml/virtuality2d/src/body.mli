@@ -1,4 +1,5 @@
 open! Geo
+open Base
 
 type mass =
   | Inertial of float
@@ -20,6 +21,7 @@ type drag_force =
 
 type force =
   | Normal of normal_force
+  | Pure_torque of float
   | Ground_frictional
   | Drag of drag_force
 [@@deriving sexp_of]
@@ -37,6 +39,8 @@ type t =
   ; air_drag_c : float
   ; max_speed : float
   ; max_omega : float
+  ; collision_group : int
+  ; black_list : Set.M(Int).t
   ; curr_forces : force list
   }
 [@@deriving sexp_of]
@@ -53,6 +57,8 @@ val create
   -> ?air_drag_c:float
   -> ?max_speed:float
   -> ?max_omega:float
+  -> ?black_list:int list
+  -> collision_group:int
   -> m:float
   -> Shape.t
   -> t
@@ -67,6 +73,7 @@ val exert_force : t -> Vec.t -> Vec.t -> t
 val exert_force_w_global_pos : t -> Vec.t -> Vec.t -> t
 val exert_ground_friction : t -> t
 val exert_drag : t -> ?medium_v:Vec.t -> ?v_exponent:float -> float -> t
+val exert_pure_torque : t -> float -> t
 val apply_all_forces : ?reset_forces:bool -> t -> float -> t
 val get_edges_w_global_pos : t -> Edge.t list
 val get_v_pt : t -> Vec.t -> Vec.t
@@ -79,8 +86,12 @@ type intersection =
   }
 [@@deriving sexp_of]
 
-val intersections : t -> t -> intersection list
-val closest_dist_to_corner : intersection -> Edge.t -> float
+val intersections
+  :  ?allow_blacklist:bool
+  -> ?dt:float
+  -> t
+  -> t
+  -> intersection list
 
 type collision =
   { t1 : t
@@ -92,16 +103,14 @@ type collision =
   }
 [@@deriving sexp_of]
 
-val get_collision : t -> t -> collision option
+val get_collision : float -> t -> t -> collision option
 
 (** Takes two bodies, returns the two bodies in the same order as a pair once
     they have collided. If they are not touching, the same bodies will be
     returned *)
-val collide : t -> t -> t * t
+val collide : float -> t -> t -> t * t
 
-val advance : t -> dt:float -> t
-val collide_advance : t -> t -> float -> t * t
-val collide_and_min_bounce : t -> t -> float -> t * t
+val advance : ?apply_forces:bool -> t -> dt:float -> t
 val ang_inertia_of : t -> mass
 val get_mass : t -> default:float -> float
 val get_ang_inertia : t -> default:float -> float

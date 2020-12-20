@@ -37,9 +37,9 @@
     (define-values (r w) (unix-socket-connect pipename))
     (conn r w)))
 
-(define (launch-and-connect)
+(define (launch-and-connect name)
   (define pipename (path->string (make-temporary-file "game-~a.pipe")))
   (system (string-append
            "(cd $(git rev-parse --show-toplevel)/ocaml; "
-           "dune exec -- game_server/main.exe " pipename ") &"))
+           "dune exec -- game_server/main.exe " name " " pipename ") &"))
   (connect-loop pipename))
