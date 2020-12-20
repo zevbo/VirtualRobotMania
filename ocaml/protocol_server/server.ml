@@ -22,6 +22,7 @@ let server impl_group ~filename =
             don't_wait_for (exit 0)))
       (Tcp.Where_to_listen.of_file filename)
       (fun addr r w ->
+        log_s [%message "Connection opened" (addr : Socket.Address.Unix.t)];
         don't_wait_for
           (let%bind () = Reader.close_finished r in
            log_s [%message "Connection closed. Exiting."];
