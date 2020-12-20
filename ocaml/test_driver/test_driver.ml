@@ -1,7 +1,7 @@
 open! Core
 open! Async
 module Client = Csexp_rpc.Client
-module Protocol = Robot_sim.Protocol
+module Protocol = Test_game.Protocol
 
 let log_s = Log.Global.error_s
 

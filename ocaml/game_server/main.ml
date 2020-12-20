@@ -1,7 +1,7 @@
 open! Core
 open! Async
-module Game_state = Robot_sim.Game_state
-module Protocol = Robot_sim.Protocol
+module Game_state = Test_game.Game_state
+module Protocol = Test_game.Protocol
 module Implementation = Csexp_rpc.Implementation
 
 let impls =
