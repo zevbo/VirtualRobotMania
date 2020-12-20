@@ -1,9 +1,4 @@
 open Virtuality2d
 
-val gen_updater
-  :  State.t
-  -> State.Defense_bot.t
-  -> float
-  -> Body.t
-  -> World.t
-  -> Body.t
+val defense_bot : unit -> Body.t
+val gen_updater : State.Defense_bot.t -> float -> Body.t -> World.t -> Body.t

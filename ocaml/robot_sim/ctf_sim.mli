@@ -12,3 +12,6 @@ val l_input : unit -> float
 
 (** Get's current input to right motor *)
 val r_input : unit -> float
+
+(** Shoots laser if on offense bot *)
+val shoot_laser : unit -> unit

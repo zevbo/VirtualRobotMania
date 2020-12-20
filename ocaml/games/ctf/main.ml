@@ -10,16 +10,33 @@ let frame =
   Int.of_float Ctf_consts.frame_width, Int.of_float Ctf_consts.frame_height
 
 let dt = 1. /. fps
-let dt_sim = dt /. 50.
+let dt_sim_dt = 10.
+let dt_sim = dt /. dt_sim_dt
+let speed_constant = 0.2
+
+let robot_image state =
+  Display.Image.of_bmp_file state.display "../../images/test-robot.bmp"
 
 let init () =
   let world = World.empty in
   let world =
-    List.fold (Bodies.border ()) ~init:world ~f:(fun world border_edge ->
+    List.fold Bodies.border ~init:world ~f:(fun world border_edge ->
         fst (World.add_body world border_edge))
   in
   let offense_robot_state = State.Offense_bot.create () in
   let defense_robot_state = State.Defense_bot.create () in
+  let world, offense_body_id =
+    World.add_body
+      world
+      ~updater:(Offense_bot_logic.gen_updater offense_robot_state dt_sim)
+      (Offense_bot_logic.offense_bot ())
+  in
+  let world, defense_body_id =
+    World.add_body
+      world
+      ~updater:(Defense_bot_logic.gen_updater defense_robot_state dt_sim)
+      (Defense_bot_logic.defense_bot ())
+  in
   let state =
     State.create
       world
@@ -28,25 +45,11 @@ let init () =
          ~physical:frame
          ~logical:frame
          ~title:"Virtual Robotics Arena")
-      offense_robot_state
-      defense_robot_state
-  in
-  let world, offense_body_id =
-    World.add_body
-      world
-      ~updater:(Offense_bot_logic.gen_updater state offense_robot_state dt_sim)
-      (Bodies.offense_bot ())
-  in
-  let world, defense_body_id =
-    World.add_body
-      world
-      ~updater:(Defense_bot_logic.gen_updater state defense_robot_state dt_sim)
-      (Bodies.defense_bot ())
+      (offense_robot_state, offense_body_id)
+      (defense_robot_state, defense_body_id)
   in
   state.world <- world;
-  let robot_image =
-    Display.Image.of_bmp_file state.display "../../images/test-robot.bmp"
-  in
+  let robot_image = robot_image state in
   state.images
     <- Map.update state.images ~f:(fun _ -> robot_image) offense_body_id;
   state.images
@@ -75,8 +78,9 @@ let _status_s sexp =
 
 let step state =
   handle_events state;
-  for _i = 1 to 10 do
-    state.world <- World.advance state.world ~dt:dt_sim
+  for _i = 1 to Int.of_float dt_sim_dt do
+    state.ts <- state.ts +. dt_sim;
+    state.world <- World.advance state.world ~dt:(dt_sim *. speed_constant)
   done;
   Display.clear state.display Color.white;
   Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
@@ -104,6 +108,8 @@ let step state =
   state.last_step_end <- Some (Time.now ())
 
 let max_input = 1.
+let use_offense_bot state = state.on_offense_bot <- true
+let use_defense_bot state = state.on_offense_bot <- false
 
 let set_motors state l_input r_input =
   let make_valid input =
@@ -111,10 +117,54 @@ let set_motors state l_input r_input =
     then input
     else Float.copysign max_input input
   in
-  state.offense_bot.l_input <- make_valid l_input;
-  state.offense_bot.r_input <- make_valid r_input
+  if state.on_offense_bot
+  then (
+    (fst state.offense_bot).l_input <- make_valid l_input;
+    (fst state.offense_bot).r_input <- make_valid r_input)
+  else (
+    (fst state.defense_bot).l_input <- make_valid l_input;
+    (fst state.defense_bot).r_input <- make_valid r_input)
 
-let l_input state = state.offense_bot.l_input
-let r_input state = state.offense_bot.r_input
-let make_on_offense_bot state = state.on_offense_bot <- true
-let make_off_offense_bot state = state.on_offense_bot <- false
+let l_input state =
+  if state.on_offense_bot
+  then (fst state.offense_bot).l_input
+  else (fst state.defense_bot).l_input
+
+let r_input state =
+  if state.on_offense_bot
+  then (fst state.offense_bot).r_input
+  else (fst state.defense_bot).r_input
+
+let _get_offense_bot_body state =
+  let body_op = Map.find state.world.bodies (snd state.offense_bot) in
+  match body_op with
+  | Some body -> body
+  | None ->
+    raise
+      (Failure
+         "Called get_offense_bot_body before offense bot generation or after \
+          its deletion")
+
+let get_defense_bot_body state =
+  let body_op = Map.find state.world.bodies (snd state.defense_bot) in
+  match body_op with
+  | Some body -> body
+  | None ->
+    raise
+      (Failure
+         "Called get_defense_bot_body before defense bot generation or after \
+          its deletion")
+
+let shoot_laser state =
+  if (not state.on_offense_bot)
+     && Float.(
+          Ctf_consts.Laser.cooldown +. (fst state.defense_bot).last_fire_ts
+          < state.ts)
+  then (
+    let laser_body = Laser_logic.laser (get_defense_bot_body state) in
+    let updater = Laser_logic.gen_updater () in
+    let world, laser_id = World.add_body state.world ~updater laser_body in
+    state.world <- world;
+    state.images
+      <- Map.update state.images laser_id ~f:(fun _ -> robot_image state);
+    (fst state.defense_bot).last_fire_ts <- state.ts)

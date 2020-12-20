@@ -11,6 +11,8 @@ let run () =
     let s = key_state.{Sdl.Scancode.s} in
     let u = key_state.{Sdl.Scancode.up} in
     let d = key_state.{Sdl.Scancode.down} in
+    let space = key_state.{Sdl.Scancode.space} in
+    if space = 1 then Game.shoot_laser ();
     let move_by = 0.01 in
     let l_input =
       Game.l_input ()

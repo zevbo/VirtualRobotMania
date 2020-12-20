@@ -195,7 +195,7 @@ let closest_dist_to_corner inter (edge : Edge.t) =
   in
   let sorted =
     List.sort dists ~compare:(fun (_pt1, dist1) (_pt2, dist2) ->
-        Int.of_float (dist1 -. dist2))
+        Float.compare dist1 dist2)
   in
   match sorted with
   | closest_pd :: _tl -> closest_pd
@@ -408,9 +408,7 @@ let _parallel_intersection
     let params =
       [ param_bound_11; param_bound_12; param_bound_21; param_bound_22 ]
     in
-    let sorted_params =
-      List.sort params ~compare:(fun a b -> Int.of_float (a -. b))
-    in
+    let sorted_params = List.sort params ~compare:Float.compare in
     (* These exns are safe because params we already know has length 3 *)
     assert (List.length sorted_params = 4);
     let param_min = List.nth_exn sorted_params 1 in

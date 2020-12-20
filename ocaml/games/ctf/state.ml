@@ -14,11 +14,12 @@ end
 
 module Defense_bot = struct
   type t =
-    { mutable l_input : float
+    { mutable last_fire_ts : float
+    ; mutable l_input : float
     ; mutable r_input : float
     }
 
-  let create () = { l_input = 0.; r_input = 0. }
+  let create () = { last_fire_ts = 0.; l_input = 0.; r_input = 0. }
 end
 
 type t =
@@ -29,8 +30,9 @@ type t =
   ; mutable images : Display.Image.t Map.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
-  ; offense_bot : Offense_bot.t
-  ; defense_bot : Defense_bot.t
+  ; offense_bot : Offense_bot.t * World.Id.t
+  ; defense_bot : Defense_bot.t * World.Id.t
+  ; mutable ts : float
   ; mutable on_offense_bot : bool
   }
 
@@ -42,5 +44,6 @@ let create world images display offense_bot defense_bot =
   ; display
   ; offense_bot
   ; defense_bot
+  ; ts = 0.
   ; on_offense_bot = true
   }
