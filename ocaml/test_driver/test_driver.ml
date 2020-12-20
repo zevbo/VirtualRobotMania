@@ -5,26 +5,19 @@ module Protocol = Robot_sim.Protocol
 
 let log_s = Log.Global.error_s
 
-let rec wait_for_file filename =
-  let%bind exists = Sys.file_exists_exn filename in
-  if exists
+let rec wait_for_connection filename =
+  if%bind Client.can_connect ~filename
   then return ()
   else (
     let%bind () = Clock.after (Time.Span.of_ms 10.) in
-    wait_for_file filename)
+    wait_for_connection filename)
 
-let run ~pipefile =
-  (* let filename = Filename.temp_file "game" ".pipe" in printf "starting\n";
-     log_s [%message "tmpfile for pipe" (filename : string)]; let _exec_finished
-     = Async.Process.run_exn ~prog:"dune" ~args:[ "exec"; "--";
-     "game_server/main.exe"; filename ] () in log_s [%message "waiting for
-     file"]; let%bind () = wait_for_file filename in log_s [%message "file
-     loaded"]; *)
+let run_with_pipefile ~pipefile =
   let dispatch = Client.dispatch ~filename:pipefile in
   let module Game = Robot_sim.Game in
   let%bind () =
     log_s [%message "starting dispatch"];
-    Deferred.Sequence.iter (Sequence.range 0 20) ~f:(fun _ ->
+    Deferred.Sequence.iter (Sequence.range 0 5) ~f:(fun _ ->
         let%bind (_ : int) = dispatch Protocol.add_bot () in
         return ())
   in
@@ -38,9 +31,37 @@ let run ~pipefile =
   in
   loop (Time.now ())
 
-let () =
+let run () =
+  let filename = Filename.temp_file "game" ".pipe" in
+  printf "starting\n";
+  log_s [%message "tmpfile for pipe" (filename : string)];
+  let _exec_finished =
+    Async.Process.run_exn
+      ~prog:"dune"
+      ~args:[ "exec"; "--"; "game_server/main.exe"; filename ]
+      ()
+  in
+  log_s [%message "waiting for connection"];
+  let%bind () = wait_for_connection filename in
+  log_s [%message "connection is up"];
+  run_with_pipefile ~pipefile:filename
+
+let with_existing_engine =
   Command.async
-    ~summary:"Test out API we plan to expose to Racket"
+    ~summary:"Use an existing server, and specify the pipe file"
     (let%map_open.Command pipefile = anon ("pipefile" %: Filename.arg_type) in
-     fun () -> run ~pipefile)
+     fun () -> run_with_pipefile ~pipefile)
+
+let launch_engine =
+  Command.async
+    ~summary:"Launch a server automatically"
+    (let%map_open.Command () = return () in
+     fun () -> run ())
+
+let () =
+  Command.group
+    ~summary:"For testing out the Engine API for Racket, but from OCaml"
+    [ "with-existing-engine", with_existing_engine
+    ; "launch-engine", launch_engine
+    ]
   |> Command.run
