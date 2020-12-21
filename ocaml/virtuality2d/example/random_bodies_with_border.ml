@@ -33,7 +33,7 @@ let run () =
   in
   let create_border pos shape =
     let body = Body.create ~m:Float.infinity ~collision_group:0 ~pos shape in
-    body, World.null_updater
+    body
   in
   let border_1 =
     create_border (Vec.create (frame_width /. 2.) 0.) vertical_border_shape
@@ -74,9 +74,10 @@ let run () =
         ~collision_group:0
         shape
     in
-    let apply_friction body = Body.exert_ground_friction body in
-    let updater _id body _world = apply_friction body in
-    body, World.to_world_updater updater
+    body
+    (* TODO: {[ let apply_friction body = Body.exert_ground_friction body in let
+       updater _id body _world = apply_friction body in World.to_world_updater
+       updater]} *)
   in
   (*let robot = Body.create ~m:1. ~ang_inertia:1. ~average_r:40. shape in let
     robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in let robot_2 =
@@ -92,7 +93,7 @@ let run () =
   in
   let robots = List.map robot_positions ~f:create_random in
   let borders = [ border_1; border_2; border_3; border_4 ] in
-  let world = ref (World.of_bodies_and_updaters (List.append robots borders)) in
+  let world = ref (World.of_bodies (List.append robots borders)) in
   let _image =
     Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
   in

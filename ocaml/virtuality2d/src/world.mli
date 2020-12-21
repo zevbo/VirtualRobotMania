@@ -1,7 +1,7 @@
 open Base
 
 module Id : sig
-  type t
+  type t [@@deriving sexp]
 
   include Comparable.S with type t := t
 

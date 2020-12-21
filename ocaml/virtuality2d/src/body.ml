@@ -47,6 +47,7 @@ type t =
   ; collision_group : int
   ; black_list : Set.M(Int).t
   ; curr_forces : force list
+  ; never_collide : bool
   }
 [@@deriving sexp_of]
 
@@ -64,6 +65,7 @@ let create
     ?(max_speed = no_max_speed)
     ?(max_omega = no_max_speed)
     ?(black_list = [])
+    ?(never_collide = false)
     ~collision_group
     ~m
     shape
@@ -85,6 +87,7 @@ let create
   ; black_list = Set.of_list cmp black_list
   ; collision_group
   ; curr_forces = []
+  ; never_collide
   }
 
 (* format is a, b, c, discriminant, discriminant_leniance *)
@@ -456,7 +459,9 @@ let intersections ?(allow_blacklist = false) ?(dt = 0.) t1 t2 =
   (* create and do_intersect in Line_like and use here *)
   let _void = dt in
   if (Set.mem t1.black_list t2.collision_group
-     || Set.mem t2.black_list t1.collision_group)
+     || Set.mem t2.black_list t1.collision_group
+     || t1.never_collide
+     || t2.never_collide)
      && not allow_blacklist
   then []
   else (

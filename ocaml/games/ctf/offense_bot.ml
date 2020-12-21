@@ -17,19 +17,16 @@ let create () =
   ; r_input = 0.
   }
 
-let gen_updater (offense_bot : t) dt =
-  let body_updater _id (body : Body.t) _world =
-    Set_motors.apply_motor_force
-      body
-      ~dt
-      ~bot_height:Ctf_consts.Bots.height
-      ~force_over_input:Ctf_consts.Bots.Offense.force_over_input
-      ~air_resistance_c:Ctf_consts.Bots.air_resistance_c
-      ~side_fric_k:Ctf_consts.Bots.side_fric_k
-      offense_bot.l_input
-      offense_bot.r_input
-  in
-  World.to_world_updater body_updater
+let update t ~dt (body : Body.t) =
+  Set_motors.apply_motor_force
+    body
+    ~dt
+    ~bot_height:Ctf_consts.Bots.height
+    ~force_over_input:Ctf_consts.Bots.Offense.force_over_input
+    ~air_resistance_c:Ctf_consts.Bots.air_resistance_c
+    ~side_fric_k:Ctf_consts.Bots.side_fric_k
+    t.l_input
+    t.r_input
 
 let reset (body : Body.t) =
   { body with
@@ -38,14 +35,12 @@ let reset (body : Body.t) =
   ; angle = Ctf_consts.Bots.start_angle
   }
 
-let offense_bot () =
-  let body =
-    Body.create
-      ~m:Ctf_consts.Bots.mass
-      ~collision_group:Ctf_consts.Bots.Offense.coll_group
-      Ctf_consts.Bots.shape
-  in
-  reset body
+let body =
+  reset
+    (Body.create
+       ~m:Ctf_consts.Bots.mass
+       ~collision_group:Ctf_consts.Bots.Offense.coll_group
+       Ctf_consts.Bots.shape)
 
 let remove_live offense_bot (offense_bot_body : Body.t) =
   offense_bot.lives <- offense_bot.lives - 1;

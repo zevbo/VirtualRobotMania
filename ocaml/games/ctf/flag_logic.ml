@@ -34,10 +34,10 @@ let flag_protector (flag : Body.t) =
     Protector.shape
 
 let update_flag_protector_visibility (state : State.t) to_use =
-  state.images
-    <- Map.update state.images state.flag_protector ~f:(fun data ->
-           let img, _ = Option.value_exn data in
-           img, to_use)
+  state.invisible
+    <- (if to_use
+       then Set.remove state.invisible state.flag_protector
+       else Set.add state.invisible state.flag_protector)
 
 let set_flag_protector_state (state : State.t) world in_use =
   update_flag_protector_visibility state in_use;
@@ -51,41 +51,38 @@ let set_flag_protector_state (state : State.t) world in_use =
   let flag_protector = { flag_protector with black_list; pos } in
   World.set_body world state.flag_protector flag_protector
 
-let gen_updater (state : State.t) =
-  let updater id (flag_body : Body.t) world =
-    let picked_up_flag =
-      not
-        (List.is_empty
-           (Body.intersections
-              ~allow_blacklist:true
-              flag_body
-              (State.get_offense_bot_body state)))
-    in
-    if picked_up_flag then Offense_bot.set_has_flag state.offense_bot.bot true;
-    (* this find_exn should eventually be changed probably *)
-    let bot = State.get_offense_bot_body state in
-    let on_ground = snd (Map.find_exn state.images state.flag_protector) in
-    let flag_body =
-      if state.offense_bot.bot.has_flag
-      then
-        { flag_body with pos = bot.pos; angle = bot.angle -. (Float.pi /. 2.) }
-      else if not on_ground
-      then flag (State.get_defense_bot_body state)
-      else flag_body
-    in
-    let world = World.set_body world id flag_body in
-    let world =
-      if state.offense_bot.bot.has_flag && on_ground
-      then set_flag_protector_state state world false
-      else if (not state.offense_bot.bot.has_flag) && not on_ground
-      then set_flag_protector_state state world true
-      else world
-    in
-    let flag_protector = World.get_body_exn world state.flag_protector in
-    assert (
-      (not state.offense_bot.bot.has_flag)
-      || Set.exists flag_protector.black_list ~f:(fun group ->
-             group = Ctf_consts.Laser.coll_group));
-    world
+let update (state : State.t) =
+  let flag_body = Map.find_exn state.world.bodies state.flag in
+  let picked_up_flag =
+    not
+      (List.is_empty
+         (Body.intersections
+            ~allow_blacklist:true
+            flag_body
+            (State.get_offense_bot_body state)))
   in
-  updater
+  if picked_up_flag then Offense_bot.set_has_flag state.offense_bot.bot true;
+  (* this find_exn should eventually be changed probably *)
+  let bot = State.get_offense_bot_body state in
+  let on_ground = not (Set.mem state.invisible state.flag_protector) in
+  let flag_body =
+    if state.offense_bot.bot.has_flag
+    then { flag_body with pos = bot.pos; angle = bot.angle -. (Float.pi /. 2.) }
+    else if not on_ground
+    then flag (State.get_defense_bot_body state)
+    else flag_body
+  in
+  let world = World.set_body state.world state.flag flag_body in
+  let world =
+    if state.offense_bot.bot.has_flag && on_ground
+    then set_flag_protector_state state world false
+    else if (not state.offense_bot.bot.has_flag) && not on_ground
+    then set_flag_protector_state state world true
+    else world
+  in
+  assert (
+    let flag_protector = World.get_body_exn world state.flag_protector in
+    (not state.offense_bot.bot.has_flag)
+    || Set.exists flag_protector.black_list ~f:(fun group ->
+           group = Ctf_consts.Laser.coll_group));
+  state.world <- world

@@ -1,6 +1,6 @@
 open Core_kernel
 open Virtuality2d
-module Sdl = Tsdl.Sdl
+module Sdl := Tsdl.Sdl
 open Geo_graph
 
 type 'a with_id =
@@ -11,7 +11,8 @@ type 'a with_id =
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
-  ; mutable images : (Display.Image.t * bool) Map.M(World.Id).t
+  ; mutable images : Display.Image.t Map.M(World.Id).t
+  ; mutable invisible : Set.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
   ; offense_bot : Offense_bot.t with_id
@@ -25,7 +26,7 @@ type t =
 
 val create
   :  World.t
-  -> (Display.Image.t * bool) Map.M(World.Id).t
+  -> Display.Image.t Map.M(World.Id).t
   -> Display.t
   -> Offense_bot.t with_id
   -> Defense_bot.t with_id
