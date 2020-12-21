@@ -15,11 +15,23 @@ end
 
 type t =
   { bodies : Body.t Map.M(Id).t
-  ; updaters : (Body.t -> t -> Body.t) Map.M(Id).t
+  ; updaters : updater Map.M(Id).t
   }
 [@@deriving sexp_of]
 
-let null_updater body _ = body
+and updater = Id.t -> Body.t -> t -> t
+
+let null_updater _ _ world = world
+
+let to_world_updater body_updater =
+  let updater id body world =
+    let updated_body = body_updater id body world in
+    { world with
+      bodies = Map.update world.bodies id ~f:(fun _ -> updated_body)
+    }
+  in
+  updater
+
 let empty = { bodies = Map.empty (module Id); updaters = Map.empty (module Id) }
 
 let of_bodies bodies =
@@ -50,6 +62,9 @@ let add_body t ?(updater = null_updater) body =
     }
   , id )
 
+let remove_body t id =
+  { bodies = Map.remove t.bodies id; updaters = Map.remove t.updaters id }
+
 (* TODO: If objects get stuck, we might want a small bounce *)
 let collide_bodies dt bodies =
   let ids = Sequence.of_list (Map.keys bodies) in
@@ -65,15 +80,21 @@ let collide_bodies dt bodies =
 
 let update t id body =
   match Map.find t.updaters id with
-  | None -> body
-  | Some f -> f body t
+  | None -> t
+  | Some f -> f id body t
 
 let advance t ~dt =
+  let updated_t =
+    Map.fold t.bodies ~init:t ~f:(fun ~key:id ~data:body t -> update t id body)
+  in
   let bodies =
-    t.bodies
-    |> Map.mapi ~f:(fun ~key:id ~data:body -> update t id body)
+    updated_t.bodies
     |> collide_bodies dt
     |> Map.map ~f:Body.apply_restrictions
     |> Map.map ~f:(Body.advance ~dt)
   in
   { t with bodies }
+
+let all_of_coll_group t coll_group =
+  List.filter (Map.to_alist t.bodies) ~f:(fun (_id, body) ->
+      body.collision_group = coll_group)

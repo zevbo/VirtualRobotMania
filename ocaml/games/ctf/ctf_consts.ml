@@ -5,13 +5,14 @@ let frame_width = 500.
 let frame_height = 500.
 
 module Border = struct
+  let energy_ret = 1.4
   let coll_group = 0
 end
 
 module Bots = struct
   let width = 75.
   let height = 50.
-  let material = Material.create ~energy_ret:0.3
+  let material = Material.create ~energy_ret:1.
   let mass = 1.
   let start_angle = 0.01
   let x_mag = (frame_width /. 2.) -. width
@@ -20,13 +21,15 @@ module Bots = struct
   let air_resistance_c = 1.
 
   module Offense = struct
-    let force_over_input = 500.
+    let start_lives = 3
+    let force_over_input = 650.
     let coll_group = 1
   end
 
   module Defense = struct
     let force_over_input = 400.
     let coll_group = 2
+    let black_list = [ 1 ]
   end
 end
 

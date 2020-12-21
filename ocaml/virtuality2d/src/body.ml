@@ -1,6 +1,8 @@
 open! Geo
 open! Base
 
+let log_s sexp = Async.Log.Global.info_s sexp
+
 type mass =
   | Inertial of float
   | Static
@@ -187,23 +189,50 @@ let parallel_turn_left (e1 : Edge.t) (e2 : Edge.t) =
   in
   if Float.O.(dif = 0.) then 0. else if Float.O.(dif > 0.) then 1. else -1.
 
+let is_in_body t pt =
+  let ray = Line_like.ray_of_point_angle pt 0. in
+  let num_intersections =
+    List.count t.shape.edges ~f:(fun edge ->
+        Option.is_some (Line_like.intersection edge.ls ray))
+  in
+  num_intersections % 2 = 1
+
 let closest_dist_to_corner inter (edge : Edge.t) =
   let flip_points = Line_like.flip_points_of edge.ls in
-  let dists =
-    List.map flip_points ~f:(fun flip_point ->
-        flip_point, Vec.dist inter.pt flip_point)
+  let closest =
+    List.min_elt
+      (List.map flip_points ~f:(Vec.dist inter.pt))
+      ~compare:Float.compare
   in
-  let sorted =
-    List.sort dists ~compare:(fun (_pt1, dist1) (_pt2, dist2) ->
-        Float.compare dist1 dist2)
-  in
-  match sorted with
-  | closest_pd :: _tl -> closest_pd
-  | [] ->
+  match closest with
+  | Some closest -> closest
+  | None ->
     raise
       (Failure
          "Somehow there was only one flip point of an edge in \
           closest_dist_to_corner")
+
+let pertruding_distance_sq_of_pt flat_t (flat_edge : Edge.t) (pt : Vec.t) =
+  if is_in_body flat_t pt then Line_like.dist_sq_to_pt flat_edge.ls pt else 0.
+
+let pertruding_distance_sq_of_edge
+    flat_t
+    (flat_edge : Edge.t)
+    (sharp_edge : Edge.t)
+  =
+  let dist = pertruding_distance_sq_of_pt flat_t flat_edge in
+  let d1 = dist (Line_like.get_p1 sharp_edge.ls) in
+  let d2 = dist (Line_like.get_p2 sharp_edge.ls) in
+  Float.max d1 d2
+
+let pertruding_distance_sq sharp_t flat_t (flat_edge : Edge.t) =
+  let distances =
+    List.map
+      (get_edges_w_global_pos sharp_t)
+      ~f:(pertruding_distance_sq_of_edge flat_t flat_edge)
+  in
+  let max_distance = List.max_elt distances ~compare:Float.compare in
+  Option.value max_distance ~default:0.
 
 let momentum_of t = Vec.scale t.v (get_mass t ~default:0.)
 let ang_momentum_of t = t.omega *. get_ang_inertia t ~default:0.
@@ -491,16 +520,18 @@ let rec get_collision_from_intersections t1 t2 intersections =
   | inter :: tl ->
     let r1 = get_r t1 inter.pt in
     let r2 = get_r t2 inter.pt in
-    let corner_1 = closest_dist_to_corner inter inter.edge_1 in
-    let corner_2 = closest_dist_to_corner inter inter.edge_2 in
-    let is_edge_1_flat = Float.(snd corner_1 > snd corner_2) in
+    let dist_1 = closest_dist_to_corner inter inter.edge_1 in
+    let dist_2 = closest_dist_to_corner inter inter.edge_2 in
+    let is_edge_1_flat = Float.(dist_1 > dist_2) in
     let flat_edge = if is_edge_1_flat then inter.edge_1 else inter.edge_2 in
-    let sharp_corner = if is_edge_1_flat then fst corner_2 else fst corner_1 in
+    let pertruding_distance_sq =
+      if is_edge_1_flat
+      then pertruding_distance_sq t2 t1 inter.edge_1
+      else pertruding_distance_sq t1 t2 inter.edge_2
+    in
     let max_min_escape_v = 200. in
     let min_escape_v =
-      Float.min
-        ((Line_like.dist_sq_to_pt flat_edge.ls sharp_corner **. 2.) /. 200.)
-        max_min_escape_v
+      Float.min ((pertruding_distance_sq /. 5.) **. 2.) max_min_escape_v
     in
     (*let min_escape_v = if is_static t1 || is_static t2 then min_escape_v else
       0. in*)
@@ -511,6 +542,21 @@ let rec get_collision_from_intersections t1 t2 intersections =
       let is_inwards = is_inwards t inter.pt force_angle in
       if is_inwards then force_angle else force_angle +. Float.pi
     in
+    let msg =
+      Printf.sprintf
+        "min escape v: %f. flat edge: (%f, %f), (%f, %f). dist_sq: %f. sharp \
+         acc angle: %f"
+        min_escape_v
+        (Line_like.get_p1 flat_edge.ls).x
+        (Line_like.get_p1 flat_edge.ls).y
+        (Line_like.get_p2 flat_edge.ls).x
+        (Line_like.get_p2 flat_edge.ls).y
+        pertruding_distance_sq
+        (Vec.normalize_angle (flat_edge_acc_angle +. Float.pi)
+        *. 180.
+        /. Float.pi)
+    in
+    log_s [%message msg];
     let t1_acc_angle =
       if is_edge_1_flat
       then flat_edge_acc_angle

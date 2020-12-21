@@ -5,7 +5,8 @@ open Geo_graph
 
 module Offense_bot : sig
   type t =
-    { mutable l_input : float
+    { mutable lives : int
+    ; mutable l_input : float
     ; mutable r_input : float
     }
 
@@ -45,3 +46,5 @@ val create
 
 val load_offense_image : t -> string -> unit Async.Deferred.t
 val load_defense_image : t -> string -> unit Async.Deferred.t
+val get_offense_bot_body : t -> Body.t
+val get_defense_bot_body : t -> Body.t

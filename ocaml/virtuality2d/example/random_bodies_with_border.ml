@@ -75,8 +75,8 @@ let run () =
         shape
     in
     let apply_friction body = Body.exert_ground_friction body in
-    let updater body _world = apply_friction body in
-    body, updater
+    let updater _id body _world = apply_friction body in
+    body, World.to_world_updater updater
   in
   (*let robot = Body.create ~m:1. ~ang_inertia:1. ~average_r:40. shape in let
     robot = Body.apply_com_impulse robot (Vec.create 50. 0.) in let robot_2 =
