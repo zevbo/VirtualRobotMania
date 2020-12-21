@@ -1,9 +1,11 @@
 open Virtuality2d
 open Common
+open Core
 open Geo
 
 type t =
   { mutable has_flag : bool
+  ; mutable last_boost : float
   ; mutable lives : int
   ; mutable l_input : float
   ; mutable r_input : float
@@ -13,11 +15,18 @@ type t =
 let create () =
   { has_flag = false
   ; lives = Ctf_consts.Bots.Offense.start_lives
+  ; last_boost = -.Ctf_consts.Bots.Offense.boost_cooldown
   ; l_input = 0.
   ; r_input = 0.
   }
 
-let update t ~dt (body : Body.t) =
+let update t ~dt (body : Body.t) ts =
+  let body =
+    if Float.O.(t.last_boost = ts)
+    then
+      { body with v = Vec.scale body.v Ctf_consts.Bots.Offense.boost_v_scale }
+    else body
+  in
   Set_motors.apply_motor_force
     body
     ~dt

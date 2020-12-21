@@ -30,10 +30,9 @@ let run (state : State.t) ~dt =
             | Some body -> f body))
   in
   update_body state.offense_bot.id (fun body ->
-      Offense_bot.update state.offense_bot.bot ~dt body);
+      Offense_bot.update state.offense_bot.bot ~dt body state.ts);
   update_body state.defense_bot.id (fun body ->
       Defense_bot.update state.defense_bot.bot ~dt body);
   bot_collision state;
   Flag_logic.update state;
-  state.world <- World.advance state.world ~dt;
-  state.ts <- state.ts +. dt
+  state.world <- World.advance state.world ~dt

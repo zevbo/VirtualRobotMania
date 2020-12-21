@@ -79,7 +79,8 @@ let _status_s sexp =
 let step state =
   handle_events state;
   for _i = 1 to Int.of_float dt_sim_dt do
-    Advance.run state ~dt:(dt_sim *. speed_constant)
+    Advance.run state ~dt:(dt_sim *. speed_constant);
+    state.ts <- state.ts +. dt_sim
   done;
   Display.clear state.display Color.white;
   Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
@@ -134,11 +135,14 @@ let r_input state =
   then state.offense_bot.bot.r_input
   else state.defense_bot.bot.r_input
 
+let usable state last_ts cooldown = Float.(last_ts +. cooldown < state.ts)
+
 let shoot_laser state =
   if (not state.on_offense_bot)
-     && Float.(
-          Ctf_consts.Laser.cooldown +. state.defense_bot.bot.last_fire_ts
-          < state.ts)
+     && usable
+          state
+          state.defense_bot.bot.last_fire_ts
+          Ctf_consts.Laser.cooldown
   then (
     let laser_body = Laser_logic.laser (State.get_defense_bot_body state) in
     (* TODO: let updater = Laser_logic.gen_updater state in *)
@@ -146,3 +150,11 @@ let shoot_laser state =
     state.world <- world;
     state.images <- Map.set state.images ~key:laser_id ~data:state.laser;
     Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
+
+let boost state =
+  if state.on_offense_bot
+     && usable
+          state
+          state.offense_bot.bot.last_boost
+          Ctf_consts.Bots.Offense.boost_cooldown
+  then state.offense_bot.bot.last_boost <- state.ts

@@ -97,6 +97,8 @@ let play_ctf client =
     let l_input = maybe_adjust l_input in
     let r_input = maybe_adjust r_input in
     let%bind () = dispatch Protocol.set_motors (l_input, r_input) in
+    let%bind () = dispatch Protocol.use_offense_bot () in
+    let%bind () = dispatch Protocol.boost () in
     loop ()
   in
   loop ()

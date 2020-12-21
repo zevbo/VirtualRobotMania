@@ -9,6 +9,7 @@ let r_input () = exportable Main.r_input
 let use_offense_bot () = exportable Main.use_offense_bot
 let use_defense_bot () = exportable Main.use_defense_bot
 let shoot_laser () = exportable Main.shoot_laser
+let boost () = exportable Main.boost
 let set_offense_image s = exportable State.load_offense_image s
 let set_defense_image s = exportable State.load_defense_image s
 
@@ -23,6 +24,7 @@ let group =
     ; impl Protocol.step step
     ; impl Protocol.use_defense_bot use_defense_bot
     ; impl Protocol.use_offense_bot use_offense_bot
+    ; impl Protocol.boost boost
     ; impl' Protocol.set_offense_image set_offense_image
     ; impl' Protocol.set_defense_image set_defense_image
     ]
