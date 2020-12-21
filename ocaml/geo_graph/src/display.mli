@@ -30,6 +30,7 @@ val clear : t -> Color.t -> unit
 val draw_image
   :  t
   -> ?scale:float
+  -> ?alpha:int
   -> Image.t
   -> center:Vec.t
   -> angle:float
@@ -39,6 +40,7 @@ val draw_image_wh
   :  t
   -> w:float
   -> h:float
+  -> ?alpha:int
   -> Image.t
   -> center:Vec.t
   -> angle:float
