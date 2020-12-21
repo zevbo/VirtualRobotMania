@@ -12,3 +12,4 @@ val shoot_laser : State.t -> unit
 val opp_angle : State.t -> float
 val opp_dist : State.t -> float
 val boost : State.t -> unit
+val enhance_border : State.t -> unit

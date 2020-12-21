@@ -26,6 +26,7 @@ type t =
   ; mutable on_offense_bot : bool
   ; laser : Display.Image.t
   ; end_line : Display.Image.t
+  ; mutable last_wall_enhance : float
   }
 
 let create
@@ -52,6 +53,7 @@ let create
   ; on_offense_bot = true
   ; laser = Display.Image.pixel display Color.red
   ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
+  ; last_wall_enhance = -.Ctf_consts.Border.enhance_period
   }
 
 let set_world t world = t.world <- world

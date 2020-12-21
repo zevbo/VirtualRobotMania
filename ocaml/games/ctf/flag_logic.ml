@@ -42,13 +42,17 @@ let update_flag_protector_visibility (state : State.t) to_use =
 let set_flag_protector_state (state : State.t) world in_use =
   update_flag_protector_visibility state in_use;
   let flag_protector = World.get_body_exn world state.flag_protector in
-  let modify_set = if in_use then Set.remove else Set.add in
-  let black_list =
-    modify_set flag_protector.black_list Ctf_consts.Bots.Defense.coll_group
+  let modify_black_list =
+    if in_use then Body.remove_from_black_list else Body.add_to_black_list
   in
-  let black_list = modify_set black_list Ctf_consts.Laser.coll_group in
+  let flag_protector =
+    modify_black_list flag_protector Ctf_consts.Bots.Defense.coll_group
+  in
+  let flag_protector =
+    modify_black_list flag_protector Ctf_consts.Laser.coll_group
+  in
   let pos = (World.get_body_exn world state.flag).pos in
-  let flag_protector = { flag_protector with black_list; pos } in
+  let flag_protector = { flag_protector with pos } in
   World.set_body world state.flag_protector flag_protector
 
 let update (state : State.t) =

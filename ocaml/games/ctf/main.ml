@@ -26,7 +26,7 @@ let init () =
   in
   let world = World.empty in
   let world =
-    List.fold Bodies.border ~init:world ~f:(fun world border_edge ->
+    List.fold Border.border ~init:world ~f:(fun world border_edge ->
         fst (World.add_body world border_edge))
   in
   let offense_robot_state = Offense_bot.create () in
@@ -193,3 +193,10 @@ let boost state =
           state.offense_bot.bot.last_boost
           Ctf_consts.Bots.Offense.boost_cooldown
   then state.offense_bot.bot.last_boost <- state.ts
+
+let enhance_border state =
+  state.last_wall_enhance <- state.ts;
+  state.world
+    <- Border.set_border_black_list
+         state.world
+         Ctf_consts.Border.enhanced_black_list
