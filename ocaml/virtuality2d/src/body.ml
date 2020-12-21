@@ -529,7 +529,7 @@ let rec get_collision_from_intersections t1 t2 intersections =
       then pertruding_distance_sq t2 t1 inter.edge_1
       else pertruding_distance_sq t1 t2 inter.edge_2
     in
-    let max_min_escape_v = 0. in
+    let max_min_escape_v = 10. in
     let min_escape_v =
       Float.min ((pertruding_distance_sq /. 20.) **. 2.) max_min_escape_v
     in

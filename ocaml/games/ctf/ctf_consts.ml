@@ -41,7 +41,7 @@ module Laser = struct
   let width = 5.
   let color = Color.red
   let coll_group = 3
-  let black_list = [ 1 ]
+  let black_list = [ 0; 1; 2; 3; 4 ]
   let material = Material.create ~energy_ret:2.
   let shape = Shape.create_standard_rect length width ~material
   let v = 1000.
@@ -52,9 +52,8 @@ module Flag = struct
   let width = 30.
   let height = 30.
   let image_path = "../images/flag.bmp"
-  let no_defense_dist = 110.
+  let no_defense_dist = 75.
   let max_y = (frame_height /. 2.) -. 30.
-  let min_y = no_defense_dist +. 50.
   let min_x = 100.
   let max_x = (frame_width /. 2.) -. width
   let m = Float.infinity
@@ -69,6 +68,7 @@ module Flag = struct
   let black_list = [ 0; 1; 2; 3 ]
 
   module Protector = struct
+    let initial_defense_passing = 30.
     let material = Material.create ~energy_ret:2.
 
     let shape =
