@@ -64,6 +64,9 @@ module Flag = struct
   let min_x = 100.
   let max_x = (frame_width /. 2.) -. width
   let m = Float.infinity
+  let top_display_x = (frame_height /. 2.) -. 80.
+  let display_y_diff = height *. 1.5
+  let display_x = (70. /. 2.) -. (frame_width /. 2.)
 
   let shape =
     Shape.create_standard_rect

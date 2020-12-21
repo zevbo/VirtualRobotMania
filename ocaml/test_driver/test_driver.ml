@@ -83,7 +83,7 @@ let play_ctf client =
     let%bind () = dispatch Protocol.use_defense_bot () in
     let%bind () = dispatch Protocol.step () in
     let%bind () =
-      maybe 0.1 (lazy (dispatch Protocol.shoot_laser ())) (lazy Deferred.unit)
+      maybe 0. (lazy (dispatch Protocol.shoot_laser ())) (lazy Deferred.unit)
     in
     let%bind l_input = dispatch Protocol.l_input () in
     let%bind r_input = dispatch Protocol.r_input () in
