@@ -40,6 +40,7 @@
 (define (launch-and-connect name)
   (define pipename (path->string (make-temporary-file "game-~a.pipe")))
   (system (string-append
-           "(cd $(git rev-parse --show-toplevel)/ocaml; "
+           "(eval $(/usr/local/bin/opam env); "
+           "cd $(git rev-parse --show-toplevel)/ocaml; "
            "dune exec -- game_server/main.exe " name " " pipename ") &"))
   (connect-loop pipename))
