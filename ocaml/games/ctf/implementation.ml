@@ -26,4 +26,6 @@ let group () =
     ; impl Protocol.boost boost
     ; impl' Protocol.set_offense_image set_offense_image
     ; impl' Protocol.set_defense_image set_defense_image
+    ; impl Protocol.opp_dist (fun () -> Main.opp_dist state)
+    ; impl Protocol.opp_angle (fun () -> Main.opp_angle state)
     ]
