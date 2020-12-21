@@ -32,9 +32,13 @@ let offense_bot () =
   in
   reset body
 
-let remove_live (offense_bot_body : Body.t) (offense_bot : State.Offense_bot.t) =
-  offense_bot.lives <- offense_bot.lives - 1;
-  if offense_bot.lives = 0
+let remove_live
+    ?(num_lives = 1)
+    (offense_bot_body : Body.t)
+    (offense_bot : State.Offense_bot.t)
+  =
+  offense_bot.lives <- offense_bot.lives - num_lives;
+  if offense_bot.lives <= 0
   then (
     offense_bot.lives <- Ctf_consts.Bots.Offense.start_lives;
     offense_bot.has_flag <- false;

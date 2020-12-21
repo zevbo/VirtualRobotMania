@@ -91,10 +91,29 @@ let _status_s sexp =
   in
   Out_channel.write_all "/tmp/status.sexp" ~data
 
+let update_world state =
+  let bot_collisions =
+    Body.intersections
+      ~allow_blacklist:true
+      (State.get_defense_bot_body state)
+      (State.get_offense_bot_body state)
+  in
+  if not (List.is_empty bot_collisions)
+  then (
+    let offense_bot =
+      Offense_bot_logic.remove_live
+        ~num_lives:Ctf_consts.Bots.Offense.start_lives
+        (State.get_offense_bot_body state)
+        (fst state.offense_bot)
+    in
+    state.world
+      <- World.set_body state.world (snd state.offense_bot) offense_bot)
+
 let step state =
   handle_events state;
   for _i = 1 to Int.of_float dt_sim_dt do
     state.ts <- state.ts +. dt_sim;
+    update_world state;
     state.world <- World.advance state.world ~dt:(dt_sim *. speed_constant)
   done;
   Display.clear state.display Color.white;
