@@ -24,5 +24,5 @@ let set_defense_image =
   Call.create "set-defense-image" (module String) (module Unit)
 
 let opp_angle = Call.create "opp-angle" (module Unit) (module Float)
-let opp_distance = Call.create "opp-distance" (module Unit) (module Float)
+let opp_dist = Call.create "opp-dist" (module Unit) (module Float)
 let opp_shot = Call.create "opp-shot?" (module Unit) (module Bool)
