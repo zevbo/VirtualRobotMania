@@ -1,3 +1,4 @@
 open! Core
+open Async
 
-val group : Csexp_rpc.Implementation.Group.t
+val group : unit -> Csexp_rpc.Implementation.Group.t Deferred.t

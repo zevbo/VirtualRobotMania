@@ -1,3 +1,4 @@
+open Core
 open Virtuality2d
 open Geo_graph
 
@@ -53,7 +54,7 @@ end
 module Flag = struct
   let width = 30.
   let height = 30.
-  let image_path = "../images/flag.bmp"
+  let image_path ~root = root ^/ "images/flag.bmp"
   let no_defense_dist = 75.
   let max_y = (frame_height /. 2.) -. 30.
   let min_x = 100.
@@ -82,7 +83,7 @@ module Flag = struct
     let coll_group = 5
     let m = Float.infinity
     let black_list = [ 1 ]
-    let image_path = "../images/green-outline.bmp"
+    let image_path ~root = root ^/ "images/green-outline.bmp"
   end
 end
 

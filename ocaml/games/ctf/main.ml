@@ -1,4 +1,5 @@
-open! Core_kernel
+open! Core
+open! Async
 open State
 open Virtuality2d
 module Sdl = Tsdl.Sdl
@@ -16,6 +17,10 @@ let dt_sim = dt /. dt_sim_dt
 let speed_constant = 0.2
 
 let init () =
+  let%map root =
+    Process.run_exn ~prog:"git" ~args:[ "rev-parse"; "--show-toplevel" ] ()
+    >>| String.strip
+  in
   let world = World.empty in
   let world =
     List.fold Bodies.border ~init:world ~f:(fun world border_edge ->
@@ -47,10 +52,12 @@ let init () =
   in
   state.world <- world;
   let flag_img =
-    Display.Image.of_bmp_file state.display Ctf_consts.Flag.image_path
+    Display.Image.of_bmp_file state.display (Ctf_consts.Flag.image_path ~root)
   in
   let flag_protector_img =
-    Display.Image.of_bmp_file state.display Ctf_consts.Flag.Protector.image_path
+    Display.Image.of_bmp_file
+      state.display
+      (Ctf_consts.Flag.Protector.image_path ~root)
   in
   state.images <- Map.set state.images ~key:flag_id ~data:flag_img;
   state.images
@@ -116,10 +123,10 @@ let step state =
   state.last_step_end <- Some (Time.now ())
 
 let max_input = 1.
-let use_offense_bot state = state.on_offense_bot <- true
-let use_defense_bot state = state.on_offense_bot <- false
+let use_offense_bot (state : State.t) = state.on_offense_bot <- true
+let use_defense_bot (state : State.t) = state.on_offense_bot <- false
 
-let set_motors state l_input r_input =
+let set_motors (state : State.t) l_input r_input =
   let make_valid input =
     if Float.O.(Float.abs input < max_input)
     then input
@@ -133,12 +140,12 @@ let set_motors state l_input r_input =
     Defense_bot.set_l_input state.defense_bot.bot (make_valid l_input);
     Defense_bot.set_r_input state.defense_bot.bot (make_valid r_input))
 
-let l_input state =
+let l_input (state : State.t) =
   if state.on_offense_bot
   then state.offense_bot.bot.l_input
   else state.defense_bot.bot.l_input
 
-let r_input state =
+let r_input (state : State.t) =
   if state.on_offense_bot
   then state.offense_bot.bot.r_input
   else state.defense_bot.bot.r_input

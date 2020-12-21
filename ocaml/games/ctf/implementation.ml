@@ -1,19 +1,18 @@
 open! Core_kernel
+open! Async
 
-let state = Lazy.from_fun Main.init
-let exportable f = f (force state)
-let step () = exportable Main.step
-let set_motors (x, y) = exportable Main.set_motors x y
-let l_input () = exportable Main.l_input
-let r_input () = exportable Main.r_input
-let use_offense_bot () = exportable Main.use_offense_bot
-let use_defense_bot () = exportable Main.use_defense_bot
-let shoot_laser () = exportable Main.shoot_laser
-let boost () = exportable Main.boost
-let set_offense_image s = exportable State.load_offense_image s
-let set_defense_image s = exportable State.load_defense_image s
-
-let group =
+let group () =
+  let%map state = Main.init () in
+  let step () = Main.step state in
+  let set_motors (x, y) = Main.set_motors state x y in
+  let l_input () = Main.l_input state in
+  let r_input () = Main.r_input state in
+  let use_offense_bot () = Main.use_offense_bot state in
+  let use_defense_bot () = Main.use_defense_bot state in
+  let shoot_laser () = Main.shoot_laser state in
+  let boost () = Main.boost state in
+  let set_offense_image s = State.load_offense_image state s in
+  let set_defense_image s = State.load_defense_image state s in
   let impl = Csexp_rpc.Implementation.create in
   let impl' = Csexp_rpc.Implementation.create' in
   Csexp_rpc.Implementation.Group.create
