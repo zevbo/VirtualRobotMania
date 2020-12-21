@@ -15,7 +15,7 @@ type t =
   }
 [@@deriving sexp_of]
 
-and updater = Id.t -> Body.t -> t -> Body.t
+and updater = Id.t -> Body.t -> t -> t
 
 val empty : t
 val null_updater : updater
@@ -25,3 +25,4 @@ val add_body : t -> ?updater:updater -> Body.t -> t * Id.t
 val advance : t -> dt:float -> t
 val all_of_coll_group : t -> int -> (Id.t * Body.t) list
 val remove_body : t -> Id.t -> t
+val to_world_updater : (Id.t -> Body.t -> t -> Body.t) -> updater

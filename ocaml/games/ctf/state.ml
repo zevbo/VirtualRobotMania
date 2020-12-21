@@ -76,3 +76,23 @@ let load_defense_image t imagefile =
 let load_offense_image t imagefile =
   let id = snd t.offense_bot in
   load_bot_image t id imagefile
+
+let get_offense_bot_body state =
+  let body_op = Map.find state.world.bodies (snd state.offense_bot) in
+  match body_op with
+  | Some body -> body
+  | None ->
+    raise
+      (Failure
+         "Called get_offense_bot_body before offense bot generation or after \
+          its deletion")
+
+let get_defense_bot_body state =
+  let body_op = Map.find state.world.bodies (snd state.defense_bot) in
+  match body_op with
+  | Some body -> body
+  | None ->
+    raise
+      (Failure
+         "Called get_defense_bot_body before defense bot generation or after \
+          its deletion")

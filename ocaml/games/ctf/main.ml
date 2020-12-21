@@ -127,33 +127,13 @@ let r_input state =
   then (fst state.offense_bot).r_input
   else (fst state.defense_bot).r_input
 
-let _get_offense_bot_body state =
-  let body_op = Map.find state.world.bodies (snd state.offense_bot) in
-  match body_op with
-  | Some body -> body
-  | None ->
-    raise
-      (Failure
-         "Called get_offense_bot_body before offense bot generation or after \
-          its deletion")
-
-let get_defense_bot_body state =
-  let body_op = Map.find state.world.bodies (snd state.defense_bot) in
-  match body_op with
-  | Some body -> body
-  | None ->
-    raise
-      (Failure
-         "Called get_defense_bot_body before defense bot generation or after \
-          its deletion")
-
 let shoot_laser state =
   if (not state.on_offense_bot)
      && Float.(
           Ctf_consts.Laser.cooldown +. (fst state.defense_bot).last_fire_ts
           < state.ts)
   then (
-    let laser_body = Laser_logic.laser (get_defense_bot_body state) in
+    let laser_body = Laser_logic.laser (State.get_defense_bot_body state) in
     let updater = Laser_logic.gen_updater state in
     let world, laser_id = World.add_body state.world ~updater laser_body in
     state.world <- world;

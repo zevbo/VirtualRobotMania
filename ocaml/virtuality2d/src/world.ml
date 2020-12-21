@@ -19,9 +19,19 @@ type t =
   }
 [@@deriving sexp_of]
 
-and updater = Id.t -> Body.t -> t -> Body.t
+and updater = Id.t -> Body.t -> t -> t
 
-let null_updater _ body _ = body
+let null_updater _ _ world = world
+
+let to_world_updater body_updater =
+  let updater id body world =
+    let updated_body = body_updater id body world in
+    { world with
+      bodies = Map.update world.bodies id ~f:(fun _ -> updated_body)
+    }
+  in
+  updater
+
 let empty = { bodies = Map.empty (module Id); updaters = Map.empty (module Id) }
 
 let of_bodies bodies =
@@ -70,13 +80,15 @@ let collide_bodies dt bodies =
 
 let update t id body =
   match Map.find t.updaters id with
-  | None -> body
+  | None -> t
   | Some f -> f id body t
 
 let advance t ~dt =
+  let updated_t =
+    Map.fold t.bodies ~init:t ~f:(fun ~key:id ~data:body t -> update t id body)
+  in
   let bodies =
-    t.bodies
-    |> Map.mapi ~f:(fun ~key:id ~data:body -> update t id body)
+    updated_t.bodies
     |> collide_bodies dt
     |> Map.map ~f:Body.apply_restrictions
     |> Map.map ~f:(Body.advance ~dt)

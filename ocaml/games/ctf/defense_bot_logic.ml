@@ -12,7 +12,7 @@ let defense_bot () =
     Ctf_consts.Bots.shape
 
 let gen_updater (defense_bot : State.Defense_bot.t) dt =
-  let updater _id (body : Body.t) _world =
+  let body_updater _id (body : Body.t) _world =
     Set_motors.apply_motor_force
       body
       ~dt
@@ -23,4 +23,4 @@ let gen_updater (defense_bot : State.Defense_bot.t) dt =
       defense_bot.l_input
       defense_bot.r_input
   in
-  updater
+  World.to_world_updater body_updater
