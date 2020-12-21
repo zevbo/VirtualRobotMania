@@ -5,6 +5,7 @@ open Geo
 
 type t =
   { mutable has_flag : bool
+  ; mutable num_flags : int
   ; mutable last_boost : float
   ; mutable lives : int
   ; mutable l_input : float
@@ -14,6 +15,7 @@ type t =
 
 let create () =
   { has_flag = false
+  ; num_flags = 0
   ; lives = Ctf_consts.Bots.Offense.start_lives
   ; last_boost = -.Ctf_consts.Bots.Offense.boost_cooldown
   ; l_input = 0.
@@ -27,6 +29,12 @@ let update t ~dt (body : Body.t) ts =
       { body with v = Vec.scale body.v Ctf_consts.Bots.Offense.boost_v_scale }
     else body
   in
+  if t.has_flag
+     && Float.O.(
+          body.pos.x < Ctf_consts.End_line.x +. (Ctf_consts.End_line.w /. 2.))
+  then (
+    t.has_flag <- false;
+    t.num_flags <- t.num_flags + 1);
   Set_motors.apply_motor_force
     body
     ~dt

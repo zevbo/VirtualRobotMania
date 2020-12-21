@@ -76,7 +76,7 @@ let play_ctf client =
     if Float.O.(Random.float 1. < p) then force then_ else force else_
   in
   let%bind () = dispatch Protocol.use_defense_bot () in
-  let%bind () = dispatch Protocol.set_motors (1., 0.8) in
+  let%bind () = dispatch Protocol.set_motors (0., 0.) in
   let%bind () = dispatch Protocol.use_offense_bot () in
   let%bind () = dispatch Protocol.set_motors (0.95, 1.) in
   let rec loop () =

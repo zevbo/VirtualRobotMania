@@ -2,6 +2,7 @@ open Virtuality2d
 
 type t =
   { mutable has_flag : bool
+  ; mutable num_flags : int
   ; mutable last_boost : float
   ; mutable lives : int
   ; mutable l_input : float

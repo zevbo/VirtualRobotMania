@@ -87,6 +87,6 @@ module Flag = struct
 end
 
 module End_line = struct
-  let x = 40. -. frame_width
-  let w = 10.
+  let x = 70. -. (frame_width /. 2.)
+  let w = 7.
 end

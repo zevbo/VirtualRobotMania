@@ -84,6 +84,13 @@ let step state =
     state.ts <- state.ts +. dt_sim
   done;
   Display.clear state.display Color.white;
+  Display.draw_image_wh
+    state.display
+    ~w:Ctf_consts.End_line.w
+    ~h:Ctf_consts.frame_height
+    state.end_line
+    ~center:(Vec.create Ctf_consts.End_line.x 0.)
+    ~angle:0.;
   Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
       Option.iter (Map.find state.images id) ~f:(fun image ->
           if not (Set.mem state.invisible id)
@@ -98,9 +105,6 @@ let step state =
               ~center:robot.pos
               ~angle:robot.angle)));
   Display.present state.display;
-  (*Display.draw_image_wh state.display ~w:Ctf_consts.End_line.w
-    ~h:Ctf_consts.frame_height state.end_line ~center:(Vec.create
-    Ctf_consts.End_line.w 0.) ~angle:0.;*)
   (match state.last_step_end with
   | None -> ()
   | Some last_step_end ->
