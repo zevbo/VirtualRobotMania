@@ -6,6 +6,7 @@ let default_border_width = 40.
 let generate_border
     ?(border_width = default_border_width)
     ?(shift = Vec.origin)
+    ?(black_list = [])
     ~energy_ret
     ~collision_group
     width
@@ -23,6 +24,7 @@ let generate_border
       ~m:Float.infinity
       ~pos:(Vec.add pos shift)
       ~collision_group
+      ~black_list
       shape
   in
   let create_vertical sign =

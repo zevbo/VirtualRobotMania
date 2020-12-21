@@ -24,6 +24,7 @@ type t =
   ; mutable on_offense_bot : bool
   ; laser : Display.Image.t
   ; end_line : Display.Image.t
+  ; mutable last_wall_enhance : float
   }
 
 val create

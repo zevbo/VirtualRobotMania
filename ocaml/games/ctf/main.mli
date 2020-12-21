@@ -10,3 +10,4 @@ val use_offense_bot : State.t -> unit
 val use_defense_bot : State.t -> unit
 val shoot_laser : State.t -> unit
 val boost : State.t -> unit
+val enhance_border : State.t -> unit

@@ -127,6 +127,10 @@ let add_to_black_list t coll_group =
 let remove_from_black_list t coll_group =
   { t with black_list = Set.remove t.black_list coll_group }
 
+let set_black_list t black_list =
+  let cmp = Set.comparator_s (Set.empty (module Int)) in
+  { t with black_list = Set.of_list cmp black_list }
+
 type intersection =
   { pt : Vec.t
   ; energy_ret : float

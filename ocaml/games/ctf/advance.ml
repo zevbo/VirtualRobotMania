@@ -18,6 +18,13 @@ let bot_collision (state : State.t) =
     in
     state.world <- World.set_body state.world state.offense_bot.id offense_bot)
 
+let _check_wall_enhance (state : State.t) =
+  if Float.O.(
+       state.last_wall_enhance +. Ctf_consts.Border.enhance_period < state.ts)
+  then
+    state.world
+      <- Border.set_border_black_list state.world Ctf_consts.Border.black_list
+
 let run (state : State.t) ~dt =
   let update_bodies f =
     state.world <- { World.bodies = f state.world.bodies }
@@ -33,6 +40,7 @@ let run (state : State.t) ~dt =
       Offense_bot.update state.offense_bot.bot ~dt body state.ts);
   update_body state.defense_bot.id (fun body ->
       Defense_bot.update state.defense_bot.bot ~dt body);
+  (*check_wall_enhance state;*)
   bot_collision state;
   Flag_logic.update state;
   Laser_logic.update state;
