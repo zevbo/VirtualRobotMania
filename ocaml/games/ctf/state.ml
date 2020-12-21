@@ -15,6 +15,7 @@ type t =
             be elongated to match a single animation frame *)
   ; mutable images : Display.Image.t Map.M(World.Id).t
   ; mutable invisible : Set.M(World.Id).t
+  ; mutable lasers : Set.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
   ; offense_bot : Offense_bot.t with_id
@@ -39,6 +40,7 @@ let create
   ; last_step_end = None
   ; images
   ; invisible = Set.empty (module World.Id)
+  ; lasers = Set.empty (module World.Id)
   ; event = Sdl.Event.create ()
   ; display
   ; offense_bot

@@ -35,4 +35,5 @@ let run (state : State.t) ~dt =
       Defense_bot.update state.defense_bot.bot ~dt body);
   bot_collision state;
   Flag_logic.update state;
+  Laser_logic.update state;
   state.world <- World.advance state.world ~dt

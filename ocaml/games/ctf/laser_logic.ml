@@ -4,7 +4,7 @@ open Base
 
 let _log_s sexp = Async.Log.Global.info_s sexp
 
-let laser (bot : Body.t) =
+let laser ~(bot : Body.t) =
   let half_length = Vec.create (Ctf_consts.Bots.width /. 2.) 0. in
   let pos = Vec.add bot.pos (Vec.rotate half_length bot.angle) in
   let angle = bot.angle in
@@ -20,16 +20,17 @@ let laser (bot : Body.t) =
     ~black_list:Ctf_consts.Laser.black_list
     Ctf_consts.Laser.shape
 
-let update (state : State.t) id (laser : Body.t) world =
+let update_one (state : State.t) id =
+  let laser = Map.find_exn state.world.bodies id in
   if Float.O.(
        Float.abs laser.pos.x -. (Ctf_consts.Laser.length /. 2.)
        > Ctf_consts.frame_width /. 2.
        || Float.abs laser.pos.y -. (Ctf_consts.Laser.length /. 2.)
           > Ctf_consts.frame_height /. 2.)
-  then World.remove_body world id
+  then World.remove_body state.world id
   else (
     let offense_bodies =
-      World.all_of_coll_group world Ctf_consts.Bots.Offense.coll_group
+      World.all_of_coll_group state.world Ctf_consts.Bots.Offense.coll_group
     in
     let hit_offense_body =
       Option.is_some
@@ -41,7 +42,7 @@ let update (state : State.t) id (laser : Body.t) world =
     in
     if hit_offense_body
     then (
-      let world = World.remove_body world id in
+      let world = World.remove_body state.world id in
       let offense_bot =
         Offense_bot.remove_live
           state.offense_bot.bot
@@ -60,5 +61,12 @@ let update (state : State.t) id (laser : Body.t) world =
         ; angle = Vec.angle_of laser.v
         }
       in
-      let new_bodies = Map.set world.bodies ~key:id ~data:new_laser in
+      let new_bodies = Map.set state.world.bodies ~key:id ~data:new_laser in
       { World.bodies = new_bodies }))
+
+let update (state : State.t) =
+  Set.iter state.lasers ~f:(fun id -> state.world <- update_one state id);
+  state.lasers
+    <- Set.inter
+         state.lasers
+         (Set.of_list (module World.Id) (Map.keys state.world.bodies))

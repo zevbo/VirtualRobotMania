@@ -144,11 +144,14 @@ let shoot_laser state =
           state.defense_bot.bot.last_fire_ts
           Ctf_consts.Laser.cooldown
   then (
-    let laser_body = Laser_logic.laser (State.get_defense_bot_body state) in
+    let laser_body =
+      Laser_logic.laser ~bot:(State.get_defense_bot_body state)
+    in
     (* TODO: let updater = Laser_logic.gen_updater state in *)
     let world, laser_id = World.add_body state.world laser_body in
     state.world <- world;
     state.images <- Map.set state.images ~key:laser_id ~data:state.laser;
+    state.lasers <- Set.add state.lasers laser_id;
     Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
 
 let boost state =
