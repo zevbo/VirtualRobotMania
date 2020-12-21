@@ -2,8 +2,17 @@ open Virtuality2d
 open Common
 open Geo
 
+let defense_bot () =
+  Body.create
+    ~pos:(Vec.create Ctf_consts.Bots.x_mag 0.)
+    ~m:Ctf_consts.Bots.mass
+    ~angle:(Float.pi -. Ctf_consts.Bots.start_angle)
+    ~collision_group:Ctf_consts.Bots.Defense.coll_group
+    ~black_list:Ctf_consts.Bots.Defense.black_list
+    Ctf_consts.Bots.shape
+
 let gen_updater (defense_bot : State.Defense_bot.t) dt =
-  let updater (body : Body.t) _world =
+  let updater _id (body : Body.t) _world =
     Set_motors.apply_motor_force
       body
       ~dt
@@ -15,12 +24,3 @@ let gen_updater (defense_bot : State.Defense_bot.t) dt =
       defense_bot.r_input
   in
   updater
-
-let defense_bot () =
-  Body.create
-    ~pos:(Vec.create Ctf_consts.Bots.x_mag 0.)
-    ~m:Ctf_consts.Bots.mass
-    ~angle:(Float.pi -. Ctf_consts.Bots.start_angle)
-    ~collision_group:Ctf_consts.Bots.Defense.coll_group
-    ~black_list:Ctf_consts.Bots.Defense.black_list
-    Ctf_consts.Bots.shape

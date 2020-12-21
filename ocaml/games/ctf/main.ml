@@ -154,7 +154,7 @@ let shoot_laser state =
           < state.ts)
   then (
     let laser_body = Laser_logic.laser (get_defense_bot_body state) in
-    let updater = Laser_logic.gen_updater () in
+    let updater = Laser_logic.gen_updater state in
     let world, laser_id = World.add_body state.world ~updater laser_body in
     state.world <- world;
     state.images <- Map.update state.images laser_id ~f:(fun _ -> state.laser);

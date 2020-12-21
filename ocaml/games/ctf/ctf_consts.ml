@@ -21,6 +21,7 @@ module Bots = struct
   let air_resistance_c = 1.
 
   module Offense = struct
+    let start_lives = 3
     let force_over_input = 500.
     let coll_group = 1
   end

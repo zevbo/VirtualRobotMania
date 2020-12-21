@@ -5,11 +5,13 @@ open Geo_graph
 
 module Offense_bot = struct
   type t =
-    { mutable l_input : float
+    { mutable lives : int
+    ; mutable l_input : float
     ; mutable r_input : float
     }
 
-  let create () = { l_input = 0.; r_input = 0. }
+  let create () =
+    { lives = Ctf_consts.Bots.Offense.start_lives; l_input = 0.; r_input = 0. }
 end
 
 module Defense_bot = struct

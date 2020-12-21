@@ -11,7 +11,7 @@ let offense_bot () =
     Ctf_consts.Bots.shape
 
 let gen_updater (offense_bot : State.Offense_bot.t) dt =
-  let updater (body : Body.t) _world =
+  let updater _id (body : Body.t) _world =
     Set_motors.apply_motor_force
       body
       ~dt

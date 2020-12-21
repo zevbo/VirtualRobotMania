@@ -5,7 +5,8 @@ open Geo_graph
 
 module Offense_bot : sig
   type t =
-    { mutable l_input : float
+    { mutable lives : int
+    ; mutable l_input : float
     ; mutable r_input : float
     }
 
