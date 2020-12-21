@@ -54,8 +54,6 @@ let init () =
   state.images <- Map.set state.images ~key:flag_id ~data:flag_img;
   state.images
     <- Map.set state.images ~key:flag_protector_id ~data:flag_protector_img;
-  (* TODO state.world <- World.set_updater state.world flag_id
-     (Flag_logic.gen_updater state); *)
   state
 
 (** Handle any keyboard or other events *)
