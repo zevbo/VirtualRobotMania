@@ -1,8 +1,10 @@
+open! Core
+open! Async
 open State
-open! Core_kernel
 open Virtuality2d
 module Sdl = Tsdl.Sdl
 open Geo_graph
+open! Geo
 
 let fps = 20.
 
@@ -15,6 +17,13 @@ let dt_sim = dt /. dt_sim_dt
 let speed_constant = 0.2
 
 let init () =
+  let display =
+    Display.init ~physical:frame ~logical:frame ~title:"Virtual Robotics Arena"
+  in
+  let%map root =
+    Process.run_exn ~prog:"git" ~args:[ "rev-parse"; "--show-toplevel" ] ()
+    >>| String.strip
+  in
   let world = World.empty in
   let world =
     List.fold Bodies.border ~init:world ~f:(fun world border_edge ->
@@ -22,19 +31,9 @@ let init () =
   in
   let offense_robot_state = Offense_bot.create () in
   let defense_robot_state = Defense_bot.create () in
-  let world, offense_body_id =
-    World.add_body
-      world
-      ~updater:(Offense_bot.gen_updater offense_robot_state dt_sim)
-      (Offense_bot.offense_bot ())
-  in
+  let world, offense_body_id = World.add_body world Offense_bot.body in
   let defense_body = Defense_bot.defense_bot () in
-  let world, defense_body_id =
-    World.add_body
-      world
-      ~updater:(Defense_bot.gen_updater defense_robot_state dt_sim)
-      defense_body
-  in
+  let world, defense_body_id = World.add_body world defense_body in
   let world, flag_id = World.add_body world (Flag_logic.flag defense_body) in
   let world, flag_protector_id =
     World.add_body
@@ -45,10 +44,7 @@ let init () =
     State.create
       world
       (Map.empty (module World.Id))
-      (Display.init
-         ~physical:frame
-         ~logical:frame
-         ~title:"Virtual Robotics Arena")
+      display
       { bot = offense_robot_state; id = offense_body_id }
       { bot = defense_robot_state; id = defense_body_id }
       flag_id
@@ -56,19 +52,16 @@ let init () =
   in
   state.world <- world;
   let flag_img =
-    Display.Image.of_bmp_file state.display Ctf_consts.Flag.image_path
+    Display.Image.of_bmp_file state.display (Ctf_consts.Flag.image_path ~root)
   in
   let flag_protector_img =
-    Display.Image.of_bmp_file state.display Ctf_consts.Flag.Protector.image_path
+    Display.Image.of_bmp_file
+      state.display
+      (Ctf_consts.Flag.Protector.image_path ~root)
   in
-  state.images <- Map.set state.images ~key:flag_id ~data:(flag_img, true);
+  state.images <- Map.set state.images ~key:flag_id ~data:flag_img;
   state.images
-    <- Map.set
-         state.images
-         ~key:flag_protector_id
-         ~data:(flag_protector_img, true);
-  state.world
-    <- World.set_updater state.world flag_id (Flag_logic.gen_updater state);
+    <- Map.set state.images ~key:flag_protector_id ~data:flag_protector_img;
   state
 
 (** Handle any keyboard or other events *)
@@ -94,23 +87,30 @@ let _status_s sexp =
 let step state =
   handle_events state;
   for _i = 1 to Int.of_float dt_sim_dt do
-    state.ts <- state.ts +. dt_sim;
-    state.world <- World.advance state.world ~dt:(dt_sim *. speed_constant)
+    Advance.run state ~dt:(dt_sim *. speed_constant);
+    state.ts <- state.ts +. dt_sim
   done;
   Display.clear state.display Color.white;
+  Display.draw_image_wh
+    state.display
+    ~w:Ctf_consts.End_line.w
+    ~h:Ctf_consts.frame_height
+    state.end_line
+    ~center:(Vec.create Ctf_consts.End_line.x 0.)
+    ~angle:0.;
   Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
-      match Map.find state.images id with
-      | Some (image, true) ->
-        let w = robot.shape.bounding_box.width in
-        let h = robot.shape.bounding_box.height in
-        Display.draw_image_wh
-          state.display
-          ~w
-          ~h
-          image
-          ~center:robot.pos
-          ~angle:robot.angle
-      | None | Some (_, false) -> ());
+      Option.iter (Map.find state.images id) ~f:(fun image ->
+          if not (Set.mem state.invisible id)
+          then (
+            let w = robot.shape.bounding_box.width in
+            let h = robot.shape.bounding_box.height in
+            Display.draw_image_wh
+              state.display
+              ~w
+              ~h
+              image
+              ~center:robot.pos
+              ~angle:robot.angle)));
   Display.present state.display;
   (match state.last_step_end with
   | None -> ()
@@ -123,10 +123,10 @@ let step state =
   state.last_step_end <- Some (Time.now ())
 
 let max_input = 1.
-let use_offense_bot state = state.on_offense_bot <- true
-let use_defense_bot state = state.on_offense_bot <- false
+let use_offense_bot (state : State.t) = state.on_offense_bot <- true
+let use_defense_bot (state : State.t) = state.on_offense_bot <- false
 
-let set_motors state l_input r_input =
+let set_motors (state : State.t) l_input r_input =
   let make_valid input =
     if Float.O.(Float.abs input < max_input)
     then input
@@ -140,27 +140,33 @@ let set_motors state l_input r_input =
     Defense_bot.set_l_input state.defense_bot.bot (make_valid l_input);
     Defense_bot.set_r_input state.defense_bot.bot (make_valid r_input))
 
-let l_input state =
+let l_input (state : State.t) =
   if state.on_offense_bot
   then state.offense_bot.bot.l_input
   else state.defense_bot.bot.l_input
 
-let r_input state =
+let r_input (state : State.t) =
   if state.on_offense_bot
   then state.offense_bot.bot.r_input
   else state.defense_bot.bot.r_input
 
+let usable state last_ts cooldown = Float.(last_ts +. cooldown < state.ts)
+
 let shoot_laser state =
   if (not state.on_offense_bot)
-     && Float.(
-          Ctf_consts.Laser.cooldown +. state.defense_bot.bot.last_fire_ts
-          < state.ts)
+     && usable
+          state
+          state.defense_bot.bot.last_fire_ts
+          Ctf_consts.Laser.cooldown
   then (
-    let laser_body = Laser_logic.laser (State.get_defense_bot_body state) in
-    let updater = Laser_logic.gen_updater state in
-    let world, laser_id = World.add_body state.world ~updater laser_body in
+    let laser_body =
+      Laser_logic.laser ~bot:(State.get_defense_bot_body state)
+    in
+    (* TODO: let updater = Laser_logic.gen_updater state in *)
+    let world, laser_id = World.add_body state.world laser_body in
     state.world <- world;
-    state.images <- Map.set state.images ~key:laser_id ~data:(state.laser, true);
+    state.images <- Map.set state.images ~key:laser_id ~data:state.laser;
+    state.lasers <- Set.add state.lasers laser_id;
     Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
 
 let origin_and_target (state : State.t) =
@@ -179,3 +185,11 @@ let opp_angle state =
 let opp_dist state =
   let o, t = origin_and_target state in
   Geo.Vec.mag (Geo.Vec.sub t.pos o.pos)
+
+let boost state =
+  if state.on_offense_bot
+     && usable
+          state
+          state.offense_bot.bot.last_boost
+          Ctf_consts.Bots.Offense.boost_cooldown
+  then state.offense_bot.bot.last_boost <- state.ts

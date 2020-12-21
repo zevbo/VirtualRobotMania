@@ -15,6 +15,7 @@ let r_input = Call.create "r-input" (module Unit) (module Float)
 let use_offense_bot = Call.create "use-offense-bot" (module Unit) (module Unit)
 let use_defense_bot = Call.create "use-defense-bot" (module Unit) (module Unit)
 let shoot_laser = Call.create "shoot-laser" (module Unit) (module Unit)
+let boost = Call.create "boost" (module Unit) (module Unit)
 
 let set_offense_image =
   Call.create "set-offense-image" (module String) (module Unit)

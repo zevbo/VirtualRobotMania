@@ -1,16 +1,18 @@
 open Virtuality2d
 
-type t = private
+type t =
   { mutable has_flag : bool
+  ; mutable num_flags : int
+  ; mutable last_boost : float
   ; mutable lives : int
   ; mutable l_input : float
   ; mutable r_input : float
   }
 
 val create : unit -> t
-val offense_bot : unit -> Body.t
-val gen_updater : t -> float -> World.updater
-val remove_live : t -> Body.t -> Body.t
+val body : Body.t
+val update : t -> dt:float -> Body.t -> float -> Body.t
+val remove_live : t -> ?num_lives:int -> Body.t -> Body.t
 
 (** {2 setters} *)
 

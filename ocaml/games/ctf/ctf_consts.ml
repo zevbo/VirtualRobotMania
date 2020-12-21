@@ -1,3 +1,4 @@
+open Core
 open Virtuality2d
 open Geo_graph
 
@@ -23,6 +24,8 @@ module Bots = struct
 
   module Offense = struct
     let start_pos = Geo.Vec.create (-.x_mag) y_offset
+    let boost_cooldown = 15.
+    let boost_v_scale = 2.
     let start_lives = 3
     let force_over_input = 650.
     let coll_group = 1
@@ -51,7 +54,7 @@ end
 module Flag = struct
   let width = 30.
   let height = 30.
-  let image_path = "../images/flag.bmp"
+  let image_path ~root = root ^/ "images/flag.bmp"
   let no_defense_dist = 75.
   let max_y = (frame_height /. 2.) -. 30.
   let min_x = 100.
@@ -80,6 +83,11 @@ module Flag = struct
     let coll_group = 5
     let m = Float.infinity
     let black_list = [ 1 ]
-    let image_path = "../images/green-outline.bmp"
+    let image_path ~root = root ^/ "images/green-outline.bmp"
   end
+end
+
+module End_line = struct
+  let x = 70. -. (frame_width /. 2.)
+  let w = 7.
 end
