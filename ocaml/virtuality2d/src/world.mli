@@ -19,9 +19,12 @@ and updater = Id.t -> Body.t -> t -> t
 
 val empty : t
 val null_updater : updater
+val get_body_exn : t -> Id.t -> Body.t
 val of_bodies : Body.t list -> t
 val of_bodies_and_updaters : (Body.t * updater) list -> t
 val add_body : t -> ?updater:updater -> Body.t -> t * Id.t
+val set_body : t -> Id.t -> Body.t -> t
+val set_updater : t -> Id.t -> updater -> t
 val advance : t -> dt:float -> t
 val all_of_coll_group : t -> int -> (Id.t * Body.t) list
 val remove_body : t -> Id.t -> t

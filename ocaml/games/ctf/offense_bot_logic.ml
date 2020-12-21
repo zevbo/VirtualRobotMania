@@ -18,16 +18,15 @@ let gen_updater (offense_bot : State.Offense_bot.t) dt =
 
 let reset (body : Body.t) =
   { body with
-    pos = Vec.create (-.Ctf_consts.Bots.x_mag) 0.
+    pos = Ctf_consts.Bots.Offense.start_pos
   ; v = Vec.origin
-  ; angle = 0.
+  ; angle = Ctf_consts.Bots.start_angle
   }
 
 let offense_bot () =
   let body =
     Body.create
       ~m:Ctf_consts.Bots.mass
-      ~angle:Ctf_consts.Bots.start_angle
       ~collision_group:Ctf_consts.Bots.Offense.coll_group
       Ctf_consts.Bots.shape
   in
@@ -38,5 +37,6 @@ let remove_live (offense_bot_body : Body.t) (offense_bot : State.Offense_bot.t) 
   if offense_bot.lives = 0
   then (
     offense_bot.lives <- Ctf_consts.Bots.Offense.start_lives;
+    offense_bot.has_flag <- false;
     reset offense_bot_body)
   else offense_bot_body

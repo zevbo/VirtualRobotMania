@@ -5,7 +5,8 @@ open Geo_graph
 
 module Offense_bot : sig
   type t =
-    { mutable lives : int
+    { mutable has_flag : bool
+    ; mutable lives : int
     ; mutable l_input : float
     ; mutable r_input : float
     }
@@ -26,11 +27,13 @@ end
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
-  ; mutable images : Display.Image.t Map.M(World.Id).t
+  ; mutable images : (Display.Image.t * bool) Map.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
   ; offense_bot : Offense_bot.t * World.Id.t
   ; defense_bot : Defense_bot.t * World.Id.t
+  ; flag : World.Id.t
+  ; flag_protector : World.Id.t
   ; mutable ts : float
   ; mutable on_offense_bot : bool
   ; laser : Display.Image.t
@@ -38,10 +41,12 @@ type t =
 
 val create
   :  World.t
-  -> Display.Image.t Map.M(World.Id).t
+  -> (Display.Image.t * bool) Map.M(World.Id).t
   -> Display.t
   -> Offense_bot.t * World.Id.t
   -> Defense_bot.t * World.Id.t
+  -> World.Id.t
+  -> World.Id.t
   -> t
 
 val load_offense_image : t -> string -> unit Async.Deferred.t
