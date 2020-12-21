@@ -2,16 +2,8 @@ open Virtuality2d
 open Common
 open Geo
 
-let offense_bot () =
-  Body.create
-    ~pos:(Vec.create (-.Ctf_consts.Bots.x_mag) 0.)
-    ~m:Ctf_consts.Bots.mass
-    ~angle:Ctf_consts.Bots.start_angle
-    ~collision_group:Ctf_consts.Bots.Offense.coll_group
-    Ctf_consts.Bots.shape
-
 let gen_updater (offense_bot : State.Offense_bot.t) dt =
-  let updater _id (body : Body.t) _world =
+  let body_updater _id (body : Body.t) _world =
     Set_motors.apply_motor_force
       body
       ~dt
@@ -22,4 +14,29 @@ let gen_updater (offense_bot : State.Offense_bot.t) dt =
       offense_bot.l_input
       offense_bot.r_input
   in
-  updater
+  World.to_world_updater body_updater
+
+let reset (body : Body.t) =
+  { body with
+    pos = Ctf_consts.Bots.Offense.start_pos
+  ; v = Vec.origin
+  ; angle = Ctf_consts.Bots.start_angle
+  }
+
+let offense_bot () =
+  let body =
+    Body.create
+      ~m:Ctf_consts.Bots.mass
+      ~collision_group:Ctf_consts.Bots.Offense.coll_group
+      Ctf_consts.Bots.shape
+  in
+  reset body
+
+let remove_live (offense_bot_body : Body.t) (offense_bot : State.Offense_bot.t) =
+  offense_bot.lives <- offense_bot.lives - 1;
+  if offense_bot.lives = 0
+  then (
+    offense_bot.lives <- Ctf_consts.Bots.Offense.start_lives;
+    offense_bot.has_flag <- false;
+    reset offense_bot_body)
+  else offense_bot_body

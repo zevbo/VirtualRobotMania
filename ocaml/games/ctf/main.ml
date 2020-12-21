@@ -28,11 +28,18 @@ let init () =
       ~updater:(Offense_bot_logic.gen_updater offense_robot_state dt_sim)
       (Offense_bot_logic.offense_bot ())
   in
+  let defense_body = Defense_bot_logic.defense_bot () in
   let world, defense_body_id =
     World.add_body
       world
       ~updater:(Defense_bot_logic.gen_updater defense_robot_state dt_sim)
-      (Defense_bot_logic.defense_bot ())
+      defense_body
+  in
+  let world, flag_id = World.add_body world (Flag_logic.flag defense_body) in
+  let world, flag_protector_id =
+    World.add_body
+      world
+      (Flag_logic.flag_protector (World.get_body_exn world flag_id))
   in
   let state =
     State.create
@@ -44,8 +51,24 @@ let init () =
          ~title:"Virtual Robotics Arena")
       (offense_robot_state, offense_body_id)
       (defense_robot_state, defense_body_id)
+      flag_id
+      flag_protector_id
   in
   state.world <- world;
+  let flag_img =
+    Display.Image.of_bmp_file state.display Ctf_consts.Flag.image_path
+  in
+  let flag_protector_img =
+    Display.Image.of_bmp_file state.display Ctf_consts.Flag.Protector.image_path
+  in
+  state.images <- Map.set state.images ~key:flag_id ~data:(flag_img, true);
+  state.images
+    <- Map.set
+         state.images
+         ~key:flag_protector_id
+         ~data:(flag_protector_img, true);
+  state.world
+    <- World.set_updater state.world flag_id (Flag_logic.gen_updater state);
   state
 
 (** Handle any keyboard or other events *)
@@ -77,7 +100,7 @@ let step state =
   Display.clear state.display Color.white;
   Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
       match Map.find state.images id with
-      | Some image ->
+      | Some (image, true) ->
         let w = robot.shape.bounding_box.width in
         let h = robot.shape.bounding_box.height in
         Display.draw_image_wh
@@ -87,7 +110,7 @@ let step state =
           image
           ~center:robot.pos
           ~angle:robot.angle
-      | None -> ());
+      | None | Some (_, false) -> ());
   Display.present state.display;
   (match state.last_step_end with
   | None -> ()
@@ -127,35 +150,15 @@ let r_input state =
   then (fst state.offense_bot).r_input
   else (fst state.defense_bot).r_input
 
-let _get_offense_bot_body state =
-  let body_op = Map.find state.world.bodies (snd state.offense_bot) in
-  match body_op with
-  | Some body -> body
-  | None ->
-    raise
-      (Failure
-         "Called get_offense_bot_body before offense bot generation or after \
-          its deletion")
-
-let get_defense_bot_body state =
-  let body_op = Map.find state.world.bodies (snd state.defense_bot) in
-  match body_op with
-  | Some body -> body
-  | None ->
-    raise
-      (Failure
-         "Called get_defense_bot_body before defense bot generation or after \
-          its deletion")
-
 let shoot_laser state =
   if (not state.on_offense_bot)
      && Float.(
           Ctf_consts.Laser.cooldown +. (fst state.defense_bot).last_fire_ts
           < state.ts)
   then (
-    let laser_body = Laser_logic.laser (get_defense_bot_body state) in
+    let laser_body = Laser_logic.laser (State.get_defense_bot_body state) in
     let updater = Laser_logic.gen_updater state in
     let world, laser_id = World.add_body state.world ~updater laser_body in
     state.world <- world;
-    state.images <- Map.update state.images laser_id ~f:(fun _ -> state.laser);
+    state.images <- Map.set state.images ~key:laser_id ~data:(state.laser, true);
     (fst state.defense_bot).last_fire_ts <- state.ts)
