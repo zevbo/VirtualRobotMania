@@ -17,5 +17,6 @@ let run (state : State.t) ~dt =
   update_body state.defense_bot.id (fun body ->
       Defense_bot.update state.defense_bot.bot ~dt body);
   Flag_logic.update state;
+  Laser_logic.update state;
   state.world <- World.advance state.world ~dt;
   state.ts <- state.ts +. dt
