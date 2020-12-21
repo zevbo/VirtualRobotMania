@@ -1,10 +1,9 @@
 open Virtuality2d
 open Common
-open Geo
 
 let defense_bot () =
   Body.create
-    ~pos:(Vec.create Ctf_consts.Bots.x_mag 0.)
+    ~pos:Ctf_consts.Bots.Defense.start_pos
     ~m:Ctf_consts.Bots.mass
     ~angle:(Float.pi -. Ctf_consts.Bots.start_angle)
     ~collision_group:Ctf_consts.Bots.Defense.coll_group

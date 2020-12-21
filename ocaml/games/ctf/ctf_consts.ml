@@ -1,7 +1,7 @@
 open Virtuality2d
 open Geo_graph
 
-let frame_width = 500.
+let frame_width = 800.
 let frame_height = 500.
 
 module Border = struct
@@ -14,19 +14,22 @@ module Bots = struct
   let height = 50.
   let material = Material.create ~energy_ret:1.
   let mass = 1.
-  let start_angle = 0.01
+  let start_angle = 0.0
   let x_mag = (frame_width /. 2.) -. width
+  let y_offset = height /. 1.5
   let shape = Shape.create_standard_rect width height ~material
   let side_fric_k = 100000.
   let air_resistance_c = 1.
 
   module Offense = struct
+    let start_pos = Geo.Vec.create (-.x_mag) y_offset
     let start_lives = 3
     let force_over_input = 650.
     let coll_group = 1
   end
 
   module Defense = struct
+    let start_pos = Geo.Vec.create x_mag (-.y_offset)
     let force_over_input = 400.
     let coll_group = 2
     let black_list = [ 1 ]
