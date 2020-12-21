@@ -8,7 +8,7 @@ type t = private
 
 val create : unit -> t
 val defense_bot : unit -> Body.t
-val gen_updater : t -> float -> World.updater
+val update : t -> dt:float -> Body.t -> Body.t
 
 (** {2 Setters} *)
 

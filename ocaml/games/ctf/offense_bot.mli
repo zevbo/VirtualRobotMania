@@ -8,8 +8,8 @@ type t = private
   }
 
 val create : unit -> t
-val offense_bot : unit -> Body.t
-val gen_updater : t -> float -> World.updater
+val body : Body.t
+val update : t -> dt:float -> Body.t -> Body.t
 val remove_live : t -> ?num_lives:int -> Body.t -> Body.t
 
 (** {2 setters} *)

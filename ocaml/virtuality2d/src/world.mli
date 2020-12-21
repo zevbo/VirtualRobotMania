@@ -1,7 +1,7 @@
 open Base
 
 module Id : sig
-  type t
+  type t [@@deriving sexp]
 
   include Comparable.S with type t := t
 
@@ -9,23 +9,13 @@ module Id : sig
   val of_int : int -> t
 end
 
-type t =
-  { bodies : Body.t Map.M(Id).t
-  ; updaters : updater Map.M(Id).t
-  }
-[@@deriving sexp_of]
-
-and updater = Id.t -> Body.t -> t -> t
+type t = { bodies : Body.t Map.M(Id).t } [@@deriving sexp_of]
 
 val empty : t
-val null_updater : updater
 val get_body_exn : t -> Id.t -> Body.t
 val of_bodies : Body.t list -> t
-val of_bodies_and_updaters : (Body.t * updater) list -> t
-val add_body : t -> ?updater:updater -> Body.t -> t * Id.t
+val add_body : t -> Body.t -> t * Id.t
 val set_body : t -> Id.t -> Body.t -> t
-val set_updater : t -> Id.t -> updater -> t
 val advance : t -> dt:float -> t
 val all_of_coll_group : t -> int -> (Id.t * Body.t) list
 val remove_body : t -> Id.t -> t
-val to_world_updater : (Id.t -> Body.t -> t -> Body.t) -> updater
