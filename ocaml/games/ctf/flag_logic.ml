@@ -61,12 +61,12 @@ let gen_updater (state : State.t) =
               flag_body
               (State.get_offense_bot_body state)))
     in
-    if picked_up_flag then (fst state.offense_bot).has_flag <- true;
+    if picked_up_flag then Offense_bot.set_has_flag state.offense_bot.bot true;
     (* this find_exn should eventually be changed probably *)
     let bot = State.get_offense_bot_body state in
     let on_ground = snd (Map.find_exn state.images state.flag_protector) in
     let flag_body =
-      if (fst state.offense_bot).has_flag
+      if state.offense_bot.bot.has_flag
       then
         { flag_body with pos = bot.pos; angle = bot.angle -. (Float.pi /. 2.) }
       else if not on_ground
@@ -75,15 +75,15 @@ let gen_updater (state : State.t) =
     in
     let world = World.set_body world id flag_body in
     let world =
-      if (fst state.offense_bot).has_flag && on_ground
+      if state.offense_bot.bot.has_flag && on_ground
       then set_flag_protector_state state world false
-      else if (not (fst state.offense_bot).has_flag) && not on_ground
+      else if (not state.offense_bot.bot.has_flag) && not on_ground
       then set_flag_protector_state state world true
       else world
     in
     let flag_protector = World.get_body_exn world state.flag_protector in
     assert (
-      (not (fst state.offense_bot).has_flag)
+      (not state.offense_bot.bot.has_flag)
       || Set.exists flag_protector.black_list ~f:(fun group ->
              group = Ctf_consts.Laser.coll_group));
     world

@@ -20,19 +20,19 @@ let init () =
     List.fold Bodies.border ~init:world ~f:(fun world border_edge ->
         fst (World.add_body world border_edge))
   in
-  let offense_robot_state = State.Offense_bot.create () in
-  let defense_robot_state = State.Defense_bot.create () in
+  let offense_robot_state = Offense_bot.create () in
+  let defense_robot_state = Defense_bot.create () in
   let world, offense_body_id =
     World.add_body
       world
-      ~updater:(Offense_bot_logic.gen_updater offense_robot_state dt_sim)
-      (Offense_bot_logic.offense_bot ())
+      ~updater:(Offense_bot.gen_updater offense_robot_state dt_sim)
+      (Offense_bot.offense_bot ())
   in
-  let defense_body = Defense_bot_logic.defense_bot () in
+  let defense_body = Defense_bot.defense_bot () in
   let world, defense_body_id =
     World.add_body
       world
-      ~updater:(Defense_bot_logic.gen_updater defense_robot_state dt_sim)
+      ~updater:(Defense_bot.gen_updater defense_robot_state dt_sim)
       defense_body
   in
   let world, flag_id = World.add_body world (Flag_logic.flag defense_body) in
@@ -49,8 +49,8 @@ let init () =
          ~physical:frame
          ~logical:frame
          ~title:"Virtual Robotics Arena")
-      (offense_robot_state, offense_body_id)
-      (defense_robot_state, defense_body_id)
+      { bot = offense_robot_state; id = offense_body_id }
+      { bot = defense_robot_state; id = defense_body_id }
       flag_id
       flag_protector_id
   in
@@ -101,13 +101,12 @@ let update_world state =
   if not (List.is_empty bot_collisions)
   then (
     let offense_bot =
-      Offense_bot_logic.remove_live
+      Offense_bot.remove_live
+        state.offense_bot.bot
         ~num_lives:Ctf_consts.Bots.Offense.start_lives
         (State.get_offense_bot_body state)
-        (fst state.offense_bot)
     in
-    state.world
-      <- World.set_body state.world (snd state.offense_bot) offense_bot)
+    state.world <- World.set_body state.world state.offense_bot.id offense_bot)
 
 let step state =
   handle_events state;
@@ -153,26 +152,26 @@ let set_motors state l_input r_input =
   in
   if state.on_offense_bot
   then (
-    (fst state.offense_bot).l_input <- make_valid l_input;
-    (fst state.offense_bot).r_input <- make_valid r_input)
+    Offense_bot.set_l_input state.offense_bot.bot (make_valid l_input);
+    Offense_bot.set_r_input state.offense_bot.bot (make_valid r_input))
   else (
-    (fst state.defense_bot).l_input <- make_valid l_input;
-    (fst state.defense_bot).r_input <- make_valid r_input)
+    Defense_bot.set_l_input state.defense_bot.bot (make_valid l_input);
+    Defense_bot.set_r_input state.defense_bot.bot (make_valid r_input))
 
 let l_input state =
   if state.on_offense_bot
-  then (fst state.offense_bot).l_input
-  else (fst state.defense_bot).l_input
+  then state.offense_bot.bot.l_input
+  else state.defense_bot.bot.l_input
 
 let r_input state =
   if state.on_offense_bot
-  then (fst state.offense_bot).r_input
-  else (fst state.defense_bot).r_input
+  then state.offense_bot.bot.r_input
+  else state.defense_bot.bot.r_input
 
 let shoot_laser state =
   if (not state.on_offense_bot)
      && Float.(
-          Ctf_consts.Laser.cooldown +. (fst state.defense_bot).last_fire_ts
+          Ctf_consts.Laser.cooldown +. state.defense_bot.bot.last_fire_ts
           < state.ts)
   then (
     let laser_body = Laser_logic.laser (State.get_defense_bot_body state) in
@@ -180,4 +179,4 @@ let shoot_laser state =
     let world, laser_id = World.add_body state.world ~updater laser_body in
     state.world <- world;
     state.images <- Map.set state.images ~key:laser_id ~data:(state.laser, true);
-    (fst state.defense_bot).last_fire_ts <- state.ts)
+    Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
