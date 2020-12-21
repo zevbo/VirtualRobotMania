@@ -39,6 +39,6 @@ let run impl_group ~filename =
             log_s [%message "wrote resp" (response : Sexp.t)];
             loop ())
         in
-        loop ())
+        Deferred.any_unit [ Reader.close_finished r; loop () ])
   in
   Tcp.Server.close_finished server
