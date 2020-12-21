@@ -12,7 +12,7 @@ The game is played between two different kinds of robots:
   the flag.
 
 The defense bot has two ways of interfering with the offense bot: it
-can get in its way, and it can fire projectiles at it.
+can get in its way, and it can fire bullets at it.
 
 Also, tournaments will be in teams, bughouse style!
 
@@ -73,17 +73,22 @@ a previous round you called `(set-motors 0.3 0.6)`, then
 `(get-motor-left)` will return 0.3, and `(get-motor-right)` will
 return 0.6
 
-
 ## Defense bot
 
 Here are the defense-bot-only calls.
 
-### shoot-laser
+### shoot
 
-This one is easy! `(shoot-laser)` just shoots a laser directly head of
-you.  But you can't do it too often! You can only shoot every 50
-ticks!
+This one is easy! `(shoot)` fires a bullet in the direction your car
+is pointed.  But you can't do it too often! You can only shoot every
+50 ticks!
 
 ## Offense bot
 
 Here are the offense-bot-only calls.
+
+- boost
+- opponent-angle
+- opponent-distance
+- opponent-shot?
+- flag-angle
