@@ -24,6 +24,8 @@ module Bots = struct
 
   module Offense = struct
     let start_pos = Geo.Vec.create (-.x_mag) y_offset
+    let boost_cooldown = 15.
+    let boost_v_scale = 2.
     let start_lives = 3
     let force_over_input = 650.
     let coll_group = 1
@@ -83,4 +85,9 @@ module Flag = struct
     let black_list = [ 1 ]
     let image_path ~root = root ^/ "images/green-outline.bmp"
   end
+end
+
+module End_line = struct
+  let x = 70. -. (frame_width /. 2.)
+  let w = 7.
 end

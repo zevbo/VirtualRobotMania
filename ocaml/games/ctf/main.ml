@@ -1,8 +1,10 @@
 open! Core
 open! Async
+open State
 open Virtuality2d
 module Sdl = Tsdl.Sdl
 open Geo_graph
+open! Geo
 
 let fps = 20.
 
@@ -85,9 +87,17 @@ let _status_s sexp =
 let step state =
   handle_events state;
   for _i = 1 to Int.of_float dt_sim_dt do
-    Advance.run state ~dt:(dt_sim *. speed_constant)
+    Advance.run state ~dt:(dt_sim *. speed_constant);
+    state.ts <- state.ts +. dt_sim
   done;
   Display.clear state.display Color.white;
+  Display.draw_image_wh
+    state.display
+    ~w:Ctf_consts.End_line.w
+    ~h:Ctf_consts.frame_height
+    state.end_line
+    ~center:(Vec.create Ctf_consts.End_line.x 0.)
+    ~angle:0.;
   Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
       Option.iter (Map.find state.images id) ~f:(fun image ->
           if not (Set.mem state.invisible id)
@@ -140,11 +150,14 @@ let r_input (state : State.t) =
   then state.offense_bot.bot.r_input
   else state.defense_bot.bot.r_input
 
-let shoot_laser (state : State.t) =
+let usable state last_ts cooldown = Float.(last_ts +. cooldown < state.ts)
+
+let shoot_laser state =
   if (not state.on_offense_bot)
-     && Float.O.(
-          Ctf_consts.Laser.cooldown + state.defense_bot.bot.last_fire_ts
-          < state.ts)
+     && usable
+          state
+          state.defense_bot.bot.last_fire_ts
+          Ctf_consts.Laser.cooldown
   then (
     let laser_body =
       Laser_logic.laser ~bot:(State.get_defense_bot_body state)
@@ -155,3 +168,11 @@ let shoot_laser (state : State.t) =
     state.images <- Map.set state.images ~key:laser_id ~data:state.laser;
     state.lasers <- Set.add state.lasers laser_id;
     Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
+
+let boost state =
+  if state.on_offense_bot
+     && usable
+          state
+          state.offense_bot.bot.last_boost
+          Ctf_consts.Bots.Offense.boost_cooldown
+  then state.offense_bot.bot.last_boost <- state.ts

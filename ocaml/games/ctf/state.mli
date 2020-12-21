@@ -23,6 +23,7 @@ type t =
   ; mutable ts : float
   ; mutable on_offense_bot : bool
   ; laser : Display.Image.t
+  ; end_line : Display.Image.t
   }
 
 val create
