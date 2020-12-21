@@ -1,4 +1,7 @@
-val init : unit -> State.t
+open! Core
+open! Async
+
+val init : unit -> State.t Deferred.t
 val step : State.t -> unit
 val set_motors : State.t -> float -> float -> unit
 val l_input : State.t -> float
