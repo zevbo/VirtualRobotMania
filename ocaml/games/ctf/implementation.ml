@@ -12,6 +12,7 @@ let group () =
   let shoot_laser () = Main.shoot_laser state in
   let boost () = Main.boost state in
   let enhance_border () = Main.enhance_border state in
+  let num_flags () = Main.num_flags state in
   let set_offense_image s = State.load_offense_image state s in
   let set_defense_image s = State.load_defense_image state s in
   let impl = Csexp_rpc.Implementation.create in
@@ -28,6 +29,7 @@ let group () =
     ; impl Protocol.enhance_border enhance_border
     ; impl' Protocol.set_offense_image set_offense_image
     ; impl' Protocol.set_defense_image set_defense_image
+    ; impl Protocol.num_flags num_flags
     ; impl Protocol.opp_dist (fun () -> Main.opp_dist state)
     ; impl Protocol.opp_angle (fun () -> Main.opp_angle state)
     ]

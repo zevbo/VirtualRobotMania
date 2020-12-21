@@ -13,3 +13,4 @@ val opp_angle : State.t -> float
 val opp_dist : State.t -> float
 val boost : State.t -> unit
 val enhance_border : State.t -> unit
+val num_flags : State.t -> int

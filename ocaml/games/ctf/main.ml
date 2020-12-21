@@ -213,3 +213,5 @@ let enhance_border state =
     <- Border.set_border_black_list
          state.world
          Ctf_consts.Border.enhanced_black_list
+
+let num_flags state = state.offense_bot.bot.num_flags
