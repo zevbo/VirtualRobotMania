@@ -121,6 +121,12 @@ let quadratic_formula
     in
     numerator /. (2. *. a))
 
+let add_to_black_list t coll_group =
+  { t with black_list = Set.add t.black_list coll_group }
+
+let remove_from_black_list t coll_group =
+  { t with black_list = Set.remove t.black_list coll_group }
+
 type intersection =
   { pt : Vec.t
   ; energy_ret : float
