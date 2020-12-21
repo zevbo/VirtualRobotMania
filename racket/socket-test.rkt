@@ -2,7 +2,9 @@
 (require 2htdp/image)
 (require "engine-connect.rkt")
 
+(println "whatever")
 (define c (launch-and-connect "test"))
+(println "started")
 
 (define (set-robot-image i image)
   (define file (make-temporary-file "image-~a.png"))
