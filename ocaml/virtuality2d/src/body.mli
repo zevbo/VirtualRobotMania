@@ -42,6 +42,7 @@ type t =
   ; collision_group : int
   ; black_list : Set.M(Int).t
   ; curr_forces : force list
+  ; never_collide : bool
   }
 [@@deriving sexp_of]
 
@@ -58,6 +59,7 @@ val create
   -> ?max_speed:float
   -> ?max_omega:float
   -> ?black_list:int list
+  -> ?never_collide:bool
   -> collision_group:int
   -> m:float
   -> Shape.t

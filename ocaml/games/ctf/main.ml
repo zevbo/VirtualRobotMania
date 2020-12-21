@@ -22,19 +22,9 @@ let init () =
   in
   let offense_robot_state = Offense_bot.create () in
   let defense_robot_state = Defense_bot.create () in
-  let world, offense_body_id =
-    World.add_body
-      world
-      ~updater:(Offense_bot.gen_updater offense_robot_state dt_sim)
-      (Offense_bot.offense_bot ())
-  in
+  let world, offense_body_id = World.add_body world Offense_bot.body in
   let defense_body = Defense_bot.defense_bot () in
-  let world, defense_body_id =
-    World.add_body
-      world
-      ~updater:(Defense_bot.gen_updater defense_robot_state dt_sim)
-      defense_body
-  in
+  let world, defense_body_id = World.add_body world defense_body in
   let world, flag_id = World.add_body world (Flag_logic.flag defense_body) in
   let world, flag_protector_id =
     World.add_body
@@ -61,14 +51,9 @@ let init () =
   let flag_protector_img =
     Display.Image.of_bmp_file state.display Ctf_consts.Flag.Protector.image_path
   in
-  state.images <- Map.set state.images ~key:flag_id ~data:(flag_img, true);
+  state.images <- Map.set state.images ~key:flag_id ~data:flag_img;
   state.images
-    <- Map.set
-         state.images
-         ~key:flag_protector_id
-         ~data:(flag_protector_img, true);
-  state.world
-    <- World.set_updater state.world flag_id (Flag_logic.gen_updater state);
+    <- Map.set state.images ~key:flag_protector_id ~data:flag_protector_img;
   state
 
 (** Handle any keyboard or other events *)
@@ -94,23 +79,22 @@ let _status_s sexp =
 let step state =
   handle_events state;
   for _i = 1 to Int.of_float dt_sim_dt do
-    state.ts <- state.ts +. dt_sim;
-    state.world <- World.advance state.world ~dt:(dt_sim *. speed_constant)
+    Advance.run state ~dt:(dt_sim *. speed_constant)
   done;
   Display.clear state.display Color.white;
   Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
-      match Map.find state.images id with
-      | Some (image, true) ->
-        let w = robot.shape.bounding_box.width in
-        let h = robot.shape.bounding_box.height in
-        Display.draw_image_wh
-          state.display
-          ~w
-          ~h
-          image
-          ~center:robot.pos
-          ~angle:robot.angle
-      | None | Some (_, false) -> ());
+      Option.iter (Map.find state.images id) ~f:(fun image ->
+          if not (Set.mem state.invisible id)
+          then (
+            let w = robot.shape.bounding_box.width in
+            let h = robot.shape.bounding_box.height in
+            Display.draw_image_wh
+              state.display
+              ~w
+              ~h
+              image
+              ~center:robot.pos
+              ~angle:robot.angle)));
   Display.present state.display;
   (match state.last_step_end with
   | None -> ()
@@ -157,8 +141,8 @@ let shoot_laser state =
           < state.ts)
   then (
     let laser_body = Laser_logic.laser (State.get_defense_bot_body state) in
-    let updater = Laser_logic.gen_updater state in
-    let world, laser_id = World.add_body state.world ~updater laser_body in
+    (* TODO: let updater = Laser_logic.gen_updater state in *)
+    let world, laser_id = World.add_body state.world laser_body in
     state.world <- world;
-    state.images <- Map.set state.images ~key:laser_id ~data:(state.laser, true);
+    state.images <- Map.set state.images ~key:laser_id ~data:state.laser;
     Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)

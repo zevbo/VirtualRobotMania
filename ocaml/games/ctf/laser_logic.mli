@@ -1,4 +1,4 @@
 open Virtuality2d
 
 val laser : Body.t -> Body.t
-val gen_updater : State.t -> World.updater
+val update : State.t -> World.Id.t -> Body.t -> World.t -> World.t

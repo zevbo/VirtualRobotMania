@@ -13,7 +13,8 @@ type t =
   ; mutable last_step_end : Time.t option
         (** The last time step was called. Used to make sure that the step can
             be elongated to match a single animation frame *)
-  ; mutable images : (Display.Image.t * bool) Map.M(World.Id).t
+  ; mutable images : Display.Image.t Map.M(World.Id).t
+  ; mutable invisible : Set.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
   ; offense_bot : Offense_bot.t with_id
@@ -37,6 +38,7 @@ let create
   { world
   ; last_step_end = None
   ; images
+  ; invisible = Set.empty (module World.Id)
   ; event = Sdl.Event.create ()
   ; display
   ; offense_bot
@@ -63,9 +65,9 @@ let load_bot_image t id imagefile =
   let%bind () = Unix.unlink bmpfile in
   t.images
     <- Map.update t.images id ~f:(fun old_image ->
-           Option.iter old_image ~f:(fun (old_image, _to_use) ->
+           Option.iter old_image ~f:(fun old_image ->
                Display.Image.destroy old_image);
-           image, true);
+           image);
   return ()
 
 let load_defense_image t imagefile = load_bot_image t t.defense_bot.id imagefile

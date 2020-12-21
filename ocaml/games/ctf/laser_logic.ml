@@ -20,49 +20,45 @@ let laser (bot : Body.t) =
     ~black_list:Ctf_consts.Laser.black_list
     Ctf_consts.Laser.shape
 
-let gen_updater (state : State.t) =
-  let updater id (laser : Body.t) world =
-    if Float.O.(
-         Float.abs laser.pos.x -. (Ctf_consts.Laser.length /. 2.)
-         > Ctf_consts.frame_width /. 2.
-         || Float.abs laser.pos.y -. (Ctf_consts.Laser.length /. 2.)
-            > Ctf_consts.frame_height /. 2.)
-    then World.remove_body world id
+let update (state : State.t) id (laser : Body.t) world =
+  if Float.O.(
+       Float.abs laser.pos.x -. (Ctf_consts.Laser.length /. 2.)
+       > Ctf_consts.frame_width /. 2.
+       || Float.abs laser.pos.y -. (Ctf_consts.Laser.length /. 2.)
+          > Ctf_consts.frame_height /. 2.)
+  then World.remove_body world id
+  else (
+    let offense_bodies =
+      World.all_of_coll_group world Ctf_consts.Bots.Offense.coll_group
+    in
+    let hit_offense_body =
+      Option.is_some
+        (List.find offense_bodies ~f:(fun (_id, body) ->
+             not
+               (List.length
+                  (Body.intersections ~allow_blacklist:true body laser)
+               = 0)))
+    in
+    if hit_offense_body
+    then (
+      let world = World.remove_body world id in
+      let offense_bot =
+        Offense_bot.remove_live
+          state.offense_bot.bot
+          (State.get_offense_bot_body state)
+      in
+      let world =
+        { World.bodies =
+            Map.set world.bodies ~key:state.offense_bot.id ~data:offense_bot
+        }
+      in
+      world)
     else (
-      let offense_bodies =
-        World.all_of_coll_group world Ctf_consts.Bots.Offense.coll_group
+      let new_laser =
+        { laser with
+          v = Vec.scale (Vec.to_unit laser.v) Ctf_consts.Laser.v
+        ; angle = Vec.angle_of laser.v
+        }
       in
-      let hit_offense_body =
-        Option.is_some
-          (List.find offense_bodies ~f:(fun (_id, body) ->
-               not
-                 (List.length
-                    (Body.intersections ~allow_blacklist:true body laser)
-                 = 0)))
-      in
-      if hit_offense_body
-      then (
-        let world = World.remove_body world id in
-        let offense_bot =
-          Offense_bot.remove_live
-            state.offense_bot.bot
-            (State.get_offense_bot_body state)
-        in
-        let world =
-          { world with
-            bodies =
-              Map.set world.bodies ~key:state.offense_bot.id ~data:offense_bot
-          }
-        in
-        world)
-      else (
-        let new_laser =
-          { laser with
-            v = Vec.scale (Vec.to_unit laser.v) Ctf_consts.Laser.v
-          ; angle = Vec.angle_of laser.v
-          }
-        in
-        let new_bodies = Map.set world.bodies ~key:id ~data:new_laser in
-        { world with bodies = new_bodies }))
-  in
-  updater
+      let new_bodies = Map.set world.bodies ~key:id ~data:new_laser in
+      { World.bodies = new_bodies }))
