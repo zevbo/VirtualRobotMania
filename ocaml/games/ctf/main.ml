@@ -162,3 +162,20 @@ let shoot_laser state =
     state.world <- world;
     state.images <- Map.set state.images ~key:laser_id ~data:(state.laser, true);
     Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
+
+let origin_and_target (state : State.t) =
+  let origin, target =
+    if state.on_offense_bot
+    then state.offense_bot.id, state.defense_bot.id
+    else state.defense_bot.id, state.offense_bot.id
+  in
+  let body id = Map.find_exn state.world.bodies id in
+  body origin, body target
+
+let opp_angle state =
+  let o, t = origin_and_target state in
+  Geo.Vec.angle_of (Geo.Vec.sub t.pos o.pos)
+
+let opp_dist state =
+  let o, t = origin_and_target state in
+  Geo.Vec.mag (Geo.Vec.sub t.pos o.pos)
