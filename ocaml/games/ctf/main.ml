@@ -98,6 +98,19 @@ let step state =
     state.end_line
     ~center:(Vec.create Ctf_consts.End_line.x 0.)
     ~angle:0.;
+  for num_flag = 0 to state.offense_bot.bot.num_flags - 1 do
+    Display.draw_image_wh
+      state.display
+      ~w:Ctf_consts.Flag.width
+      ~h:Ctf_consts.Flag.height
+      (Map.find_exn state.images state.flag)
+      ~center:
+        (Vec.create
+           Ctf_consts.Flag.display_x
+           (Ctf_consts.Flag.max_y
+           -. (Float.of_int num_flag *. Ctf_consts.Flag.display_y_diff)))
+      ~angle:0.
+  done;
   Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
       Option.iter (Map.find state.images id) ~f:(fun image ->
           if not (Set.mem state.invisible id)
@@ -200,3 +213,5 @@ let enhance_border state =
     <- Border.set_border_black_list
          state.world
          Ctf_consts.Border.enhanced_black_list
+
+let num_flags state = state.offense_bot.bot.num_flags
