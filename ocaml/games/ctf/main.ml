@@ -28,13 +28,14 @@ let init () =
       ~updater:(Offense_bot_logic.gen_updater offense_robot_state dt_sim)
       (Offense_bot_logic.offense_bot ())
   in
+  let defense_body = Defense_bot_logic.defense_bot () in
   let world, defense_body_id =
     World.add_body
       world
       ~updater:(Defense_bot_logic.gen_updater defense_robot_state dt_sim)
-      (Defense_bot_logic.defense_bot ())
+      defense_body
   in
-  let world, flag_id = World.add_body world (Flag_logic.flag ()) in
+  let world, flag_id = World.add_body world (Flag_logic.flag defense_body) in
   let world, flag_protector_id =
     World.add_body
       world
