@@ -3,6 +3,11 @@ open Virtuality2d
 module Sdl = Tsdl.Sdl
 open Geo_graph
 
+type 'a with_id =
+  { bot : 'a
+  ; id : World.Id.t
+  }
+
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
@@ -11,8 +16,8 @@ type t =
   ; mutable images : (Display.Image.t * bool) Map.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
-  ; offense_bot : Offense_bot.t * World.Id.t
-  ; defense_bot : Defense_bot.t * World.Id.t
+  ; offense_bot : Offense_bot.t with_id
+  ; defense_bot : Defense_bot.t with_id
   ; flag : World.Id.t
   ; flag_protector : World.Id.t
   ; mutable ts : float
@@ -63,16 +68,11 @@ let load_bot_image t id imagefile =
            image, true);
   return ()
 
-let load_defense_image t imagefile =
-  let id = snd t.defense_bot in
-  load_bot_image t id imagefile
-
-let load_offense_image t imagefile =
-  let id = snd t.offense_bot in
-  load_bot_image t id imagefile
+let load_defense_image t imagefile = load_bot_image t t.defense_bot.id imagefile
+let load_offense_image t imagefile = load_bot_image t t.offense_bot.id imagefile
 
 let get_offense_bot_body state =
-  let body_op = Map.find state.world.bodies (snd state.offense_bot) in
+  let body_op = Map.find state.world.bodies state.offense_bot.id in
   match body_op with
   | Some body -> body
   | None ->
@@ -82,7 +82,7 @@ let get_offense_bot_body state =
           its deletion")
 
 let get_defense_bot_body state =
-  let body_op = Map.find state.world.bodies (snd state.defense_bot) in
+  let body_op = Map.find state.world.bodies state.defense_bot.id in
   match body_op with
   | Some body -> body
   | None ->

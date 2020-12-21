@@ -3,14 +3,19 @@ open Virtuality2d
 module Sdl = Tsdl.Sdl
 open Geo_graph
 
+type 'a with_id =
+  { bot : 'a
+  ; id : World.Id.t
+  }
+
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
   ; mutable images : (Display.Image.t * bool) Map.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
-  ; offense_bot : Offense_bot.t * World.Id.t
-  ; defense_bot : Defense_bot.t * World.Id.t
+  ; offense_bot : Offense_bot.t with_id
+  ; defense_bot : Defense_bot.t with_id
   ; flag : World.Id.t
   ; flag_protector : World.Id.t
   ; mutable ts : float
@@ -22,8 +27,8 @@ val create
   :  World.t
   -> (Display.Image.t * bool) Map.M(World.Id).t
   -> Display.t
-  -> Offense_bot.t * World.Id.t
-  -> Defense_bot.t * World.Id.t
+  -> Offense_bot.t with_id
+  -> Defense_bot.t with_id
   -> World.Id.t
   -> World.Id.t
   -> t
