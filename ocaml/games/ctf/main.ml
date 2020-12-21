@@ -34,6 +34,12 @@ let init () =
       ~updater:(Defense_bot_logic.gen_updater defense_robot_state dt_sim)
       (Defense_bot_logic.defense_bot ())
   in
+  let world, flag_id = World.add_body world (Flag_logic.flag ()) in
+  let world, flag_protector_id =
+    World.add_body
+      world
+      (Flag_logic.flag_protector (World.get_body_exn world flag_id))
+  in
   let state =
     State.create
       world
@@ -44,8 +50,24 @@ let init () =
          ~title:"Virtual Robotics Arena")
       (offense_robot_state, offense_body_id)
       (defense_robot_state, defense_body_id)
+      flag_id
+      flag_protector_id
   in
   state.world <- world;
+  let flag_img =
+    Display.Image.of_bmp_file state.display Ctf_consts.Flag.image_path
+  in
+  let flag_protector_img =
+    Display.Image.of_bmp_file state.display Ctf_consts.Flag.Protector.image_path
+  in
+  state.images <- Map.set state.images ~key:flag_id ~data:(flag_img, true);
+  state.images
+    <- Map.set
+         state.images
+         ~key:flag_protector_id
+         ~data:(flag_protector_img, true);
+  state.world
+    <- World.set_updater state.world flag_id (Flag_logic.gen_updater state);
   state
 
 (** Handle any keyboard or other events *)
@@ -77,7 +99,7 @@ let step state =
   Display.clear state.display Color.white;
   Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
       match Map.find state.images id with
-      | Some image ->
+      | Some (image, true) ->
         let w = robot.shape.bounding_box.width in
         let h = robot.shape.bounding_box.height in
         Display.draw_image_wh
@@ -87,7 +109,7 @@ let step state =
           image
           ~center:robot.pos
           ~angle:robot.angle
-      | None -> ());
+      | None | Some (_, false) -> ());
   Display.present state.display;
   (match state.last_step_end with
   | None -> ()
@@ -137,5 +159,5 @@ let shoot_laser state =
     let updater = Laser_logic.gen_updater state in
     let world, laser_id = World.add_body state.world ~updater laser_body in
     state.world <- world;
-    state.images <- Map.update state.images laser_id ~f:(fun _ -> state.laser);
+    state.images <- Map.set state.images ~key:laser_id ~data:(state.laser, true);
     (fst state.defense_bot).last_fire_ts <- state.ts)

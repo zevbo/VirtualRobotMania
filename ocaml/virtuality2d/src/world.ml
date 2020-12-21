@@ -34,6 +34,13 @@ let to_world_updater body_updater =
 
 let empty = { bodies = Map.empty (module Id); updaters = Map.empty (module Id) }
 
+exception Nonexistent_world_id of Id.t * Id.t list
+
+let get_body_exn t id =
+  match Map.find t.bodies id with
+  | Some body -> body
+  | None -> raise (Nonexistent_world_id (id, Map.keys t.bodies))
+
 let of_bodies bodies =
   let bodies =
     Map.of_alist_exn
@@ -61,6 +68,11 @@ let add_body t ?(updater = null_updater) body =
     ; updaters = Map.set t.updaters ~key:id ~data:updater
     }
   , id )
+
+let set_body t id body = { t with bodies = Map.set t.bodies ~key:id ~data:body }
+
+let set_updater t id updater =
+  { t with updaters = Map.set t.updaters ~key:id ~data:updater }
 
 let remove_body t id =
   { bodies = Map.remove t.bodies id; updaters = Map.remove t.updaters id }
