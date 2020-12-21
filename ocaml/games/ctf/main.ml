@@ -17,6 +17,9 @@ let dt_sim = dt /. dt_sim_dt
 let speed_constant = 0.2
 
 let init () =
+  let display =
+    Display.init ~physical:frame ~logical:frame ~title:"Virtual Robotics Arena"
+  in
   let%map root =
     Process.run_exn ~prog:"git" ~args:[ "rev-parse"; "--show-toplevel" ] ()
     >>| String.strip
@@ -41,10 +44,7 @@ let init () =
     State.create
       world
       (Map.empty (module World.Id))
-      (Display.init
-         ~physical:frame
-         ~logical:frame
-         ~title:"Virtual Robotics Arena")
+      display
       { bot = offense_robot_state; id = offense_body_id }
       { bot = defense_robot_state; id = defense_body_id }
       flag_id
