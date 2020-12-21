@@ -43,11 +43,10 @@ choose what kind of bot you're creating.
 Here are the APIs that you can use for each kind of bot, along with
 some documentation about the restrictions for each bot type.
 
-## Defense bot
+## Both bots
 
-Defense bots are the easier ones to build.  Remember, there are just
-two things you can do to your opponents bot: shoot it, and get in its
-way.  Here are the controls you have.
+A lot of the controls are shared between the two bots.  Here's the
+shared API:
 
 ### set-motors
 
@@ -67,4 +66,24 @@ Some examples.
   - `(set-motors 1 0.5)` will cause your car to circle forward and to
     the right.
 
+### get-motor-left/right
+
+These calls allow you to read off the state of your motors.  So, if in
+a previous round you called `(set-motors 0.3 0.6)`, then
+`(get-motor-left)` will return 0.3, and `(get-motor-right)` will
+return 0.6
+
+
+## Defense bot
+
+Here are the defense-bot-only calls.
+
+### shoot-laser
+
+This one is easy! `(shoot-laser)` just shoots a laser directly head of
+you.  But you can't do it too often! You can only shoot every 50
+ticks!
+
 ## Offense bot
+
+Here are the offense-bot-only calls.
