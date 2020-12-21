@@ -3,27 +3,6 @@ open Virtuality2d
 module Sdl = Tsdl.Sdl
 open Geo_graph
 
-module Offense_bot : sig
-  type t =
-    { mutable has_flag : bool
-    ; mutable lives : int
-    ; mutable l_input : float
-    ; mutable r_input : float
-    }
-
-  val create : unit -> t
-end
-
-module Defense_bot : sig
-  type t =
-    { mutable last_fire_ts : float
-    ; mutable l_input : float
-    ; mutable r_input : float
-    }
-
-  val create : unit -> t
-end
-
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
@@ -49,6 +28,7 @@ val create
   -> World.Id.t
   -> t
 
+val set_world : t -> World.t -> unit
 val load_offense_image : t -> string -> unit Async.Deferred.t
 val load_defense_image : t -> string -> unit Async.Deferred.t
 val get_offense_bot_body : t -> Body.t

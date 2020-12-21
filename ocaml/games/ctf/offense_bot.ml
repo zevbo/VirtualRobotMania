@@ -2,7 +2,22 @@ open Virtuality2d
 open Common
 open Geo
 
-let gen_updater (offense_bot : State.Offense_bot.t) dt =
+type t =
+  { mutable has_flag : bool
+  ; mutable lives : int
+  ; mutable l_input : float
+  ; mutable r_input : float
+  }
+[@@deriving fields]
+
+let create () =
+  { has_flag = false
+  ; lives = Ctf_consts.Bots.Offense.start_lives
+  ; l_input = 0.
+  ; r_input = 0.
+  }
+
+let gen_updater (offense_bot : t) dt =
   let body_updater _id (body : Body.t) _world =
     Set_motors.apply_motor_force
       body
@@ -32,7 +47,7 @@ let offense_bot () =
   in
   reset body
 
-let remove_live (offense_bot_body : Body.t) (offense_bot : State.Offense_bot.t) =
+let remove_live offense_bot (offense_bot_body : Body.t) =
   offense_bot.lives <- offense_bot.lives - 1;
   if offense_bot.lives = 0
   then (

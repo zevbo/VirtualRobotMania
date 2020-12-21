@@ -61,7 +61,7 @@ let gen_updater (state : State.t) =
               flag_body
               (State.get_offense_bot_body state)))
     in
-    if picked_up_flag then (fst state.offense_bot).has_flag <- true;
+    if picked_up_flag then Offense_bot.set_has_flag (fst state.offense_bot) true;
     (* this find_exn should eventually be changed probably *)
     let bot = State.get_offense_bot_body state in
     let on_ground = snd (Map.find_exn state.images state.flag_protector) in

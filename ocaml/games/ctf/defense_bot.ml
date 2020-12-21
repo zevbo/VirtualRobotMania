@@ -1,6 +1,15 @@
 open Virtuality2d
 open Common
 
+type t =
+  { mutable last_fire_ts : float
+  ; mutable l_input : float
+  ; mutable r_input : float
+  }
+[@@deriving fields]
+
+let create () = { last_fire_ts = 0.; l_input = 0.; r_input = 0. }
+
 let defense_bot () =
   Body.create
     ~pos:Ctf_consts.Bots.Defense.start_pos
@@ -10,7 +19,7 @@ let defense_bot () =
     ~black_list:Ctf_consts.Bots.Defense.black_list
     Ctf_consts.Bots.shape
 
-let gen_updater (defense_bot : State.Defense_bot.t) dt =
+let gen_updater (defense_bot : t) dt =
   let body_updater _id (body : Body.t) _world =
     Set_motors.apply_motor_force
       body

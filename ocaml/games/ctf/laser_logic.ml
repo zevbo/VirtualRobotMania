@@ -44,9 +44,9 @@ let gen_updater (state : State.t) =
       then (
         let world = World.remove_body world id in
         let offense_bot =
-          Offense_bot_logic.remove_live
-            (State.get_offense_bot_body state)
+          Offense_bot.remove_live
             (fst state.offense_bot)
+            (State.get_offense_bot_body state)
         in
         let world =
           { world with

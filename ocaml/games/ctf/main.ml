@@ -20,19 +20,19 @@ let init () =
     List.fold Bodies.border ~init:world ~f:(fun world border_edge ->
         fst (World.add_body world border_edge))
   in
-  let offense_robot_state = State.Offense_bot.create () in
-  let defense_robot_state = State.Defense_bot.create () in
+  let offense_robot_state = Offense_bot.create () in
+  let defense_robot_state = Defense_bot.create () in
   let world, offense_body_id =
     World.add_body
       world
-      ~updater:(Offense_bot_logic.gen_updater offense_robot_state dt_sim)
-      (Offense_bot_logic.offense_bot ())
+      ~updater:(Offense_bot.gen_updater offense_robot_state dt_sim)
+      (Offense_bot.offense_bot ())
   in
-  let defense_body = Defense_bot_logic.defense_bot () in
+  let defense_body = Defense_bot.defense_bot () in
   let world, defense_body_id =
     World.add_body
       world
-      ~updater:(Defense_bot_logic.gen_updater defense_robot_state dt_sim)
+      ~updater:(Defense_bot.gen_updater defense_robot_state dt_sim)
       defense_body
   in
   let world, flag_id = World.add_body world (Flag_logic.flag defense_body) in
@@ -134,11 +134,11 @@ let set_motors state l_input r_input =
   in
   if state.on_offense_bot
   then (
-    (fst state.offense_bot).l_input <- make_valid l_input;
-    (fst state.offense_bot).r_input <- make_valid r_input)
+    Offense_bot.set_l_input (fst state.offense_bot) (make_valid l_input);
+    Offense_bot.set_r_input (fst state.offense_bot) (make_valid r_input))
   else (
-    (fst state.defense_bot).l_input <- make_valid l_input;
-    (fst state.defense_bot).r_input <- make_valid r_input)
+    Defense_bot.set_l_input (fst state.defense_bot) (make_valid l_input);
+    Defense_bot.set_r_input (fst state.defense_bot) (make_valid r_input))
 
 let l_input state =
   if state.on_offense_bot
@@ -161,4 +161,4 @@ let shoot_laser state =
     let world, laser_id = World.add_body state.world ~updater laser_body in
     state.world <- world;
     state.images <- Map.set state.images ~key:laser_id ~data:(state.laser, true);
-    (fst state.defense_bot).last_fire_ts <- state.ts)
+    Defense_bot.set_last_fire_ts (fst state.defense_bot) state.ts)

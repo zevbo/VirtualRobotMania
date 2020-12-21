@@ -3,32 +3,6 @@ open Virtuality2d
 module Sdl = Tsdl.Sdl
 open Geo_graph
 
-module Offense_bot = struct
-  type t =
-    { mutable has_flag : bool
-    ; mutable lives : int
-    ; mutable l_input : float
-    ; mutable r_input : float
-    }
-
-  let create () =
-    { has_flag = false
-    ; lives = Ctf_consts.Bots.Offense.start_lives
-    ; l_input = 0.
-    ; r_input = 0.
-    }
-end
-
-module Defense_bot = struct
-  type t =
-    { mutable last_fire_ts : float
-    ; mutable l_input : float
-    ; mutable r_input : float
-    }
-
-  let create () = { last_fire_ts = 0.; l_input = 0.; r_input = 0. }
-end
-
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
@@ -68,6 +42,8 @@ let create
   ; on_offense_bot = true
   ; laser = Display.Image.pixel display Color.red
   }
+
+let set_world t world = t.world <- world
 
 let load_bot_image t id imagefile =
   let open Async in
