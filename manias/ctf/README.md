@@ -1,5 +1,3 @@
-% Capture the Flag
-
 Welcome to a new Virtual Robotics competition! This year's competition
 is a game of capture the flag, and the game is more challenging than
 ever.
@@ -51,18 +49,16 @@ Defense bots are the easier ones to build.  Remember, there are just
 two things you can do to your opponents bot: shoot it, and get in its
 way.  Here are the controls you have.
 
-### Motor control
+### set-motors
 
 The left and right motors on your car determine the force on that side
 of the car.  The power to each motor ranges from -1 (maximum push in
 the reverse direction) to 1 (maximum push forward).
 
-#### set-motors
-
 `(set-motors left right)` sets the force being put into each side of
-the robot, ranging from -1 to 1.  Numbers beyond that range have no
-extra effect, so `(set-motors -10 5)` does the same thing as
-`(set-motors -1 1)`.
+the robot.  Numbers beyond the range from -1 to 1 have no extra
+effect, so `(set-motors -10 5)` does the same thing as `(set-motors -1
+1)`.
 
 Some examples.
 
