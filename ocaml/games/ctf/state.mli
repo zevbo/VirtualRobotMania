@@ -13,6 +13,7 @@ type t =
   ; mutable last_step_end : Time.t option
   ; mutable images : Display.Image.t Map.M(World.Id).t
   ; mutable invisible : Set.M(World.Id).t
+  ; mutable lasers : Set.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
   ; offense_bot : Offense_bot.t with_id
