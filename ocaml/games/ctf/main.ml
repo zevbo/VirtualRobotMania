@@ -3,6 +3,7 @@ open State
 open Virtuality2d
 module Sdl = Tsdl.Sdl
 open Geo_graph
+open! Geo
 
 let fps = 20.
 
@@ -96,7 +97,9 @@ let step state =
               image
               ~center:robot.pos
               ~angle:robot.angle)));
-  Display.present state.display;
+  (*Display.draw_image_wh state.display ~w:Ctf_consts.End_line.w
+    ~h:Ctf_consts.frame_height state.end_line ~center:(Vec.create
+    Ctf_consts.End_line.w 0.) ~angle:0.;*)
   (match state.last_step_end with
   | None -> ()
   | Some last_step_end ->

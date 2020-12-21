@@ -25,6 +25,7 @@ type t =
   ; mutable ts : float
   ; mutable on_offense_bot : bool
   ; laser : Display.Image.t
+  ; end_line : Display.Image.t
   }
 
 let create
@@ -50,6 +51,7 @@ let create
   ; ts = 0.
   ; on_offense_bot = true
   ; laser = Display.Image.pixel display Color.red
+  ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
   }
 
 let set_world t world = t.world <- world
