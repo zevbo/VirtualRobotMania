@@ -18,8 +18,7 @@ let run impl_group ~filename =
       ~on_handler_error:
         (`Call
           (fun _ exn ->
-            log_s [%message "Handler raised. Exiting." (exn : Exn.t)];
-            don't_wait_for (exit 0)))
+            log_s [%message "Handler raised. Exiting." (exn : Exn.t)]))
       (Tcp.Where_to_listen.of_file filename)
       (fun addr r w ->
         log_s [%message "Connection opened" (addr : Socket.Address.Unix.t)];
@@ -43,6 +42,7 @@ let run impl_group ~filename =
           Deferred.any_unit
             [ Writer.close_finished w; Reader.close_finished r; loop () ]
         in
+        let%bind () = Log.Global.flushed () in
         exit 0)
   in
   Tcp.Server.close_finished server
