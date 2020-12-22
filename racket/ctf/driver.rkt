@@ -79,6 +79,9 @@
     (loop))
   (loop))
 
-(define (looking-dist-internal)
-  (define x (bot-rpc #"looking-dist" #"0"))
+(define (encode-number x)
+  (string->bytes/utf-8 (number->string x)))
+
+(define (looking-dist-internal theta)
+  (define x (bot-rpc #"looking-dist" (encode-number theta)))
   (string->number (bytes->string/utf-8 x)))
