@@ -203,13 +203,10 @@ let opp_of (state : State.t) (bot_name : Bot_name.t) =
     | Offense -> Defense
     | Defense -> Offense)
 
-let origin_and_target (state : State.t) (bot_name : Bot_name.t) =
-  body_of state bot_name, opp_of state bot_name
-
 let angle_and_dist_to state bot_name other_pos =
   let bot = body_of state bot_name in
   ( Vec.normalize_angle (Vec.angle_between bot.pos other_pos -. bot.angle)
-  , Vec.rotate (Vec.sub other_pos bot.pos) (-.bot.angle) )
+  , Vec.mag (Vec.sub other_pos bot.pos) )
 
 let dist_to state bot_name other_pos =
   snd (angle_and_dist_to state bot_name other_pos)
@@ -274,7 +271,9 @@ let looking_dist state ((bot_name : Bot_name.t), angle) =
     List.filter_map all_edges ~f:(fun edge ->
         Option.map (Line_like.intersection looking_ray edge.ls) ~f:dist)
   in
-  List.min_elt intersection_distances ~compare:Float.compare
+  match List.min_elt intersection_distances ~compare:Float.compare with
+  | Some min_dist -> min_dist -. (Ctf_consts.Bots.width /. 2.)
+  | None -> -1.
 
 let boost state ((bot_name : Bot_name.t), ()) =
   match bot_name with
