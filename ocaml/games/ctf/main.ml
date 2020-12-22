@@ -305,3 +305,9 @@ let setup_shield state =
   state.world <- World.set_body state.world state.offense_shield shield
 
 let num_flags state = state.offense_bot.bot.num_flags
+
+let just_returned_flag state =
+  Float.O.(state.offense_bot.bot.last_flag_return = state.ts)
+
+let just_killed state =
+  Float.O.(state.offense_bot.bot.last_kill +. dt +. (dt_sim /. 2.) >= state.ts)

@@ -5,6 +5,8 @@ let group () =
   let%map state = Main.init () in
   let enhance_border () = Main.enhance_border state in
   let setup_shield () = Main.setup_shield state in
+  let just_returned_flag () = Main.just_returned_flag state in
+  let just_killed () = Main.just_killed state in
   let num_flags () = Main.num_flags state in
   let impl = Csexp_rpc.Implementation.create in
   let impl' = Csexp_rpc.Implementation.create' in
@@ -15,12 +17,12 @@ let group () =
     ; impl Protocol.shoot_laser (Main.shoot_laser state)
     ; impl Protocol.step (Main.step state)
     ; impl Protocol.boost (Main.boost state)
+    ; impl Protocol.just_returned_flag just_returned_flag
+    ; impl Protocol.just_killed just_killed
     ; impl Protocol.enhance_border enhance_border
     ; impl Protocol.setup_shield setup_shield
     ; impl' Protocol.set_image (State.set_image state)
     ; impl Protocol.num_flags num_flags
-    ; impl Protocol.dist_to_opp (Main.dist_to_opp state)
-    ; impl Protocol.angle_to_opp (Main.angle_to_opp state)
     ; impl Protocol.angle_to_opp (Main.angle_to_opp state)
     ; impl Protocol.dist_to_opp (Main.dist_to_opp state)
     ; impl Protocol.angle_to_flag (Main.angle_to_flag state)

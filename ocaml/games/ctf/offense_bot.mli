@@ -8,6 +8,8 @@ type t =
   ; mutable lives : int
   ; mutable l_input : float
   ; mutable r_input : float
+  ; mutable last_kill : float
+  ; mutable last_flag_return : float
   }
 
 val create : unit -> t
@@ -15,7 +17,7 @@ val body : Body.t
 val shield : Body.t
 val update : t -> dt:float -> Body.t -> float -> Body.t
 val update_shield : Body.t -> Body.t -> Body.t
-val remove_live : t -> ?num_lives:int -> Body.t -> Body.t
+val remove_live : t -> ?num_lives:int -> Body.t -> float -> Body.t
 
 (** {2 setters} *)
 

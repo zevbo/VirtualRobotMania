@@ -11,6 +11,8 @@ type t =
   ; mutable lives : int
   ; mutable l_input : float
   ; mutable r_input : float
+  ; mutable last_kill : float
+  ; mutable last_flag_return : float
   }
 [@@deriving fields]
 
@@ -22,6 +24,8 @@ let create () =
   ; last_shield = -.Ctf_consts.Bots.Offense.Shield.time
   ; l_input = 0.
   ; r_input = 0.
+  ; last_kill = -1.
+  ; last_flag_return = -1.
   }
 
 let update_shield (shield : Body.t) (body : Body.t) =
@@ -39,7 +43,8 @@ let update t ~dt (body : Body.t) ts =
           body.pos.x < Ctf_consts.End_line.x +. (Ctf_consts.End_line.w /. 2.))
   then (
     t.has_flag <- false;
-    t.num_flags <- t.num_flags + 1);
+    t.num_flags <- t.num_flags + 1;
+    t.last_flag_return <- ts);
   Set_motors.apply_motor_force
     body
     ~dt
@@ -71,11 +76,12 @@ let shield =
     ~black_list:Ctf_consts.Bots.Offense.Shield.off_black_list
     Ctf_consts.Bots.Offense.Shield.shape
 
-let remove_live t ?(num_lives = 1) (offense_bot_body : Body.t) =
+let remove_live t ?(num_lives = 1) (offense_bot_body : Body.t) ts =
   t.lives <- t.lives - num_lives;
   if t.lives <= 0
   then (
     t.lives <- Ctf_consts.Bots.Offense.start_lives;
     t.has_flag <- false;
+    t.last_kill <- ts;
     reset offense_bot_body)
   else offense_bot_body

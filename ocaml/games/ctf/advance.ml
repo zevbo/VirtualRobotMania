@@ -15,6 +15,7 @@ let bot_collision (state : State.t) =
         state.offense_bot.bot
         ~num_lives:Ctf_consts.Bots.Offense.start_lives
         (State.get_offense_bot_body state)
+        state.ts
     in
     state.world <- World.set_body state.world state.offense_bot.id offense_bot)
 
