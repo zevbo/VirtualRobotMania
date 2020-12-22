@@ -84,7 +84,7 @@ let _status_s sexp =
   in
   Out_channel.write_all "/tmp/status.sexp" ~data
 
-let step state =
+let step state () =
   handle_events state;
   for _i = 1 to Int.of_float dt_sim_dt do
     Advance.run state ~dt:(dt_sim *. speed_constant);
@@ -145,76 +145,75 @@ let step state =
   state.last_step_end <- Some (Time.now ())
 
 let max_input = 1.
-let use_offense_bot (state : State.t) = state.on_offense_bot <- true
-let use_defense_bot (state : State.t) = state.on_offense_bot <- false
 
-let set_motors (state : State.t) l_input r_input =
+let set_motors (state : State.t) ((bot_name : Bot_name.t), (l_input, r_input)) =
   let make_valid input =
     if Float.O.(Float.abs input < max_input)
     then input
     else Float.copysign max_input input
   in
-  if state.on_offense_bot
-  then (
+  match bot_name with
+  | Offense ->
     Offense_bot.set_l_input state.offense_bot.bot (make_valid l_input);
-    Offense_bot.set_r_input state.offense_bot.bot (make_valid r_input))
-  else (
+    Offense_bot.set_r_input state.offense_bot.bot (make_valid r_input)
+  | Defense ->
     Defense_bot.set_l_input state.defense_bot.bot (make_valid l_input);
-    Defense_bot.set_r_input state.defense_bot.bot (make_valid r_input))
+    Defense_bot.set_r_input state.defense_bot.bot (make_valid r_input)
 
-let l_input (state : State.t) =
-  if state.on_offense_bot
-  then state.offense_bot.bot.l_input
-  else state.defense_bot.bot.l_input
+let l_input (state : State.t) ((bot_name : Bot_name.t), ()) =
+  match bot_name with
+  | Offense -> state.offense_bot.bot.l_input
+  | Defense -> state.defense_bot.bot.l_input
 
-let r_input (state : State.t) =
-  if state.on_offense_bot
-  then state.offense_bot.bot.r_input
-  else state.defense_bot.bot.r_input
+let r_input (state : State.t) ((bot_name : Bot_name.t), ()) =
+  match bot_name with
+  | Offense -> state.offense_bot.bot.r_input
+  | Defense -> state.defense_bot.bot.r_input
 
 let usable state last_ts cooldown = Float.(last_ts +. cooldown < state.ts)
 
-let shoot_laser state =
-  if (not state.on_offense_bot)
-     && usable
-          state
-          state.defense_bot.bot.last_fire_ts
-          Ctf_consts.Laser.cooldown
-  then (
-    let laser_body =
-      Laser_logic.laser ~bot:(State.get_defense_bot_body state)
-    in
-    (* TODO: let updater = Laser_logic.gen_updater state in *)
-    let world, laser_id = World.add_body state.world laser_body in
-    state.world <- world;
-    state.images <- Map.set state.images ~key:laser_id ~data:state.laser;
-    state.lasers <- Set.add state.lasers laser_id;
-    Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
+let shoot_laser state ((bot_name : Bot_name.t), ()) =
+  match bot_name with
+  | Offense -> ()
+  | Defense ->
+    if usable state state.defense_bot.bot.last_fire_ts Ctf_consts.Laser.cooldown
+    then (
+      let laser_body =
+        Laser_logic.laser ~bot:(State.get_defense_bot_body state)
+      in
+      (* TODO: let updater = Laser_logic.gen_updater state in *)
+      let world, laser_id = World.add_body state.world laser_body in
+      state.world <- world;
+      state.images <- Map.set state.images ~key:laser_id ~data:state.laser;
+      state.lasers <- Set.add state.lasers laser_id;
+      Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
 
-let origin_and_target (state : State.t) =
+let origin_and_target (state : State.t) (bot_name : Bot_name.t) =
   let origin, target =
-    if state.on_offense_bot
-    then state.offense_bot.id, state.defense_bot.id
-    else state.defense_bot.id, state.offense_bot.id
+    match bot_name with
+    | Offense -> state.offense_bot.id, state.defense_bot.id
+    | Defense -> state.defense_bot.id, state.offense_bot.id
   in
   let body id = Map.find_exn state.world.bodies id in
   body origin, body target
 
-let opp_angle state =
-  let o, t = origin_and_target state in
+let opp_angle state (bot_name, ()) =
+  let o, t = origin_and_target state bot_name in
   Geo.Vec.angle_of (Geo.Vec.sub t.pos o.pos)
 
-let opp_dist state =
-  let o, t = origin_and_target state in
+let opp_dist state (bot_name, ()) =
+  let o, t = origin_and_target state bot_name in
   Geo.Vec.mag (Geo.Vec.sub t.pos o.pos)
 
-let boost state =
-  if state.on_offense_bot
-     && usable
-          state
-          state.offense_bot.bot.last_boost
-          Ctf_consts.Bots.Offense.boost_cooldown
-  then state.offense_bot.bot.last_boost <- state.ts
+let boost state ((bot_name : Bot_name.t), ()) =
+  match bot_name with
+  | Defense -> ()
+  | Offense ->
+    if usable
+         state
+         state.offense_bot.bot.last_boost
+         Ctf_consts.Bots.Offense.boost_cooldown
+    then state.offense_bot.bot.last_boost <- state.ts
 
 let enhance_border state =
   state.last_wall_enhance <- state.ts;
