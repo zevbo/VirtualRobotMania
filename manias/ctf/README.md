@@ -1,9 +1,9 @@
+# Capture the Flag!
+
 Welcome to a new Virtual Robotics competition! This year's competition
 is a game of **capture the flag**!  We hope this competition will be
 as accessible as past events, but should have some more complex
 challenges for more advanced players.
-
-# Overview
 
 Everyone is going to work in teams of two, and those teams need to
 make two different robots together:
