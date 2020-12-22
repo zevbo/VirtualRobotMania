@@ -117,10 +117,19 @@ let step state =
           then (
             let w = robot.shape.bounding_box.width in
             let h = robot.shape.bounding_box.height in
+            let alpha =
+              if robot.collision_group = Ctf_consts.Bots.Offense.coll_group
+              then
+                255
+                / Ctf_consts.Bots.Offense.start_lives
+                * state.offense_bot.bot.lives
+              else 255
+            in
             Display.draw_image_wh
               state.display
               ~w
               ~h
+              ~alpha
               image
               ~center:robot.pos
               ~angle:robot.angle)));
