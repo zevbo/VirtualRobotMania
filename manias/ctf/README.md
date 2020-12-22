@@ -61,27 +61,39 @@ return 0.6
 
 ### `angle-to-opp` and `dist-to-opp`
 
+These functions let you figure out where your opponent is, relative to
+you.  `(angle-to-opp)` returns 0 if the opponent is directly in front
+of you, a positive angle if it's to your left, and a negative angle if
+it's to your right.
 
-(angle-to-opp)
-(dist-to-opp)
-(angle-to-flag)
-(dist-to-flag)
-(get-robot-angle)
-(get-opp-angle)
-(looking-dist theta)
+`(dist-to-opp)` simply returns the distance to the opponent.
 
-(define degrees-mode degrees-mode-internal)
-(define radians-mode radians-mode-internal)
+### `angle-to-flag` and `distance-to-flag`
 
+Just like the above, except for the flag, instead of your opponent.
+Note that it still works when the flag has been picked up by your
+opponent!
 
+### `get-robot-angle` and `get-opp-angle`
+
+This returns the absolute angle of your angle.  i.e., 0 degrees means
+you're pointed to the left, 90 degrees is straight up, 180 degrees is
+to the left, and so on.
+
+`get-opp-angle` gives the same number, but for your opponent!
+
+### `looking-dist`
+
+`(looking-dist theta)` tells you how much distance there is to the
+next obstacle, be it a wall, a robot or a laser!
 
 ## Defense bot
 
 Here are the defense-bot-only calls.
 
-### shoot
+### shoot-laser
 
-This one is easy! `(shoot)` fires a bullet in the direction your car
+This one is easy! `(shoot-laser)` fires a bullet in the direction your car
 is pointed.  But you can't do it too often! You can only shoot every
 50 ticks!
 
