@@ -13,7 +13,7 @@
   (rpc c `(#"load-bot-image"
            (,(string->bytes/latin-1 (~v i))
             ,(path->bytes file))))
-  #;(delete-file file))
+  (delete-file file))
 
 (define (rand-color)
   (color (random 0 256) (random 0 256) (random 0 256) (random 0 256)))
