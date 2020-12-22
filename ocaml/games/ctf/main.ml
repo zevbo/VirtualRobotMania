@@ -188,22 +188,93 @@ let shoot_laser state ((bot_name : Bot_name.t), ()) =
       state.lasers <- Set.add state.lasers laser_id;
       Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
 
-let origin_and_target (state : State.t) (bot_name : Bot_name.t) =
-  let origin, target =
+let body_of (state : State.t) (bot_name : Bot_name.t) =
+  let id =
     match bot_name with
-    | Offense -> state.offense_bot.id, state.defense_bot.id
-    | Defense -> state.defense_bot.id, state.offense_bot.id
+    | Offense -> state.offense_bot.id
+    | Defense -> state.defense_bot.id
   in
-  let body id = Map.find_exn state.world.bodies id in
-  body origin, body target
+  Map.find_exn state.world.bodies id
 
-let opp_angle state (bot_name, ()) =
-  let o, t = origin_and_target state bot_name in
-  Geo.Vec.angle_of (Geo.Vec.sub t.pos o.pos)
+let opp_of (state : State.t) (bot_name : Bot_name.t) =
+  body_of
+    state
+    (match bot_name with
+    | Offense -> Defense
+    | Defense -> Offense)
 
-let opp_dist state (bot_name, ()) =
-  let o, t = origin_and_target state bot_name in
-  Geo.Vec.mag (Geo.Vec.sub t.pos o.pos)
+let origin_and_target (state : State.t) (bot_name : Bot_name.t) =
+  body_of state bot_name, opp_of state bot_name
+
+let angle_and_dist_to state bot_name other_pos =
+  let bot = body_of state bot_name in
+  ( Vec.normalize_angle (Vec.angle_between bot.pos other_pos -. bot.angle)
+  , Vec.rotate (Vec.sub other_pos bot.pos) (-.bot.angle) )
+
+let dist_to state bot_name other_pos =
+  snd (angle_and_dist_to state bot_name other_pos)
+
+let angle_to state bot_name other_pos =
+  fst (angle_and_dist_to state bot_name other_pos)
+
+let angle_to_opp state (bot_name, ()) =
+  angle_to state bot_name (opp_of state bot_name).pos
+
+let dist_to_opp state (bot_name, ()) =
+  dist_to state bot_name (opp_of state bot_name).pos
+
+let angle_to_flag state ((bot_name : Bot_name.t), ()) =
+  angle_to state bot_name (Map.find_exn state.world.bodies state.flag).pos
+
+let dist_to_flag state ((bot_name : Bot_name.t), ()) =
+  dist_to state bot_name (Map.find_exn state.world.bodies state.flag).pos
+
+let get_angle state ((bot_name : Bot_name.t), ()) =
+  (body_of state bot_name).angle
+
+let get_opp_angle state ((bot_name : Bot_name.t), ()) =
+  (opp_of state bot_name).angle
+
+let ts_to_ticks ts = Int.of_float (ts *. speed_constant *. dt_sim)
+
+let just_fired state ((_bot_name : Bot_name.t), ()) =
+  Float.O.(state.ts = state.defense_bot.bot.last_fire_ts)
+
+let laser_cooldown_left state ((_bot_name : Bot_name.t), ()) =
+  ts_to_ticks
+    (Float.max
+       0.
+       (state.defense_bot.bot.last_fire_ts
+       +. Ctf_consts.Laser.cooldown
+       -. state.ts))
+
+let just_boosted state ((_bot_name : Bot_name.t), ()) =
+  Float.O.(state.ts = state.offense_bot.bot.last_boost)
+
+let boost_cooldown_left state ((_bot_name : Bot_name.t), ()) =
+  ts_to_ticks
+    (Float.max
+       0.
+       (state.offense_bot.bot.last_boost
+       +. Ctf_consts.Bots.Offense.boost_cooldown
+       -. state.ts))
+
+let looking_dist state ((bot_name : Bot_name.t), angle) =
+  let body = body_of state bot_name in
+  let looking_ray =
+    Line_like.ray_of_point_angle body.pos (angle +. body.angle)
+  in
+  let all_bodies = List.map (Map.to_alist state.world.bodies) ~f:snd in
+  let all_edges =
+    List.fold all_bodies ~init:[] ~f:(fun edges body ->
+        List.append (Body.get_edges_w_global_pos body) edges)
+  in
+  let dist = Vec.dist_sq body.pos in
+  let intersection_distances =
+    List.filter_map all_edges ~f:(fun edge ->
+        Option.map (Line_like.intersection looking_ray edge.ls) ~f:dist)
+  in
+  List.min_elt intersection_distances ~compare:Float.compare
 
 let boost state ((bot_name : Bot_name.t), ()) =
   match bot_name with

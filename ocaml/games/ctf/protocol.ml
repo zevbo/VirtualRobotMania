@@ -22,8 +22,18 @@ let shoot_laser =
   Call.create "shoot-laser" (module With_bot (Unit)) (module Unit)
 
 let boost = Call.create "boost" (module With_bot (Unit)) (module Unit)
-let opp_angle = Call.create "opp-angle" (module With_bot (Unit)) (module Float)
-let opp_dist = Call.create "opp-dist" (module With_bot (Unit)) (module Float)
-let opp_shot = Call.create "opp-shot?" (module With_bot (Unit)) (module Bool)
 let enhance_border = Call.create "enhance-border" (module Unit) (module Unit)
 let num_flags = Call.create "num-flags" (module Unit) (module Int)
+
+let angle_to_opp =
+  Call.create "angle-to-opp" (module With_bot (Unit)) (module Float)
+
+let dist_to_opp = Call.create "" (module With_bot (Unit)) (module Float)
+let angle_to_flag = Call.create "" (module With_bot (Unit)) (module Float)
+let dist_to_flag = Call.create "" (module With_bot (Unit)) (module Float)
+let get_angle = Call.create "" (module With_bot (Unit)) (module Float)
+let get_opp_angle = Call.create "" (module With_bot (Unit)) (module Float)
+let just_fired = Call.create "" (module With_bot (Unit)) (module Bool)
+let laser_cooldown_left = Call.create "" (module With_bot (Unit)) (module Int)
+let just_boosted = Call.create "" (module With_bot (Unit)) (module Bool)
+let boosted_cooldown_left = Call.create "" (module With_bot (Unit)) (module Int)
