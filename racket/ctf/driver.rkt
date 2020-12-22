@@ -13,15 +13,6 @@
   (println msg)
   (rpc c msg)
   (delete-file file))
-<<<<<<< HEAD
-=======
-(define (step c) (rpc c `(#"step" ())))
-
-(println (current-directory))
-(println "About to connect")
-(define c (launch-and-connect "ctf"))
-(println "connected")
->>>>>>> master
 
 (define (use_defense_bot c path) (rpc c '("use_defense_bot" ())))
 (define (use_offense_bot c path) (rpc c '("use_offense_bot" ())))
