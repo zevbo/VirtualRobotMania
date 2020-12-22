@@ -92,8 +92,11 @@
       ((robot-on-tick def) tick-num)
       (set! the-current-robot '())
       (cond
-        [(just-killed?)
-         (printf "woah, ~s~n" tick-num)])
+        [(just-killed?) 
+         (set! the-connection other-c)
+         (setup-shield)]
+        [(set! the-connection other-c)
+         (enhance-border)])
       (step))
     (run-game conn1 conn2 off1 def1)
     (run-game conn2 conn1 off2 def2)
@@ -129,3 +132,5 @@
 
 (define (just-returned-flag?) (decode-bool (non-bot-rpc #"just-returned-flag" '())))
 (define (just-killed?) (decode-bool (non-bot-rpc #"just-killed" '())))
+(define (enhance-border) (non-bot-rpc #"enhance-border" '()))
+(define (setup-shield) (non-bot-rpc #"setup-shield" '()))

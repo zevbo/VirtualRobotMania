@@ -62,7 +62,7 @@ module Laser = struct
   let material = Material.create ~energy_ret:2.
   let shape = Shape.create_standard_rect length width ~material
   let v = 1000.
-  let cooldown = 1.
+  let cooldown = 4.
   let wall_enhance_period = 10.
 end
 
