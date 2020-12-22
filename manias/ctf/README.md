@@ -1,9 +1,8 @@
 # Capture the Flag!
 
 Welcome to a new Virtual Robotics competition! This year's competition
-is a game of **capture the flag**!  We hope this competition will be
-as accessible as past events, but should have some more complex
-challenges for more advanced players.
+is a step up in the complexity of the tasks, but writing bots should
+still be easy for beginners.
 
 Everyone is going to work in teams of two, and those teams need to
 make two different robots together:
@@ -17,21 +16,21 @@ The defense bot has two ways of interfering with the offense bot: it
 can get in the other bot's way, and it can fire (strangely
 slow-moving) lasers at it.
 
-# Robot commands
+# Where to work
 
 Each kind of robot (defense or offense) has its own library of
-commands.  You should make sure you have the right require at the top
-of your file.  You should uncomment one of the following two lines to
-choose what kind of bot you're creating.
+commands.  If you look in the `manias/ctf` directory, you should find
+three files, with starting templates and some very basic bots to build
+off of.
 
-```scheme
-;(require "../../lib/worlds/ctf/offense.rkt")
-;(require "../../lib/worlds/ctf/defense.rkt")
-```
+- `offense.rkt` is for writing your offense bot.
+- `defense.rkt` is for writing your defense bot.
+- `together.rkt` brings them both together. This is where you click
+  "run" to start the game.
 
 Here's an overview of the commands you have at your disposal for
 controlling your bot.  Some of the commands work for both bots, and
-some depend on the kind of bot.
+some are only available for offense or defense.
 
 ## Common commands
 
