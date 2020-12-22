@@ -34,7 +34,7 @@ some are only available for offense or defense.
 
 ## Common commands
 
-### set-motors
+### `set-motors`
 
 The left and right motors on your car determine the force on that side
 of the car.  The power to each motor ranges from -1 (maximum push in
@@ -52,12 +52,28 @@ Some examples.
   - `(set-motors 1 0.5)` will cause your car to circle forward and to
     the right.
 
-### get-motor-left/right
+### `get-motor-left/right`
 
 These calls allow you to read off the state of your motors.  So, if in
 a previous round you called `(set-motors 0.3 0.6)`, then
-`(get-motor-left)` will return 0.3, and `(get-motor-right)` will
+`(get-left-input)` will return 0.3, and `(get-right-input)` will
 return 0.6
+
+### `angle-to-opp` and `dist-to-opp`
+
+
+(angle-to-opp)
+(dist-to-opp)
+(angle-to-flag)
+(dist-to-flag)
+(get-robot-angle)
+(get-opp-angle)
+(looking-dist theta)
+
+(define degrees-mode degrees-mode-internal)
+(define radians-mode radians-mode-internal)
+
+
 
 ## Defense bot
 
