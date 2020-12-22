@@ -175,21 +175,43 @@ let r_input (state : State.t) ((bot_name : Bot_name.t), ()) =
 
 let usable state last_ts cooldown = Float.(last_ts +. cooldown < state.ts)
 
-let shoot_laser state ((bot_name : Bot_name.t), ()) =
+let load_laser state ((bot_name : Bot_name.t), ()) =
   match bot_name with
   | Offense -> ()
   | Defense ->
-    if usable state state.defense_bot.bot.last_fire_ts Ctf_consts.Laser.cooldown
+    let is_loaded = Option.is_some state.defense_bot.bot.loaded_laser in
+    if (not is_loaded)
+       && usable
+            state
+            state.defense_bot.bot.last_fire_ts
+            Ctf_consts.Laser.cooldown
     then (
       let laser_body =
         Laser_logic.laser ~bot:(State.get_defense_bot_body state)
       in
-      (* TODO: let updater = Laser_logic.gen_updater state in *)
+      let laser_state = State.Laser.create state.ts in
       let world, laser_id = World.add_body state.world laser_body in
       state.world <- world;
-      state.images <- Map.set state.images ~key:laser_id ~data:state.laser;
-      state.lasers <- Set.add state.lasers laser_id;
-      Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
+      state.images
+        <- Map.set state.images ~key:laser_id ~data:(List.nth_exn state.laser 0);
+      state.lasers <- Map.set state.lasers ~key:laser_id ~data:laser_state;
+      state.defense_bot.bot.loaded_laser <- Some laser_id)
+
+let shoot_laser state ((bot_name : Bot_name.t), ()) =
+  if usable state state.defense_bot.bot.last_fire_ts Ctf_consts.Laser.cooldown
+  then (
+    if Option.is_none state.defense_bot.bot.loaded_laser
+    then load_laser state ((bot_name : Bot_name.t), ());
+    match state.defense_bot.bot.loaded_laser with
+    | Some id ->
+      Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts;
+      Laser_logic.shoot_laser state id
+    | None -> ())
+
+let restock_laser state ((_bot_name : Bot_name.t), ()) =
+  match state.defense_bot.bot.loaded_laser with
+  | Some id -> Laser_logic.restock_laser state id
+  | None -> ()
 
 let body_of (state : State.t) (bot_name : Bot_name.t) =
   let id =

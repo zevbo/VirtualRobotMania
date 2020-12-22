@@ -8,6 +8,16 @@ type 'a with_id =
   ; id : World.Id.t
   }
 
+module Laser = struct
+  type t =
+    { mutable power : int
+    ; mutable loaded : bool
+    ; mutable loaded_ts : float
+    }
+
+  let create loaded_ts = { power = 1; loaded = true; loaded_ts }
+end
+
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
@@ -15,7 +25,7 @@ type t =
             be elongated to match a single animation frame *)
   ; mutable images : Display.Image.t Map.M(World.Id).t
   ; mutable invisible : Set.M(World.Id).t
-  ; mutable lasers : Set.M(World.Id).t
+  ; mutable lasers : Laser.t Map.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
   ; offense_bot : Offense_bot.t with_id
@@ -23,7 +33,7 @@ type t =
   ; flag : World.Id.t
   ; flag_protector : World.Id.t
   ; mutable ts : float
-  ; laser : Display.Image.t
+  ; laser : Display.Image.t list
   ; end_line : Display.Image.t
   ; offense_shield : World.Id.t
   ; mutable last_wall_enhance : float
@@ -43,7 +53,7 @@ let create
   ; last_step_end = None
   ; images
   ; invisible = Set.empty (module World.Id)
-  ; lasers = Set.empty (module World.Id)
+  ; lasers = Map.empty (module World.Id)
   ; event = Sdl.Event.create ()
   ; display
   ; offense_bot
@@ -51,7 +61,7 @@ let create
   ; flag = flag_id
   ; flag_protector = flag_protector_id
   ; ts = 0.
-  ; laser = Display.Image.pixel display Color.red
+  ; laser = List.map Ctf_consts.Laser.colors ~f:(Display.Image.pixel display)
   ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
   ; offense_shield = offense_shield_id
   ; last_wall_enhance = -.Ctf_consts.Border.enhance_period

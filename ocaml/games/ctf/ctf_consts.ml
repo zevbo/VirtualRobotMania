@@ -56,7 +56,8 @@ end
 module Laser = struct
   let length = 25.
   let width = 5.
-  let color = Color.red
+  let next_level_time = 1.
+  let colors = [ Color.rgb 255 255 0; Color.rgb 255 165 0; Color.red ]
   let coll_group = 3
   let black_list = [ 1; 2; 3; 4 ]
   let material = Material.create ~energy_ret:2.
