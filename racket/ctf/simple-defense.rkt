@@ -3,7 +3,9 @@
 (provide def1 def2)
 
 (define (on-tick1 tick#)
-  (shoot-laser)
+  (load-laser)
+  (cond [(= 0 (random 50))
+         (shoot-laser)])
   (define p 0.2)
   (define angle (angle-to-opp))
   (define output (* p angle))

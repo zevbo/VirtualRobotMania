@@ -179,7 +179,12 @@ let load_laser state ((bot_name : Bot_name.t), ()) =
   match bot_name with
   | Offense -> ()
   | Defense ->
-    if usable state state.defense_bot.bot.last_fire_ts Ctf_consts.Laser.cooldown
+    let is_loaded = Option.is_some state.defense_bot.bot.loaded_laser in
+    if (not is_loaded)
+       && usable
+            state
+            state.defense_bot.bot.last_fire_ts
+            Ctf_consts.Laser.cooldown
     then (
       let laser_body =
         Laser_logic.laser ~bot:(State.get_defense_bot_body state)
@@ -190,16 +195,18 @@ let load_laser state ((bot_name : Bot_name.t), ()) =
       state.images
         <- Map.set state.images ~key:laser_id ~data:(List.nth_exn state.laser 0);
       state.lasers <- Map.set state.lasers ~key:laser_id ~data:laser_state;
-      state.defense_bot.bot.loaded_laser <- Some laser_id;
-      Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
+      state.defense_bot.bot.loaded_laser <- Some laser_id)
 
 let shoot_laser state ((bot_name : Bot_name.t), ()) =
   if usable state state.defense_bot.bot.last_fire_ts Ctf_consts.Laser.cooldown
   then (
     if Option.is_none state.defense_bot.bot.loaded_laser
     then load_laser state ((bot_name : Bot_name.t), ());
-    let id = Option.value_exn state.defense_bot.bot.loaded_laser in
-    Laser_logic.shoot_laser state id)
+    match state.defense_bot.bot.loaded_laser with
+    | Some id ->
+      Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts;
+      Laser_logic.shoot_laser state id
+    | None -> ())
 
 let body_of (state : State.t) (bot_name : Bot_name.t) =
   let id =

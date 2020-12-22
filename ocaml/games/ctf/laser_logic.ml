@@ -32,6 +32,7 @@ let shoot_laser (state : State.t) (laser_id : World.Id.t) =
   in
   let world = World.set_body state.world laser_id { laser with v } in
   (Map.find_exn state.lasers laser_id).loaded <- false;
+  state.defense_bot.bot.loaded_laser <- None;
   state.world <- world
 
 let update_moving (state : State.t) id =
@@ -59,6 +60,7 @@ let update_moving (state : State.t) id =
       let world = World.remove_body state.world id in
       let offense_bot =
         Offense_bot.remove_live
+          ~num_lives:(Map.find_exn state.lasers id).power
           state.offense_bot.bot
           (State.get_offense_bot_body state)
           state.ts
@@ -89,9 +91,16 @@ let update_loaded (state : State.t) id =
   let laser = { laser with angle = bot.angle; pos } in
   let t = Map.find_exn state.lasers id in
   t.power <- power_of state.ts t;
-  let image = List.nth_exn state.laser t.power in
-  state.images <- Map.set state.images ~key:id ~data:image;
-  World.set_body state.world id laser
+  if t.power > List.length Ctf_consts.Laser.colors
+  then (
+    state.defense_bot.bot.loaded_laser <- None;
+    state.images <- Map.remove state.images id;
+    state.lasers <- Map.remove state.lasers id;
+    World.remove_body state.world id)
+  else (
+    let image = List.nth_exn state.laser (t.power - 1) in
+    state.images <- Map.set state.images ~key:id ~data:image;
+    World.set_body state.world id laser)
 
 let update_one (state : State.t) id =
   (if (Map.find_exn state.lasers id).loaded
