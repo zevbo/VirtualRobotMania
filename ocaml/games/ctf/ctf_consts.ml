@@ -61,6 +61,7 @@ module Flag = struct
   let image_path ~root = root ^/ "images/flag.bmp"
   let no_defense_dist = 75.
   let max_y = (frame_height /. 2.) -. 30.
+  let min_y = no_defense_dist +. 40.
   let min_x = 100.
   let max_x = (frame_width /. 2.) -. width
   let m = Float.infinity
