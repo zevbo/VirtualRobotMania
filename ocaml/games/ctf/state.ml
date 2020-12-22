@@ -23,7 +23,6 @@ type t =
   ; flag : World.Id.t
   ; flag_protector : World.Id.t
   ; mutable ts : float
-  ; mutable on_offense_bot : bool
   ; laser : Display.Image.t
   ; end_line : Display.Image.t
   ; mutable last_wall_enhance : float
@@ -50,7 +49,6 @@ let create
   ; flag = flag_id
   ; flag_protector = flag_protector_id
   ; ts = 0.
-  ; on_offense_bot = true
   ; laser = Display.Image.pixel display Color.red
   ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
   ; last_wall_enhance = -.Ctf_consts.Border.enhance_period
@@ -76,8 +74,13 @@ let load_bot_image t id imagefile =
            image);
   return ()
 
-let load_defense_image t imagefile = load_bot_image t t.defense_bot.id imagefile
-let load_offense_image t imagefile = load_bot_image t t.offense_bot.id imagefile
+let set_image t ((bot_name : Bot_name.t), imagefile) =
+  let id =
+    match bot_name with
+    | Defense -> t.defense_bot.id
+    | Offense -> t.offense_bot.id
+  in
+  load_bot_image t id imagefile
 
 let get_offense_bot_body state =
   let body_op = Map.find state.world.bodies state.offense_bot.id in

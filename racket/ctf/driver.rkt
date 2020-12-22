@@ -7,17 +7,11 @@
   (define file (make-temporary-file file_path))
   (println file)
   (save-image image file)
-  (define msg
-    (if defense?
-           `(#"set-defense-image"
-             ,(path->bytes file))
-           `(#"set-offense-image"
-             ,(path->bytes file))))
+  (define name (if defense? #"Defense" #"Offense"))
+  (define msg `(#"set-image" (,name ,(path->bytes file))))
   (println msg)
   (rpc c msg)
   (delete-file file))
-(define (set_defense_bot c path) (rpc c '("use_defense_bot" p)))
-(define (set_offense_bot c path) (rpc c '("use_offense_bot" ())))
 (define (step c) (rpc c `(#"step" ())))
 
 (println (current-directory))
