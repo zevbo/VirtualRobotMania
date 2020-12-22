@@ -82,6 +82,9 @@
 (define (encode-number x)
   (string->bytes/utf-8 (number->string x)))
 
+(define (decode-number b)
+  (string->number (bytes->string/utf-8 b)))
+
 (define (bot-rpc-num name arg)
   (string->number (bot-rpc name arg)))
 (define (bot-rpc-bool name arg)
