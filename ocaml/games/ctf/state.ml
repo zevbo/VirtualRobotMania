@@ -25,6 +25,7 @@ type t =
   ; mutable ts : float
   ; laser : Display.Image.t
   ; end_line : Display.Image.t
+  ; offense_shield : World.Id.t
   ; mutable last_wall_enhance : float
   }
 
@@ -36,6 +37,7 @@ let create
     defense_bot
     flag_id
     flag_protector_id
+    offense_shield_id
   =
   { world
   ; last_step_end = None
@@ -51,6 +53,7 @@ let create
   ; ts = 0.
   ; laser = Display.Image.pixel display Color.red
   ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
+  ; offense_shield = offense_shield_id
   ; last_wall_enhance = -.Ctf_consts.Border.enhance_period
   }
 

@@ -32,6 +32,17 @@ module Bots = struct
     let start_lives = 3
     let force_over_input = 650.
     let coll_group = 1
+
+    module Shield = struct
+      let width = width *. 1.4
+      let height = width
+      let material = Material.create ~energy_ret:1.4
+      let shape = Shape.create_standard_rect width height ~material
+      let coll_group = 6
+      let off_black_list = [ 0; 1; 2; 3; 4; 5 ]
+      let on_black_list = [ 0; 1; 2; 4; 5 ]
+      let time = 5.
+    end
   end
 
   module Defense = struct

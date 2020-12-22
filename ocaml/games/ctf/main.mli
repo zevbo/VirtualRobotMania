@@ -11,6 +11,7 @@ type ('a, 'b) bot_func := State.t -> Bot_name.t * 'a -> 'b
 val init : unit -> State.t Deferred.t
 val step : State.t -> unit -> unit
 val enhance_border : State.t -> unit
+val setup_shield : State.t -> unit
 val num_flags : State.t -> int
 
 (** User actuator functions *)

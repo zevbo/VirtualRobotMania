@@ -23,6 +23,7 @@ type t =
   ; mutable ts : float
   ; laser : Display.Image.t
   ; end_line : Display.Image.t
+  ; offense_shield : World.Id.t
   ; mutable last_wall_enhance : float
   }
 
@@ -32,6 +33,7 @@ val create
   -> Display.t
   -> Offense_bot.t with_id
   -> Defense_bot.t with_id
+  -> World.Id.t
   -> World.Id.t
   -> World.Id.t
   -> t
