@@ -17,6 +17,17 @@ let group () =
     ; impl Protocol.enhance_border enhance_border
     ; impl' Protocol.set_image (State.set_image state)
     ; impl Protocol.num_flags num_flags
-    ; impl Protocol.opp_dist (Main.opp_dist state)
-    ; impl Protocol.opp_angle (Main.opp_angle state)
+    ; impl Protocol.dist_to_opp (Main.dist_to_opp state)
+    ; impl Protocol.angle_to_opp (Main.angle_to_opp state)
+    ; impl Protocol.angle_to_opp (Main.angle_to_opp state)
+    ; impl Protocol.dist_to_opp (Main.dist_to_opp state)
+    ; impl Protocol.angle_to_flag (Main.angle_to_flag state)
+    ; impl Protocol.dist_to_flag (Main.dist_to_flag state)
+    ; impl Protocol.get_angle (Main.get_angle state)
+    ; impl Protocol.get_opp_angle (Main.get_opp_angle state)
+    ; impl Protocol.just_fired (Main.just_fired state)
+    ; impl Protocol.laser_cooldown_left (Main.laser_cooldown_left state)
+    ; impl Protocol.just_boosted (Main.just_boosted state)
+    ; impl Protocol.boost_cooldown_left (Main.boost_cooldown_left state)
+    ; impl Protocol.looking_dist (Main.looking_dist state)
     ]
