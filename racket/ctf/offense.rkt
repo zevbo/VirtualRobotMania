@@ -9,3 +9,5 @@
 
 (define (boost)
   (bot-rpc #"boost" `()))
+
+(define looking-dist looking-dist-internal)

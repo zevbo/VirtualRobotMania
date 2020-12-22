@@ -17,8 +17,6 @@ let group () =
     ; impl Protocol.enhance_border enhance_border
     ; impl' Protocol.set_image (State.set_image state)
     ; impl Protocol.num_flags num_flags
-    ; impl Protocol.dist_to_opp (Main.dist_to_opp state)
-    ; impl Protocol.angle_to_opp (Main.angle_to_opp state)
     ; impl Protocol.angle_to_opp (Main.angle_to_opp state)
     ; impl Protocol.dist_to_opp (Main.dist_to_opp state)
     ; impl Protocol.angle_to_flag (Main.angle_to_flag state)

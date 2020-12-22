@@ -78,3 +78,7 @@
     (set! tick-num (+ tick-num 1))
     (loop))
   (loop))
+
+(define (looking-dist-internal)
+  (define x (bot-rpc #"looking-dist" #"0"))
+  (string->number (bytes->string/utf-8 x)))

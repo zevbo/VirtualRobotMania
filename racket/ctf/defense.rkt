@@ -9,3 +9,5 @@
 
 (define (shoot-laser)
   (bot-rpc #"shoot-laser" `()))
+
+(define looking-dist looking-dist-internal)
