@@ -1,10 +1,12 @@
 Welcome to a new Virtual Robotics competition! This year's competition
-is a game of capture the flag, and the game is more challenging than
-ever.
+is a game of **capture the flag**!  We hope this competition will be
+as accessible as past events, but should have some more complex
+challenges for more advanced players.
 
 # Overview
 
-The game is played between two different kinds of robots:
+Everyone is going to work in teams of two, and those teams need to
+make two different robots together:
 
 - An *offense bot*, whose goal is to capture the flag, and bring it
   back to its home base.
@@ -12,23 +14,10 @@ The game is played between two different kinds of robots:
   the flag.
 
 The defense bot has two ways of interfering with the offense bot: it
-can get in its way, and it can fire bullets at it.
+can get in the other bot's way, and it can fire (strangely
+slow-moving) lasers at it.
 
-Also, tournaments will be in teams, bughouse style!
-
-Each team consists of an offense bot and a defense bot.  Both your bot
-and your team-mate's bot will play in concurrent games.  Victories by
-your bot will provide advantages to your team-mate's bot, and
-vice-versa.  But more on that below.
-
-# Logging in
-
-For various reasons, we decided to set up a server that people could
-connect to to program their bots, rather than having to get software
-installed on everyone's box.  We'll send instructions in a separate
-email.
-
-# Robot APIs
+# Robot commands
 
 Each kind of robot (defense or offense) has its own library of
 commands.  You should make sure you have the right require at the top
@@ -40,13 +29,11 @@ choose what kind of bot you're creating.
 ;(require "../../lib/worlds/ctf/defense.rkt")
 ```
 
-Here are the APIs that you can use for each kind of bot, along with
-some documentation about the restrictions for each bot type.
+Here's an overview of the commands you have at your disposal for
+controlling your bot.  Some of the commands work for both bots, and
+some depend on the kind of bot.
 
-## Both bots
-
-A lot of the controls are shared between the two bots.  Here's the
-shared API:
+## Common commands
 
 ### set-motors
 
