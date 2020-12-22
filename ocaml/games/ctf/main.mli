@@ -1,6 +1,9 @@
 open! Core
 open! Async
 
+(** The shapes of the functions here mostly matches the protocol, except for the
+    [State.t] argument in the front. *)
+
 val init : unit -> State.t Deferred.t
 val step : State.t -> unit -> unit
 val set_motors : State.t -> Bot_name.t * (float * float) -> unit
