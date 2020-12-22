@@ -18,5 +18,5 @@
 (define (get-robot-angle) (bot-rpc-ang #"get-angle" '()))
 (define (get-opp-angle) (bot-rpc-ang #"get-opp-angle" '()))
 (define (looking-dist theta)
-  (decode-number (bot-rpc-num #"looking-dist" (/ theta degrees-over-radians))))
+  (bot-rpc-num #"looking-dist" (/ theta degrees-over-radians)))
 (define run run-internal)
