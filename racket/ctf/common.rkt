@@ -19,4 +19,6 @@
 (define (get-opp-angle) (bot-rpc-ang #"get-opp-angle" '()))
 (define (looking-dist theta)
   (bot-rpc-num #"looking-dist" (/ theta degrees-over-radians)))
+
 (define run run-internal)
+(define run-double run-double-internal)

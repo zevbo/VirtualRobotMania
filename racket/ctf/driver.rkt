@@ -58,11 +58,14 @@
       "You put an offense both in the second spot, which is reserved for defense")]
     [other (unknown-kind other)]))
 
-(define (run-internal offense defense)
+(define (startup offense defense)
   (check-offense-defense offense defense)
   (set! the-connection (launch-and-connect "ctf"))
   (set-robot-image the-connection offense)
   (set-robot-image the-connection defense)
+  the-connection)
+(define (run-internal offense defense)
+  (set! the-connection (startup offense defense))
   (define tick-num 0)
   (define (loop)
     (set! the-current-robot offense)
@@ -74,6 +77,29 @@
     (set! tick-num (+ tick-num 1))
     (loop))
   (loop))
+(define (run-double-internal off1 def1 off2 def2)
+  (check-offense-defense off1 def1)
+  (check-offense-defense off2 def2)
+  (define conn1 (startup off1 def1))
+  (define conn2 (startup off2 def2))
+  (define tick-num 0)
+  (define (loop)
+    (define (run-game c other-c off def)
+      (set! the-connection c)
+      (set! the-current-robot off)
+      ((robot-on-tick off) tick-num)
+      (set! the-current-robot def)
+      ((robot-on-tick def) tick-num)
+      (set! the-current-robot '())
+      (cond
+        [(just-killed?)
+         (printf "woah, ~s~n" tick-num)])
+      (step))
+    (run-game conn1 conn2 off1 def1)
+    (run-game conn2 conn1 off2 def2)
+    (set! tick-num (+ tick-num 1))
+    (loop))
+  (loop))
 
 (define (encode-number x)
   (string->bytes/utf-8 (number->string x)))
@@ -81,6 +107,9 @@
 (define (decode-number b)
   (string->number (bytes->string/utf-8 b)))
 
+(define (non-bot-rpc name arg)
+  (rpc the-connection
+       `(,name ,arg)))
 (define (bot-rpc name arg)
   (rpc the-connection
        `(,name (,(rpc-name the-current-robot) ,arg))))
@@ -88,8 +117,15 @@
 (define (bot-rpc-num name arg)
   (decode-number (bot-rpc name arg)))
 
-(define (bot-rpc-bool name arg)
-  (match (bytes->string/utf-8 (bot-rpc name arg))
+(define (decode-bool b) 
+  (match (bytes->string/utf-8 b)
     ["true" #t]
     ["false" #f]
     [other (error "Expected true or false" other)]))
+
+(define (bot-rpc-bool name arg)
+  (decode-bool (bot-rpc name arg)))
+
+
+(define (just-returned-flag?) (decode-bool (non-bot-rpc #"just-returned-flag" '())))
+(define (just-killed?) (decode-bool (non-bot-rpc #"just-killed" '())))

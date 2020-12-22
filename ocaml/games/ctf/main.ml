@@ -32,6 +32,7 @@ let init () =
   let offense_robot_state = Offense_bot.create () in
   let defense_robot_state = Defense_bot.create () in
   let world, offense_body_id = World.add_body world Offense_bot.body in
+  let world, offense_shield_id = World.add_body world Offense_bot.shield in
   let defense_body = Defense_bot.defense_bot () in
   let world, defense_body_id = World.add_body world defense_body in
   let world, flag_id = World.add_body world (Flag_logic.flag defense_body) in
@@ -49,6 +50,7 @@ let init () =
       { bot = defense_robot_state; id = defense_body_id }
       flag_id
       flag_protector_id
+      offense_shield_id
   in
   state.world <- world;
   let flag_img =
@@ -59,6 +61,7 @@ let init () =
       state.display
       (Ctf_consts.Flag.Protector.image_path ~root)
   in
+  state.invisible <- Set.add state.invisible state.offense_shield;
   state.images <- Map.set state.images ~key:flag_id ~data:flag_img;
   state.images
     <- Map.set state.images ~key:flag_protector_id ~data:flag_protector_img;
@@ -292,4 +295,19 @@ let enhance_border state =
          state.world
          Ctf_consts.Border.enhanced_black_list
 
+let setup_shield state =
+  state.offense_bot.bot.last_shield <- state.ts;
+  state.invisible <- Set.remove state.invisible state.offense_shield;
+  let shield = World.get_body_exn state.world state.offense_shield in
+  let shield =
+    Body.set_black_list shield Ctf_consts.Bots.Offense.Shield.on_black_list
+  in
+  state.world <- World.set_body state.world state.offense_shield shield
+
 let num_flags state = state.offense_bot.bot.num_flags
+
+let just_returned_flag state =
+  Float.O.(state.offense_bot.bot.last_flag_return = state.ts)
+
+let just_killed state =
+  Float.O.(state.offense_bot.bot.last_kill +. dt +. (dt_sim /. 2.) >= state.ts)

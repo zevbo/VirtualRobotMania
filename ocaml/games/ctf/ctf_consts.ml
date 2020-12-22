@@ -7,7 +7,7 @@ let frame_height = 500.
 
 module Border = struct
   let enhance_period = 10.
-  let energy_ret = 1.4
+  let energy_ret = 1.
   let coll_group = 0
   let black_list = [ 3 ]
   let enhanced_black_list = []
@@ -32,6 +32,17 @@ module Bots = struct
     let start_lives = 3
     let force_over_input = 650.
     let coll_group = 1
+
+    module Shield = struct
+      let width = width *. 1.4
+      let height = width
+      let material = Material.create ~energy_ret:1.4
+      let shape = Shape.create_standard_rect width height ~material
+      let coll_group = 6
+      let off_black_list = [ 0; 1; 2; 3; 4; 5 ]
+      let on_black_list = [ 0; 1; 2; 4; 5 ]
+      let time = 5.
+    end
   end
 
   module Defense = struct
@@ -80,7 +91,7 @@ module Flag = struct
 
   module Protector = struct
     let initial_defense_passing = 30.
-    let material = Material.create ~energy_ret:2.
+    let material = Material.create ~energy_ret:1.4
 
     let shape =
       Shape.create_standard_rect

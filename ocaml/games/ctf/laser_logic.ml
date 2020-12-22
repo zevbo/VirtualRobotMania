@@ -47,6 +47,7 @@ let update_one (state : State.t) id =
         Offense_bot.remove_live
           state.offense_bot.bot
           (State.get_offense_bot_body state)
+          state.ts
       in
       let world =
         { World.bodies =
