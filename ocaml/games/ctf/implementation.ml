@@ -15,6 +15,7 @@ let group () =
     ; impl Protocol.r_input (Main.r_input state)
     ; impl Protocol.set_motors (Main.set_motors state)
     ; impl Protocol.load_laser (Main.load_laser state)
+    ; impl Protocol.restock_laser (Main.restock_laser state)
     ; impl Protocol.shoot_laser (Main.shoot_laser state)
     ; impl Protocol.step (Main.step state)
     ; impl Protocol.boost (Main.boost state)

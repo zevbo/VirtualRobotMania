@@ -208,6 +208,11 @@ let shoot_laser state ((bot_name : Bot_name.t), ()) =
       Laser_logic.shoot_laser state id
     | None -> ())
 
+let restock_laser state ((_bot_name : Bot_name.t), ()) =
+  match state.defense_bot.bot.loaded_laser with
+  | Some id -> Laser_logic.restock_laser state id
+  | None -> ()
+
 let body_of (state : State.t) (bot_name : Bot_name.t) =
   let id =
     match bot_name with

@@ -4,8 +4,10 @@
 
 (define (on-tick1 tick#)
   (load-laser)
-  (cond [(= 0 (random 50))
-         (shoot-laser)])
+  (cond [(= 0 (random 150))
+         (shoot-laser)]
+        [(= 0 (random 50))
+         (restock-laser)])
   (define p 0.2)
   (define angle (angle-to-opp))
   (define output (* p angle))
