@@ -3,9 +3,13 @@ open! Async
 open! Import
 
 let run impl_group ~filename =
+  let%bind username = Unix.getlogin () in
   let () =
     Log.Global.set_output
-      [ Log.Output.file `Sexp_hum ~filename:"/tmp/game-engine.log" ]
+      [ Log.Output.file
+          `Sexp_hum
+          ~filename:(sprintf "/tmp/game-engine-%s.log" username)
+      ]
   in
   log_s [%message "Starting server" (filename : string)];
   let%bind () =
