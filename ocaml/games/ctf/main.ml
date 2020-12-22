@@ -17,13 +17,16 @@ let dt_sim = dt /. dt_sim_dt
 let speed_constant = 0.2
 
 let init () =
+  let display =
+    Display.init ~physical:frame ~logical:frame ~title:"Virtual Robotics Arena"
+  in
   let%map root =
     Process.run_exn ~prog:"git" ~args:[ "rev-parse"; "--show-toplevel" ] ()
     >>| String.strip
   in
   let world = World.empty in
   let world =
-    List.fold Bodies.border ~init:world ~f:(fun world border_edge ->
+    List.fold Border.border ~init:world ~f:(fun world border_edge ->
         fst (World.add_body world border_edge))
   in
   let offense_robot_state = Offense_bot.create () in
@@ -41,10 +44,7 @@ let init () =
     State.create
       world
       (Map.empty (module World.Id))
-      (Display.init
-         ~physical:frame
-         ~logical:frame
-         ~title:"Virtual Robotics Arena")
+      display
       { bot = offense_robot_state; id = offense_body_id }
       { bot = defense_robot_state; id = defense_body_id }
       flag_id
@@ -98,6 +98,19 @@ let step state =
     state.end_line
     ~center:(Vec.create Ctf_consts.End_line.x 0.)
     ~angle:0.;
+  for num_flag = 0 to state.offense_bot.bot.num_flags - 1 do
+    Display.draw_image_wh
+      state.display
+      ~w:Ctf_consts.Flag.width
+      ~h:Ctf_consts.Flag.height
+      (Map.find_exn state.images state.flag)
+      ~center:
+        (Vec.create
+           Ctf_consts.Flag.display_x
+           (Ctf_consts.Flag.max_y
+           -. (Float.of_int num_flag *. Ctf_consts.Flag.display_y_diff)))
+      ~angle:0.
+  done;
   Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
       Option.iter (Map.find state.images id) ~f:(fun image ->
           if not (Set.mem state.invisible id)
@@ -169,6 +182,23 @@ let shoot_laser state =
     state.lasers <- Set.add state.lasers laser_id;
     Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts)
 
+let origin_and_target (state : State.t) =
+  let origin, target =
+    if state.on_offense_bot
+    then state.offense_bot.id, state.defense_bot.id
+    else state.defense_bot.id, state.offense_bot.id
+  in
+  let body id = Map.find_exn state.world.bodies id in
+  body origin, body target
+
+let opp_angle state =
+  let o, t = origin_and_target state in
+  Geo.Vec.angle_of (Geo.Vec.sub t.pos o.pos)
+
+let opp_dist state =
+  let o, t = origin_and_target state in
+  Geo.Vec.mag (Geo.Vec.sub t.pos o.pos)
+
 let boost state =
   if state.on_offense_bot
      && usable
@@ -176,3 +206,12 @@ let boost state =
           state.offense_bot.bot.last_boost
           Ctf_consts.Bots.Offense.boost_cooldown
   then state.offense_bot.bot.last_boost <- state.ts
+
+let enhance_border state =
+  state.last_wall_enhance <- state.ts;
+  state.world
+    <- Border.set_border_black_list
+         state.world
+         Ctf_consts.Border.enhanced_black_list
+
+let num_flags state = state.offense_bot.bot.num_flags

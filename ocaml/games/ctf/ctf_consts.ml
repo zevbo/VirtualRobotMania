@@ -6,8 +6,11 @@ let frame_width = 800.
 let frame_height = 500.
 
 module Border = struct
+  let enhance_period = 10.
   let energy_ret = 1.4
   let coll_group = 0
+  let black_list = [ 3 ]
+  let enhanced_black_list = []
 end
 
 module Bots = struct
@@ -44,11 +47,12 @@ module Laser = struct
   let width = 5.
   let color = Color.red
   let coll_group = 3
-  let black_list = [ 0; 1; 2; 3; 4 ]
+  let black_list = [ 1; 2; 3; 4 ]
   let material = Material.create ~energy_ret:2.
   let shape = Shape.create_standard_rect length width ~material
   let v = 1000.
   let cooldown = 1.
+  let wall_enhance_period = 10.
 end
 
 module Flag = struct
@@ -60,6 +64,9 @@ module Flag = struct
   let min_x = 100.
   let max_x = (frame_width /. 2.) -. width
   let m = Float.infinity
+  let top_display_x = (frame_height /. 2.) -. 80.
+  let display_y_diff = height *. 1.5
+  let display_x = (70. /. 2.) -. (frame_width /. 2.)
 
   let shape =
     Shape.create_standard_rect

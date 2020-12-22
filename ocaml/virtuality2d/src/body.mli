@@ -79,6 +79,9 @@ val exert_pure_torque : t -> float -> t
 val apply_all_forces : ?reset_forces:bool -> t -> float -> t
 val get_edges_w_global_pos : t -> Edge.t list
 val get_v_pt : t -> Vec.t -> Vec.t
+val add_to_black_list : t -> int -> t
+val remove_from_black_list : t -> int -> t
+val set_black_list : t -> int list -> t
 
 type intersection =
   { pt : Vec.t

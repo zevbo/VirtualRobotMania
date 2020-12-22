@@ -2,7 +2,9 @@
 (require 2htdp/image)
 (require "engine-connect.rkt")
 
+(println "whatever")
 (define c (launch-and-connect "test"))
+(println "started")
 
 (define (set-robot-image i image)
   (define file (make-temporary-file "image-~a.png"))
@@ -11,7 +13,7 @@
   (rpc c `(#"load-bot-image"
            (,(string->bytes/latin-1 (~v i))
             ,(path->bytes file))))
-  #;(delete-file file))
+  (delete-file file))
 
 (define (rand-color)
   (color (random 0 256) (random 0 256) (random 0 256) (random 0 256)))

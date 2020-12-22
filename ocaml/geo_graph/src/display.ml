@@ -111,7 +111,15 @@ let _sdl_to_math t { Vec.x; y } =
 let radians_to_degrees x = x *. 180. /. Float.pi
 let _degrees_to_radians x = x *. Float.pi /. 180.
 
-let draw_image_wh t ~w ~h (img : Image.t) ~(center : Vec.t) ~angle:theta =
+let draw_image_wh
+    t
+    ~w
+    ~h
+    ?(alpha = 255)
+    (img : Image.t)
+    ~(center : Vec.t)
+    ~angle:theta
+  =
   let open Float.O in
   let dst =
     let corner =
@@ -122,6 +130,7 @@ let draw_image_wh t ~w ~h (img : Image.t) ~(center : Vec.t) ~angle:theta =
     let round = Float.iround_nearest_exn in
     Sdl.Rect.create ~x:(round x) ~y:(round y) ~w:(round w) ~h:(round h)
   in
+  ok_exn @@ Sdl.set_texture_alpha_mod img.texture alpha;
   Sdl.render_copy_ex
     ~dst
     t.renderer
@@ -131,14 +140,14 @@ let draw_image_wh t ~w ~h (img : Image.t) ~(center : Vec.t) ~angle:theta =
     Sdl.Flip.none
   |> ok_exn
 
-let draw_image t ?(scale = 1.0) (img : Image.t) ~center ~angle =
+let draw_image t ?(scale = 1.0) ?alpha (img : Image.t) ~center ~angle =
   let open Float.O in
   let w, h =
     let w, h = img.size in
     let adj x = Float.of_int x * scale in
     adj w, adj h
   in
-  draw_image_wh t ~w ~h img ~center ~angle
+  draw_image_wh t ?alpha ~w ~h img ~center ~angle
 
 let draw_line t ~width v1 v2 color =
   let round = Float.iround_nearest_exn in

@@ -41,3 +41,5 @@ let opp_distance =
   Call.create "opp-distance" (module With_bot (Unit)) (module Float)
 
 let opp_shot = Call.create "opp-shot?" (module With_bot (Unit)) (module Bool)
+let enhance_border = Call.create "enhance-border" (module Unit) (module Unit)
+let num_flags = Call.create "num-flags" (module Unit) (module Int)
