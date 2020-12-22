@@ -23,6 +23,7 @@ let shoot_laser =
 
 let boost = Call.create "boost" (module With_bot (Unit)) (module Unit)
 let enhance_border = Call.create "enhance-border" (module Unit) (module Unit)
+let setup_shield = Call.create "setup-shield" (module Unit) (module Unit)
 let num_flags = Call.create "num-flags" (module Unit) (module Int)
 
 let angle_to_opp =

@@ -4,6 +4,7 @@ open! Async
 let group () =
   let%map state = Main.init () in
   let enhance_border () = Main.enhance_border state in
+  let setup_shield () = Main.setup_shield state in
   let num_flags () = Main.num_flags state in
   let impl = Csexp_rpc.Implementation.create in
   let impl' = Csexp_rpc.Implementation.create' in
@@ -15,6 +16,7 @@ let group () =
     ; impl Protocol.step (Main.step state)
     ; impl Protocol.boost (Main.boost state)
     ; impl Protocol.enhance_border enhance_border
+    ; impl Protocol.setup_shield setup_shield
     ; impl' Protocol.set_image (State.set_image state)
     ; impl Protocol.num_flags num_flags
     ; impl Protocol.dist_to_opp (Main.dist_to_opp state)
