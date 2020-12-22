@@ -4,7 +4,8 @@ open Geo
 open Ctf_consts.Flag
 
 let rec get_random_pos (defense_bot : Body.t) =
-  let y = Random.float_range (-.max_y) max_y in
+  let y = min_y +. Random.float_range 0. (max_y -. min_y) in
+  let y = if Random.bool () then y else -.y in
   let x = Random.float_range min_x max_x in
   let pos = Vec.create x y in
   if Float.O.(

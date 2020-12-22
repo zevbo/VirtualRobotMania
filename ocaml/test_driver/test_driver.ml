@@ -75,13 +75,13 @@ let play_ctf client =
   let maybe p then_ else_ =
     if Float.O.(Random.float 1. < p) then force then_ else force else_
   in
-  let%bind () = dispatch Protocol.set_motors (Defense, (0., 0.)) in
+  let%bind () = dispatch Protocol.set_motors (Defense, (1., 0.8)) in
   let%bind () = dispatch Protocol.set_motors (Offense, (0.95, 1.)) in
   let rec loop () =
     let%bind () = dispatch Protocol.step () in
     let%bind () =
       maybe
-        0.
+        0.05
         (lazy (dispatch Protocol.shoot_laser (Defense, ())))
         (lazy Deferred.unit)
     in
