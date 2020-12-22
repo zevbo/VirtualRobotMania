@@ -82,6 +82,8 @@
 (define (encode-number x)
   (string->bytes/utf-8 (number->string x)))
 
+(define (decode-number b)
+  (string->number (bytes->string/utf-8 b)))
+
 (define (looking-dist-internal theta)
-  (define x (bot-rpc #"looking-dist" (encode-number theta)))
-  (string->number (bytes->string/utf-8 x)))
+  (decode-number (bot-rpc #"looking-dist" (encode-number theta))))
