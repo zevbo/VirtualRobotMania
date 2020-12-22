@@ -67,26 +67,26 @@ let play_ctf client =
   let module Protocol = Ctf.Protocol in
   let dispatch x = Client.dispatch client x in
   let%bind () =
-    dispatch Protocol.set_defense_image "../images/test-robot.JPEG"
+    dispatch Protocol.set_image (Defense, "../images/test-robot.JPEG")
   in
   let%bind () =
-    dispatch Protocol.set_offense_image "../images/test-robot.JPEG"
+    dispatch Protocol.set_image (Offense, "../images/test-robot.JPEG")
   in
   let maybe p then_ else_ =
     if Float.O.(Random.float 1. < p) then force then_ else force else_
   in
-  let%bind () = dispatch Protocol.use_defense_bot () in
-  let%bind () = dispatch Protocol.set_motors (0., 0.) in
-  let%bind () = dispatch Protocol.use_offense_bot () in
-  let%bind () = dispatch Protocol.set_motors (0.95, 1.) in
+  let%bind () = dispatch Protocol.set_motors (Defense, (0., 0.)) in
+  let%bind () = dispatch Protocol.set_motors (Offense, (0.95, 1.)) in
   let rec loop () =
-    let%bind () = dispatch Protocol.use_defense_bot () in
     let%bind () = dispatch Protocol.step () in
     let%bind () =
-      maybe 0. (lazy (dispatch Protocol.shoot_laser ())) (lazy Deferred.unit)
+      maybe
+        0.
+        (lazy (dispatch Protocol.shoot_laser (Defense, ())))
+        (lazy Deferred.unit)
     in
-    let%bind l_input = dispatch Protocol.l_input () in
-    let%bind r_input = dispatch Protocol.r_input () in
+    let%bind l_input = dispatch Protocol.l_input (Defense, ()) in
+    let%bind r_input = dispatch Protocol.r_input (Defense, ()) in
     let maybe_adjust x =
       let move_by = 0.05 in
       maybe
@@ -96,9 +96,8 @@ let play_ctf client =
     in
     let l_input = maybe_adjust l_input in
     let r_input = maybe_adjust r_input in
-    let%bind () = dispatch Protocol.set_motors (l_input, r_input) in
-    let%bind () = dispatch Protocol.use_offense_bot () in
-    let%bind () = dispatch Protocol.boost () in
+    let%bind () = dispatch Protocol.set_motors (Defense, (l_input, r_input)) in
+    let%bind () = dispatch Protocol.boost (Offense, ()) in
     loop ()
   in
   loop ()

@@ -21,7 +21,6 @@ type t =
   ; flag : World.Id.t
   ; flag_protector : World.Id.t
   ; mutable ts : float
-  ; mutable on_offense_bot : bool
   ; laser : Display.Image.t
   ; end_line : Display.Image.t
   ; mutable last_wall_enhance : float
@@ -38,7 +37,6 @@ val create
   -> t
 
 val set_world : t -> World.t -> unit
-val load_offense_image : t -> string -> unit Async.Deferred.t
-val load_defense_image : t -> string -> unit Async.Deferred.t
+val set_image : t -> Bot_name.t * string -> unit Async.Deferred.t
 val get_offense_bot_body : t -> Body.t
 val get_defense_bot_body : t -> Body.t
