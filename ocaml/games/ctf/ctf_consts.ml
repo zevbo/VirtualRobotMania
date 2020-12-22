@@ -14,8 +14,8 @@ module Border = struct
 end
 
 module Bots = struct
-  let width = 75.
-  let height = 50.
+  let width = 90.
+  let height = 60.
   let material = Material.create ~energy_ret:1.
   let mass = 1.
   let start_angle = 0.0

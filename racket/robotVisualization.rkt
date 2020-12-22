@@ -4,7 +4,7 @@
          ROBOT_WIDTH ROBOT_LENGTH
          OPTIONAL_DEFAULT)
 
-(define ROBOT_WIDTH 50.0)
+(define ROBOT_WIDTH 200.0)
 
 (define (rounded-rectangle width height pen-type color rounded-radius)
   (define (add-edge body st-bot? st-right?)
@@ -57,7 +57,7 @@
 (define MAX_IMAGE_HEIGHT (* ROBOT_LENGTH 0.65))
 (define NAME_PLACEMENT 0.6) ;; percentage up from center
 (define NAME_FONT_SIZE (floor (/ ROBOT_WIDTH 8.0)))
-(define DEFAULT_NAME_FONT "modern")
+(define DEFAULT_NAME_FONT "system")
 (define DEFAULT_NAME_COLOR "black")
 (define DEFAULT_NAME_STYLE 'normal)
 (define MAX_NAME_WIDTH (* ROBOT_WIDTH .85))

@@ -1,13 +1,11 @@
 #lang racket
 (require "driver.rkt")
-(provide (all-defined-out))
+(require "common.rkt")
+(provide (all-defined-out)
+         (all-from-out "common.rkt"))
 
 (define make-robot (make-make-robot 'defense))
 
-(define (set-motors l r)
-  (bot-rpc #"set-motors" `(,l , r)))
-
-(define (shoot-laser)
-  (bot-rpc #"shoot-laser" `()))
-
-(define looking-dist looking-dist-internal)
+(define (shoot-laser) (bot-rpc #"shoot-laser" `()))
+(define (laser-cooldown-left) (bot-rpc-num #"laser-cooldown-left" `()))
+(define (opp-just-boosted?) (bot-rpc-bool #"just-boosted" `()))

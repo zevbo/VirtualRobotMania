@@ -14,7 +14,7 @@
            #:name-font   [name-font  OPTIONAL_DEFAULT]
            #:name-style  [name-style OPTIONAL_DEFAULT]
            #:body-color  [body-color  'blue]
-           #:wheel-color [wheel-color 'red])
+           #:wheel-color [wheel-color 'black])
     (define image
       (create-robot-img
        body-color wheel-color name
@@ -43,10 +43,6 @@
 (define the-connection '())
 
 (define (step) (rpc the-connection `(#"step" ())))
-
-(define (bot-rpc name arg)
-  (rpc the-connection
-       `(,name (,(rpc-name the-current-robot) ,arg))))
 
 (define (check-offense-defense offense defense)
   (match (robot-kind offense)
@@ -82,8 +78,10 @@
 (define (encode-number x)
   (string->bytes/utf-8 (number->string x)))
 
-(define (decode-number b)
-  (string->number (bytes->string/utf-8 b)))
-
-(define (looking-dist-internal theta)
-  (decode-number (bot-rpc #"looking-dist" (encode-number theta))))
+(define (bot-rpc name arg)
+  (bytes->string/utf-8 (rpc the-connection
+       `(,name (,(rpc-name the-current-robot) ,arg)))))
+(define (bot-rpc-num name arg)
+  (string->number (bot-rpc name arg)))
+(define (bot-rpc-bool name arg)
+  (equal? (string-ref (bot-rpc name arg) 0) "t"))
