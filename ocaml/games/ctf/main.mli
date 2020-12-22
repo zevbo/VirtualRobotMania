@@ -21,6 +21,7 @@ val num_flags : State.t -> int
 val set_motors : (float * float, unit) bot_func
 val l_input : (unit, float) bot_func
 val r_input : (unit, float) bot_func
+val load_laser : (unit, unit) bot_func
 val shoot_laser : (unit, unit) bot_func
 val boost : (unit, unit) bot_func
 

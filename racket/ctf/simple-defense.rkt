@@ -1,8 +1,19 @@
 #lang racket
 (require "defense.rkt")
-(provide my-robot)
+(provide def1 def2)
 
-(define (on-tick tick#)
-  (void))
+(define (on-tick1 tick#)
+  (shoot-laser)
+  (define p 0.2)
+  (define angle (angle-to-opp))
+  (define output (* p angle))
+  (set-motors (- 1 output) (+ 1 output)))
+(define (on-tick2 tick#)
+  (shoot-laser)
+  (define p 0.5)
+  (define angle (angle-to-opp))
+  (define output (* p angle))
+  (set-motors (- 1 output) (+ 1 output)))
 
-(define my-robot (make-robot "Cashu 2.0" on-tick))
+(define def1 (make-robot "Cashu 2.0" on-tick1))
+(define def2 (make-robot "Stringer Little" on-tick2))

@@ -8,7 +8,7 @@ let laser ~(bot : Body.t) =
   let half_length = Vec.create (Ctf_consts.Bots.width /. 2.) 0. in
   let pos = Vec.add bot.pos (Vec.rotate half_length bot.angle) in
   let angle = bot.angle in
-  let v = Vec.scale (Vec.unit_vec angle) Ctf_consts.Laser.v in
+  let v = Vec.origin in
   let m = 0.01 in
   Body.create
     ~pos
@@ -20,7 +20,21 @@ let laser ~(bot : Body.t) =
     ~black_list:Ctf_consts.Laser.black_list
     Ctf_consts.Laser.shape
 
-let update_one (state : State.t) id =
+let power_of ts (laser : State.Laser.t) =
+  1 + Int.of_float ((ts -. laser.loaded_ts) /. Ctf_consts.Laser.next_level_time)
+
+let shoot_laser (state : State.t) (laser_id : World.Id.t) =
+  let laser = World.get_body_exn state.world laser_id in
+  let v =
+    Vec.scale
+      (Vec.unit_vec (State.get_defense_bot_body state).angle)
+      Ctf_consts.Laser.v
+  in
+  let world = World.set_body state.world laser_id { laser with v } in
+  (Map.find_exn state.lasers laser_id).loaded <- false;
+  state.world <- world
+
+let update_moving (state : State.t) id =
   let laser = Map.find_exn state.world.bodies id in
   if Float.O.(
        Float.abs laser.pos.x -. (Ctf_consts.Laser.length /. 2.)
@@ -65,9 +79,28 @@ let update_one (state : State.t) id =
       let new_bodies = Map.set state.world.bodies ~key:id ~data:new_laser in
       { World.bodies = new_bodies }))
 
+let update_loaded (state : State.t) id =
+  let laser = World.get_body_exn state.world id in
+  let bot = State.get_defense_bot_body state in
+  let half_length = Vec.create (Ctf_consts.Bots.width /. 2.) 0. in
+  let pos =
+    Vec.add bot.pos (Vec.scale (Vec.rotate half_length bot.angle) 0.5)
+  in
+  let laser = { laser with angle = bot.angle; pos } in
+  let t = Map.find_exn state.lasers id in
+  t.power <- power_of state.ts t;
+  let image = List.nth_exn state.laser t.power in
+  state.images <- Map.set state.images ~key:id ~data:image;
+  World.set_body state.world id laser
+
+let update_one (state : State.t) id =
+  (if (Map.find_exn state.lasers id).loaded
+  then update_loaded
+  else update_moving)
+    state
+    id
+
 let update (state : State.t) =
-  Set.iter state.lasers ~f:(fun id -> state.world <- update_one state id);
-  state.lasers
-    <- Set.inter
-         state.lasers
-         (Set.of_list (module World.Id) (Map.keys state.world.bodies))
+  List.iter (Map.to_alist state.lasers) ~f:(fun (id, _laser_state) ->
+      state.world <- update_one state id);
+  state.lasers <- Map.filter_keys state.lasers ~f:(Map.mem state.world.bodies)

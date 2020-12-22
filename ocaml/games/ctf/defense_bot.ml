@@ -3,12 +3,14 @@ open Common
 
 type t =
   { mutable last_fire_ts : float
+  ; mutable loaded_laser : World.Id.t option
   ; mutable l_input : float
   ; mutable r_input : float
   }
 [@@deriving fields]
 
-let create () = { last_fire_ts = 0.; l_input = 0.; r_input = 0. }
+let create () =
+  { last_fire_ts = 0.; l_input = 0.; r_input = 0.; loaded_laser = None }
 
 let defense_bot () =
   Body.create

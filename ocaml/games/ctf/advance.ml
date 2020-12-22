@@ -1,24 +1,6 @@
 open! Core_kernel
 open Virtuality2d
 
-let bot_collision (state : State.t) =
-  let bot_collisions =
-    Body.intersections
-      ~allow_blacklist:true
-      (State.get_defense_bot_body state)
-      (State.get_offense_bot_body state)
-  in
-  if not (List.is_empty bot_collisions)
-  then (
-    let offense_bot =
-      Offense_bot.remove_live
-        state.offense_bot.bot
-        ~num_lives:Ctf_consts.Bots.Offense.start_lives
-        (State.get_offense_bot_body state)
-        state.ts
-    in
-    state.world <- World.set_body state.world state.offense_bot.id offense_bot)
-
 let check_wall_enhance (state : State.t) =
   if Float.O.(
        state.last_wall_enhance +. Ctf_consts.Border.enhance_period < state.ts)
@@ -59,7 +41,6 @@ let run (state : State.t) ~dt =
       Offense_bot.update_shield (State.get_offense_bot_body state) body);
   check_wall_enhance state;
   check_shield state;
-  bot_collision state;
   Flag_logic.update state;
   Laser_logic.update state;
   state.world <- World.advance state.world ~dt
