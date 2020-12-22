@@ -2,9 +2,10 @@
 (require "driver.rkt")
 (provide (all-defined-out))
 
-(define degrees_over_radians (/ 180 pi))
+(define degrees-over-radians 1)
+;(define degrees-over-radians (/ 180 pi))
 (define (bot-rpc-ang msg args)
-  (* degrees_over_radians (bot-rpc-num msg args)))
+  (* degrees-over-radians (bot-rpc-num msg args)))
 
 (define (set-motors l r)
   (bot-rpc #"set-motors" `(,l ,r)))
@@ -17,5 +18,5 @@
 (define (get-robot-angle) (bot-rpc-ang #"get-angle" '()))
 (define (get-opp-angle) (bot-rpc-ang #"get-opp-angle" '()))
 (define (looking-dist theta)
-  (bot-rpc-num #"looking-dist" (encode-number (/ theta degrees_over_radians))))
+  (decode-number (bot-rpc-num #"looking-dist" (/ theta degrees-over-radians))))
 (define run run-internal)
