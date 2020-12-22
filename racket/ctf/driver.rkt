@@ -44,6 +44,10 @@
 
 (define (step) (rpc the-connection `(#"step" ())))
 
+(define (bot-rpc name arg)
+  (rpc the-connection
+       `(,name (,(rpc-name the-current-robot) ,arg))))
+
 (define (check-offense-defense offense defense)
   (match (robot-kind offense)
     ['offense '()]
@@ -78,9 +82,6 @@
 (define (encode-number x)
   (string->bytes/utf-8 (number->string x)))
 
-(define (bot-rpc name arg)
-  (bytes->string/utf-8 (rpc the-connection
-       `(,name (,(rpc-name the-current-robot) ,arg)))))
 (define (bot-rpc-num name arg)
   (string->number (bot-rpc name arg)))
 (define (bot-rpc-bool name arg)
