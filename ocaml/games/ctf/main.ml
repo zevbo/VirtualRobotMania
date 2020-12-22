@@ -230,10 +230,10 @@ let dist_to_flag state ((bot_name : Bot_name.t), ()) =
   dist_to state bot_name (Map.find_exn state.world.bodies state.flag).pos
 
 let get_angle state ((bot_name : Bot_name.t), ()) =
-  (body_of state bot_name).angle
+  Vec.normalize_angle (body_of state bot_name).angle
 
 let get_opp_angle state ((bot_name : Bot_name.t), ()) =
-  (opp_of state bot_name).angle
+  Vec.normalize_angle (opp_of state bot_name).angle
 
 let ts_to_ticks ts = Int.of_float (ts *. speed_constant *. dt_sim)
 
