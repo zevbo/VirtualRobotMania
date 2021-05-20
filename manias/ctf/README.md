@@ -91,11 +91,22 @@ next obstacle, be it a wall, a robot or a laser!
 
 Here are the defense-bot-only calls.
 
-### shoot-laser
+### `shoot-laser`
 
-This one is easy! `(shoot-laser)` fires a bullet in the direction your car
-is pointed.  But you can't do it too often! You can only shoot every
-50 ticks!
+`(shoot-laser)` fires a bullet in the direction your car is pointed.
+But you can't do it too often! Note that you can't always shoot a
+laser. That's what the next command is for.
+
+### `laser-cooldown-left`
+
+`(laser-cooldown-left)` tells you how many ticks need to elapse until
+you can fire your laser again.
+
+### `(opp-just-boosted?)`
+
+This lets you tell if your opponent has just called `(boost)`!  See
+the offense bot section above to see what boost does!
+
 
 ## Offense bot
 
