@@ -8,12 +8,24 @@ type 'a with_id =
   ; id : World.Id.t
   }
 
+module Laser : sig
+  type t =
+    { mutable power : int
+    ; mutable loaded : bool
+    ; mutable loaded_ts : float
+    }
+
+  val create : float -> t
+end
+
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
+        (** The last time step was called. Used to make sure that the step can
+            be elongated to match a single animation frame *)
   ; mutable images : Display.Image.t Map.M(World.Id).t
   ; mutable invisible : Set.M(World.Id).t
-  ; mutable lasers : Set.M(World.Id).t
+  ; mutable lasers : Laser.t Map.M(World.Id).t
   ; event : Sdl.event
   ; display : Display.t
   ; offense_bot : Offense_bot.t with_id
@@ -21,7 +33,7 @@ type t =
   ; flag : World.Id.t
   ; flag_protector : World.Id.t
   ; mutable ts : float
-  ; laser : Display.Image.t
+  ; laser : Display.Image.t list
   ; end_line : Display.Image.t
   ; offense_shield : World.Id.t
   ; mutable last_wall_enhance : float

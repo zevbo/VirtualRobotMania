@@ -61,3 +61,8 @@ let boost_cooldown_left =
 
 let looking_dist =
   Call.create "looking-dist" (module With_bot (Float)) (module Float)
+
+let load_laser = Call.create "load-laser" (module With_bot (Unit)) (module Unit)
+
+let restock_laser =
+  Call.create "restock-laser" (module With_bot (Unit)) (module Unit)

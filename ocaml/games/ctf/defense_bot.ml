@@ -3,12 +3,14 @@ open Common
 
 type t =
   { mutable last_fire_ts : float
+  ; mutable loaded_laser : World.Id.t option
   ; mutable l_input : float
   ; mutable r_input : float
   }
 [@@deriving fields]
 
-let create () = { last_fire_ts = 0.; l_input = 0.; r_input = 0. }
+let create () =
+  { last_fire_ts = 0.; l_input = 0.; r_input = 0.; loaded_laser = None }
 
 let defense_bot () =
   Body.create
@@ -19,7 +21,8 @@ let defense_bot () =
     ~black_list:Ctf_consts.Bots.Defense.black_list
     Ctf_consts.Bots.shape
 
-let update (defense_bot : t) ~dt body =
+let update (t : t) ~dt body =
+  let stalled = Option.is_some t.loaded_laser in
   Set_motors.apply_motor_force
     body
     ~dt
@@ -27,5 +30,5 @@ let update (defense_bot : t) ~dt body =
     ~force_over_input:Ctf_consts.Bots.Defense.force_over_input
     ~air_resistance_c:Ctf_consts.Bots.air_resistance_c
     ~side_fric_k:Ctf_consts.Bots.side_fric_k
-    defense_bot.l_input
-    defense_bot.r_input
+    (if stalled then 0. else t.l_input)
+    (if stalled then 0. else t.r_input)

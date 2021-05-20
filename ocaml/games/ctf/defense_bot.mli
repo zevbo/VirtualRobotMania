@@ -1,7 +1,8 @@
 open Virtuality2d
 
-type t = private
+type t =
   { mutable last_fire_ts : float
+  ; mutable loaded_laser : World.Id.t option
   ; mutable l_input : float
   ; mutable r_input : float
   }
