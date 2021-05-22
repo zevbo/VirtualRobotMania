@@ -1,6 +1,6 @@
 #lang racket
 (require "../../racket/ctf/offense.rkt")
-(provide (all-defined-out))
+(provide offense-bot)
 
 (degrees-mode)
 ;; uncomment the next line and comment out the above line if you want

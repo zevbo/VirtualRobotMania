@@ -1,6 +1,6 @@
 #lang racket
 (require "../../racket/ctf/defense.rkt")
-(provide (all-defined-out))
+(provide defense-bot)
 
 (degrees-mode)
 ;; uncomment the next line and comment out the above line if you want
