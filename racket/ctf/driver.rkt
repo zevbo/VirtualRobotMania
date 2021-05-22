@@ -93,7 +93,7 @@
       ((robot-on-tick def) tick-num)
       (set! the-current-robot '())
       (cond
-        [(just-killed?) 
+        [(just-killed?)
          (set! the-connection other-c)
          (setup-shield)]
         [(set! the-connection other-c)
@@ -125,7 +125,7 @@
 (define (bot-rpc-num name arg)
   (decode-number (bot-rpc name arg)))
 
-(define (decode-bool b) 
+(define (decode-bool b)
   (match (bytes->string/utf-8 b)
     ["true" #t]
     ["false" #f]
@@ -134,8 +134,20 @@
 (define (bot-rpc-bool name arg)
   (decode-bool (bot-rpc name arg)))
 
+(define (just-returned-flag?)
+  (decode-bool (non-bot-rpc #"just-returned-flag" '())))
+(define (just-killed?)
+  (decode-bool (non-bot-rpc #"just-killed" '())))
+(define (enhance-border)
+  (non-bot-rpc #"enhance-border" '()))
+(define (setup-shield)
+  (non-bot-rpc #"setup-shield" '()))
 
-(define (just-returned-flag?) (decode-bool (non-bot-rpc #"just-returned-flag" '())))
-(define (just-killed?) (decode-bool (non-bot-rpc #"just-killed" '())))
-(define (enhance-border) (non-bot-rpc #"enhance-border" '()))
-(define (setup-shield) (non-bot-rpc #"setup-shield" '()))
+(define degrees-over-radians (/ 180 pi))
+(define x-over-radians degrees-over-radians)
+
+(define (of-radians rad) (* rad x-over-radians))
+(define (to-radians theta) (/ theta x-over-radians))
+
+(define (degrees-mode-internal) (set! x-over-radians degrees-over-radians))
+(define (radians-mode-internal) (set! x-over-radians 1))
