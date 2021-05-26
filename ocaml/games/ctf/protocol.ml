@@ -6,16 +6,17 @@ module With_bot (M : Sexpable) = struct
 end
 
 let step = Call.create "step" (module Unit) (module Unit)
+
 let set_image = Call.create "set-image" (module With_bot (String)) (module Unit)
 
 let set_motors =
   let module Query = struct
     type t = float * float [@@deriving sexp]
-  end
-  in
+  end in
   Call.create "set-motors" (module With_bot (Query)) (module Unit)
 
 let l_input = Call.create "l-input" (module With_bot (Unit)) (module Float)
+
 let r_input = Call.create "r-input" (module With_bot (Unit)) (module Float)
 
 let shoot_laser =
@@ -27,9 +28,15 @@ let just_returned_flag =
   Call.create "just-returned-flag" (module Unit) (module Bool)
 
 let just_killed = Call.create "just-killed" (module Unit) (module Bool)
+
 let enhance_border = Call.create "enhance-border" (module Unit) (module Unit)
+
 let setup_shield = Call.create "setup-shield" (module Unit) (module Unit)
+
 let num_flags = Call.create "num-flags" (module Unit) (module Int)
+
+let offense_has_flag =
+  Call.create "offense-has-flag" (module With_bot (Unit)) (module Bool)
 
 let angle_to_opp =
   Call.create "angle-to-opp" (module With_bot (Unit)) (module Float)

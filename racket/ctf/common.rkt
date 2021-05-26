@@ -2,8 +2,7 @@
 (require "driver.rkt")
 (provide (all-defined-out))
 
-(define degrees-over-radians 1)
-;(define degrees-over-radians (/ 180 pi))
+(define degrees-over-radians (/ 180 pi))
 (define (bot-rpc-ang msg args)
   (* degrees-over-radians (bot-rpc-num msg args)))
 
@@ -19,6 +18,13 @@
 (define (get-opp-angle) (bot-rpc-ang #"get-opp-angle" '()))
 (define (looking-dist theta)
   (bot-rpc-num #"looking-dist" (/ theta degrees-over-radians)))
+(define (offense-has-flag?) (bot-rpc-bool #"offense-has-flag" '()))
+
+(define (normalize-angle angle)
+  (define floored (inexact->exact (floor angle)))
+  (+ (- angle floored) (- (modulo (+ floored 180) 360) 180)))
 
 (define run run-internal)
 (define run-double run-double-internal)
+
+

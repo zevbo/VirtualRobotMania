@@ -3,11 +3,9 @@ open Virtuality2d
 open Core_kernel
 
 let border =
-  Border.generate_border
-    ~energy_ret:Ctf_consts.Border.energy_ret
+  Border.generate_border ~energy_ret:Ctf_consts.Border.energy_ret
     ~collision_group:Ctf_consts.Border.coll_group
-    ~black_list:Ctf_consts.Border.black_list
-    Ctf_consts.frame_width
+    ~black_list:Ctf_consts.Border.black_list Ctf_consts.frame_width
     Ctf_consts.frame_height
 
 let border_of_world (world : World.t) =
