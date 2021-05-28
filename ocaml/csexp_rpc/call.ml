@@ -1,4 +1,4 @@
-open! Core
+open! Core_kernel
 
 type 'a sexpable = (module Sexpable with type t = 'a)
 

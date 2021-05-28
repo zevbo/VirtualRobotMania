@@ -20,8 +20,13 @@ let rec connect_aggressively ~filename =
 
 let dispatch t (type a b) (call : (a, b) Call.t) (query : a) =
   let (module Query) = call.query in
-  Async_csexp.write t.w (List [ Atom call.name; Query.sexp_of_t query ]);
+  Async_csexp.write
+    ~write:(Writer.write_bytes t.w)
+    (List [ Atom call.name; Query.sexp_of_t query ]);
   let (module Resp) = call.response in
-  Async_csexp.read ~context:call.name t.r Resp.t_of_sexp
+  Async_csexp.read
+    ~context:call.name
+    ~really_read:(fun bytes -> Reader.really_read t.r bytes)
+    Resp.t_of_sexp
 
 let close t = Deferred.all_unit [ Reader.close t.r; Writer.close t.w ]

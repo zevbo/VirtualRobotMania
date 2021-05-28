@@ -32,13 +32,16 @@ let run impl_group ~filename =
           else (
             let%bind sexp =
               let context = "server " ^ Socket.Address.Unix.to_string addr in
-              Async_csexp.read ~context r Fn.id
+              Async_csexp.read
+                ~context
+                ~really_read:(fun bytes -> Reader.really_read r bytes)
+                Fn.id
             in
             log_s [%message "received query" (sexp : Sexp.t)];
             let%bind response =
               Implementation.Group.handle_query impl_group sexp
             in
-            Async_csexp.write w response;
+            Async_csexp.write ~write:(Writer.write_bytes w) response;
             log_s [%message "wrote resp" (response : Sexp.t)];
             loop ())
         in

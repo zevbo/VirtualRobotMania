@@ -1,4 +1,4 @@
-open! Core
+open! Core_kernel
 module Csexp = Csexp.Make (Sexp)
 
 let%expect_test _ =
