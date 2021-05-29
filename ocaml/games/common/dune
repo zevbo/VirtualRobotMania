@@ -1,6 +1,7 @@
 (library
  (name common)
- (inline_tests (modes best js))
+ (inline_tests
+  (modes best js))
  (libraries core_kernel geo virtuality2d)
  (preprocess
   (pps ppx_jane)))
