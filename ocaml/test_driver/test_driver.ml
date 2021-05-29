@@ -1,12 +1,14 @@
 open! Core
 open! Async
-module Client = Csexp_rpc_unix.Client
+module Client = Csexp_rpc.Client
 
 let log_s = Log.Global.error_s
 
 let run_with_pipefile play ~pipefile =
   log_s [%message "Connecting"];
-  let%bind client = Client.connect_aggressively ~filename:pipefile in
+  let%bind client =
+    Csexp_rpc_unix.Unix_client.connect_aggressively ~filename:pipefile
+  in
   log_s [%message "Connected"];
   play client
 
