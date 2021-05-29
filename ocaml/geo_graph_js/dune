@@ -1,0 +1,5 @@
+(library
+ (name geo_graph_js)
+ (libraries core_kernel async_kernel async_js base geo_graph geo js_of_ocaml)
+ (preprocess
+  (pps ppx_jane js_of_ocaml-ppx)))
