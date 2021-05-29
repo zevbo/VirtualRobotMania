@@ -26,28 +26,13 @@ let run impl_group ~filename =
       (Tcp.Where_to_listen.of_file filename)
       (fun addr r w ->
         log_s [%message "Connection opened" (addr : Socket.Address.Unix.t)];
-        let rec loop () =
-          if Reader.is_closed r
-          then return ()
-          else (
-            let%bind sexp =
-              let context = "server " ^ Socket.Address.Unix.to_string addr in
-              Async_csexp.read
-                ~context
-                ~really_read:(fun bytes -> Reader.really_read r bytes)
-                Fn.id
-            in
-            log_s [%message "received query" (sexp : Sexp.t)];
-            let%bind response =
-              Implementation.Group.handle_query impl_group sexp
-            in
-            Async_csexp.write ~write:(Writer.write_bytes w) response;
-            log_s [%message "wrote resp" (response : Sexp.t)];
-            loop ())
-        in
         let%bind () =
-          Deferred.any_unit
-            [ Writer.close_finished w; Reader.close_finished r; loop () ]
+          Server.run
+            impl_group
+            ~context:("server " ^ Socket.Address.Unix.to_string addr)
+            (Io_utils.input_of_reader r)
+            (Io_utils.output_of_writer w)
+            ~log_s
         in
         let%bind () = Log.Global.flushed () in
         exit 0)

@@ -10,7 +10,7 @@ let command name gen_impl =
       (let%map_open.Command filename = anon ("pipe" %: Filename.arg_type) in
        fun () ->
          let%bind impl = gen_impl () in
-         Csexp_rpc_unix.Server.run impl ~filename)
+         Csexp_rpc_unix.Unix_server.run impl ~filename)
   in
   name, command
 
