@@ -50,4 +50,7 @@ module type S = sig
 
   (** destroy the renderer and the window, and quit SDL *)
   val shutdown : t -> unit
+
+  (* TODO: make a more portable interface here. *)
+  val image_of_bmp_file : t -> string -> Image.t
 end

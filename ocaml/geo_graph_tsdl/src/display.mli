@@ -5,5 +5,3 @@ open! Base
 type t
 
 include Geo_graph.Display_intf.S with type t := t
-
-val image_of_bmp_file : t -> string -> Image.t

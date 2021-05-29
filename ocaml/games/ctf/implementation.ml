@@ -1,7 +1,9 @@
 open! Core_kernel
 open! Async_kernel
 
-let group () =
+let group (module Display : Geo_graph.Display_intf.S) =
+  let module State = State.Make (Display) in
+  let module Main = Main.Make (Display) in
   let%map state = Main.init () in
   let enhance_border () = Main.enhance_border state in
   let setup_shield () = Main.setup_shield state in

@@ -1,5 +1,7 @@
 open Virtuality2d
 
-val flag : Body.t -> Body.t
-val flag_protector : Body.t -> Body.t
-val update : State.t -> unit
+module Make (Display : Geo_graph.Display_intf.S) : sig
+  val flag : Body.t -> Body.t
+  val flag_protector : Body.t -> Body.t
+  val update : State.Make(Display).t -> unit
+end

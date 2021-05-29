@@ -18,6 +18,7 @@ let () =
   Command.group
     ~summary:"Game engine server"
     [ command "test" (fun () -> return Test_game.Implementation.group)
-    ; command "ctf" Ctf.Implementation.group
+    ; command "ctf" (fun () ->
+          Ctf.Implementation.group (module Geo_graph_tsdl.Display))
     ]
   |> Command.run
