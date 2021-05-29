@@ -1,9 +1,6 @@
 open! Core
 open! Async
 open Virtuality2d
-
-(* TODO: remove direct SDL usage *)
-module Sdl = Tsdl.Sdl
 module Color = Geo_graph.Color
 open! Geo
 
@@ -77,16 +74,6 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
       <- Map.set state.images ~key:flag_protector_id ~data:flag_protector_img;
     state
 
-  (** Handle any keyboard or other events *)
-  let handle_events (state : State.t) =
-    if Sdl.poll_event (Some state.event)
-    then (
-      match Sdl.Event.enum (Sdl.Event.get state.event Sdl.Event.typ) with
-      | `Key_up ->
-        let key = Sdl.Event.get state.event Sdl.Event.keyboard_keycode in
-        if key = Sdl.K.q then Caml.exit 0
-      | _ -> ())
-
   let _status_s sexp =
     let data =
       String.concat
@@ -97,8 +84,8 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     in
     Out_channel.write_all "/tmp/status.sexp" ~data
 
-  let step state () =
-    handle_events state;
+  let step (state : State.t) () =
+    Display.maybe_exit state.display;
     for _i = 1 to Int.of_float dt_sim_dt do
       Advance.run state ~dt:(dt_sim *. speed_constant);
       state.ts <- state.ts +. dt_sim
@@ -154,7 +141,7 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
       let elapsed_ms = Time.Span.to_ms (Time.diff now last_step_end) in
       let target_delay_ms = 1000. *. dt in
       let time_left_ms = Float.max 0. (target_delay_ms -. elapsed_ms) in
-      Sdl.delay (Int32.of_float time_left_ms));
+      Display.delay_ms (Int.of_float time_left_ms));
     state.last_step_end <- Some (Time.now ())
 
   let max_input = 1.

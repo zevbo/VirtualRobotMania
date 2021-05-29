@@ -1,8 +1,5 @@
 open! Core_kernel
 open Virtuality2d
-
-(* TODO: remove explicit SDL dependency *)
-module Sdl = Tsdl.Sdl
 module Color = Geo_graph.Color
 
 module Make (Display : Geo_graph.Display_intf.S) = struct
@@ -29,7 +26,6 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     ; mutable images : Display.Image.t Map.M(World.Id).t
     ; mutable invisible : Set.M(World.Id).t
     ; mutable lasers : Laser.t Map.M(World.Id).t
-    ; event : Sdl.event
     ; display : Display.t
     ; offense_bot : Offense_bot.t with_id
     ; defense_bot : Defense_bot.t with_id
@@ -57,7 +53,6 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     ; images
     ; invisible = Set.empty (module World.Id)
     ; lasers = Map.empty (module World.Id)
-    ; event = Sdl.Event.create ()
     ; display
     ; offense_bot
     ; defense_bot

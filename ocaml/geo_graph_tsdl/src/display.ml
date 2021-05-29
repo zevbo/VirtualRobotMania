@@ -18,6 +18,7 @@ type t =
   ; pixel_ba : (Sdl.uint32, Bigarray.int32_elt) Sdl.bigarray
         (** The bigarray used to blit a color into our one-pixel texture. *)
   ; pixel_format : Sdl.pixel_format
+  ; event : Sdl.event
   }
 
 let set_pixel_color t color =
@@ -48,7 +49,8 @@ let init ~physical ~logical ~title =
   in
   let pixel_ba = Bigarray.Array1.create Bigarray.Int32 Bigarray.c_layout 1 in
   let pixel_format = Sdl.alloc_format Sdl.Pixel.format_rgba8888 |> ok_exn in
-  { renderer; window; size = logical; pixel; pixel_ba; pixel_format }
+  let event = Sdl.Event.create () in
+  { renderer; window; size = logical; pixel; pixel_ba; pixel_format; event }
 
 module Image = struct
   type t =
@@ -182,3 +184,15 @@ let shutdown t =
   Sdl.destroy_window t.window;
   Sdl.destroy_renderer t.renderer;
   Sdl.quit ()
+
+(* Check for events, maybe exit if you see someone press q *)
+let maybe_exit t =
+  if Sdl.poll_event (Some t.event)
+  then (
+    match Sdl.Event.enum (Sdl.Event.get t.event Sdl.Event.typ) with
+    | `Key_up ->
+      let key = Sdl.Event.get t.event Sdl.Event.keyboard_keycode in
+      if key = Sdl.K.q then Caml.exit 0
+    | _ -> ())
+
+let delay_ms ms = Sdl.delay (Int32.of_int_exn ms)

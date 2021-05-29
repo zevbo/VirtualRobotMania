@@ -53,4 +53,9 @@ module type S = sig
 
   (* TODO: make a more portable interface here. *)
   val image_of_bmp_file : t -> string -> Image.t
+
+  (** Exit the display if someone has asked you to. *)
+  val maybe_exit : t -> unit
+
+  val delay_ms : int -> unit
 end
