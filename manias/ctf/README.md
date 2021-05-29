@@ -1,10 +1,11 @@
+# Capture the Flag!
+
 Welcome to a new Virtual Robotics competition! This year's competition
-is a game of capture the flag, and the game is more challenging than
-ever.
+is a step up in the complexity of the tasks, but writing bots should
+still be easy for beginners.
 
-# Overview
-
-The game is played between two different kinds of robots:
+Everyone is going to work in teams of two, and those teams need to
+make two different robots together:
 
 - An *offense bot*, whose goal is to capture the flag, and bring it
   back to its home base.
@@ -12,43 +13,28 @@ The game is played between two different kinds of robots:
   the flag.
 
 The defense bot has two ways of interfering with the offense bot: it
-can get in its way, and it can fire bullets at it.
+can get in the other bot's way, and it can fire (strangely
+slow-moving) lasers at it.
 
-Also, tournaments will be in teams, bughouse style!
-
-Each team consists of an offense bot and a defense bot.  Both your bot
-and your team-mate's bot will play in concurrent games.  Victories by
-your bot will provide advantages to your team-mate's bot, and
-vice-versa.  But more on that below.
-
-# Logging in
-
-For various reasons, we decided to set up a server that people could
-connect to to program their bots, rather than having to get software
-installed on everyone's box.  We'll send instructions in a separate
-email.
-
-# Robot APIs
+# Where to work
 
 Each kind of robot (defense or offense) has its own library of
-commands.  You should make sure you have the right require at the top
-of your file.  You should uncomment one of the following two lines to
-choose what kind of bot you're creating.
+commands.  If you look in the `manias/ctf` directory, you should find
+three files, with starting templates and some very basic bots to build
+off of.
 
-```scheme
-;(require "../../lib/worlds/ctf/offense.rkt")
-;(require "../../lib/worlds/ctf/defense.rkt")
-```
+- `offense.rkt` is for writing your offense bot.
+- `defense.rkt` is for writing your defense bot.
+- `together.rkt` brings them both together. This is where you click
+  "run" to start the game.
 
-Here are the APIs that you can use for each kind of bot, along with
-some documentation about the restrictions for each bot type.
+Here's an overview of the commands you have at your disposal for
+controlling your bot.  Some of the commands work for both bots, and
+some are only available for offense or defense.
 
-## Both bots
+## Common commands
 
-A lot of the controls are shared between the two bots.  Here's the
-shared API:
-
-### set-motors
+### `set-motors`
 
 The left and right motors on your car determine the force on that side
 of the car.  The power to each motor ranges from -1 (maximum push in
@@ -66,22 +52,61 @@ Some examples.
   - `(set-motors 1 0.5)` will cause your car to circle forward and to
     the right.
 
-### get-motor-left/right
+### `get-motor-left/right`
 
 These calls allow you to read off the state of your motors.  So, if in
 a previous round you called `(set-motors 0.3 0.6)`, then
-`(get-motor-left)` will return 0.3, and `(get-motor-right)` will
+`(get-left-input)` will return 0.3, and `(get-right-input)` will
 return 0.6
+
+### `angle-to-opp` and `dist-to-opp`
+
+These functions let you figure out where your opponent is, relative to
+you.  `(angle-to-opp)` returns 0 if the opponent is directly in front
+of you, a positive angle if it's to your left, and a negative angle if
+it's to your right.
+
+`(dist-to-opp)` simply returns the distance to the opponent.
+
+### `angle-to-flag` and `distance-to-flag`
+
+Just like the above, except for the flag, instead of your opponent.
+Note that it still works when the flag has been picked up by your
+opponent!
+
+### `get-robot-angle` and `get-opp-angle`
+
+This returns the absolute angle of your angle.  i.e., 0 degrees means
+you're pointed to the left, 90 degrees is straight up, 180 degrees is
+to the left, and so on.
+
+`get-opp-angle` gives the same number, but for your opponent!
+
+### `looking-dist`
+
+`(looking-dist theta)` tells you how much distance there is to the
+next obstacle, be it a wall, a robot or a laser!
 
 ## Defense bot
 
 Here are the defense-bot-only calls.
 
-### shoot
+### `shoot-laser`
 
-This one is easy! `(shoot)` fires a bullet in the direction your car
-is pointed.  But you can't do it too often! You can only shoot every
-50 ticks!
+`(shoot-laser)` fires a bullet in the direction your car is pointed.
+But you can't do it too often! Note that you can't always shoot a
+laser. That's what the next command is for.
+
+### `laser-cooldown-left`
+
+`(laser-cooldown-left)` tells you how many ticks need to elapse until
+you can fire your laser again.
+
+### `(opp-just-boosted?)`
+
+This lets you tell if your opponent has just called `(boost)`!  See
+the offense bot section above to see what boost does!
+
 
 ## Offense bot
 
