@@ -1,0 +1,4 @@
+(library
+ (name geo_graph)
+ (libraries core_kernel base geo)
+ (preprocess (pps ppx_jane)))

@@ -2,6 +2,7 @@ open! Base
 open! Stdio
 open Geo
 open Geo_graph_tsdl
+module Color = Geo_graph.Color
 open Tsdl
 
 let oe = function
@@ -17,7 +18,7 @@ let main () =
   let display =
     Display.init ~logical:frame ~physical:(500, 1000) ~title:"Image Display"
   in
-  let image = Display.Image.of_bmp_file display "SignalsandThreads-3000.bmp" in
+  let image = Display.image_of_bmp_file display "SignalsandThreads-3000.bmp" in
   let event = Sdl.Event.create () in
   let i = ref 0 in
   while true do

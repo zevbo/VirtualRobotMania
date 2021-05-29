@@ -4,6 +4,7 @@ open State
 open Virtuality2d
 module Sdl = Tsdl.Sdl
 open Geo_graph_tsdl
+module Color = Geo_graph.Color
 open! Geo
 
 let fps = 20.
@@ -54,10 +55,10 @@ let init () =
   in
   state.world <- world;
   let flag_img =
-    Display.Image.of_bmp_file state.display (Ctf_consts.Flag.image_path ~root)
+    Display.image_of_bmp_file state.display (Ctf_consts.Flag.image_path ~root)
   in
   let flag_protector_img =
-    Display.Image.of_bmp_file
+    Display.image_of_bmp_file
       state.display
       (Ctf_consts.Flag.Protector.image_path ~root)
   in

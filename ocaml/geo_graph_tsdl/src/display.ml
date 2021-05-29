@@ -1,6 +1,7 @@
-open Core_kernel
+open! Core_kernel
 module Sdl = Tsdl.Sdl
 open Geo
+module Color = Geo_graph.Color
 
 let oe = function
   | Ok _ as x -> x
@@ -84,6 +85,8 @@ module Image = struct
   let destroy t = Sdl.destroy_texture t.texture
   let size t = t.size
 end
+
+let image_of_bmp_file = Image.of_bmp_file
 
 let clear t color =
   let r, g, b = Color.to_tuple color in

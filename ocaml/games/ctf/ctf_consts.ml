@@ -1,6 +1,6 @@
 open Core_kernel
 open Virtuality2d
-open Geo_graph_tsdl
+module Color = Geo_graph.Color
 
 let frame_width = 800.
 let frame_height = 500.

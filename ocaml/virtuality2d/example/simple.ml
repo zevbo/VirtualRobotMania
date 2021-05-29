@@ -42,7 +42,7 @@ let run () =
   let robot_2 = { b2 with angle = Float.pi /. 4.; pos = Vec.create 220.7 0. } in
   let world = ref (World.of_bodies [ robot; robot_2 ]) in
   let _image =
-    Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
+    Display.image_of_bmp_file state.display "../../../images/test-robot.bmp"
   in
   let draw_robot robot_n =
     let robot_n = World.Id.of_int robot_n in

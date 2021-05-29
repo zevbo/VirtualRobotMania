@@ -2,6 +2,7 @@ open! Core_kernel
 open Virtuality2d
 module Sdl = Tsdl.Sdl
 open Geo_graph_tsdl
+module Color = Geo_graph.Color
 
 type 'a with_id =
   { bot : 'a
@@ -78,7 +79,7 @@ let load_bot_image t id imagefile =
       ~args:[ imagefile; bmpfile ]
       ()
   in
-  let image = Display.Image.of_bmp_file t.display bmpfile in
+  let image = Display.image_of_bmp_file t.display bmpfile in
   let%bind () = Unix.unlink bmpfile in
   t.images
     <- Map.update t.images id ~f:(fun old_image ->

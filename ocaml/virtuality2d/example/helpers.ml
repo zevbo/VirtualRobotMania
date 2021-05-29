@@ -1,6 +1,7 @@
 open Core
 open Geo_graph_tsdl
 open Tsdl
+module Color = Geo_graph.Color
 
 let fps = 20.
 let frame = 700, 700
