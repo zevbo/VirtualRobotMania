@@ -1,6 +1,6 @@
 open! Core
 open! Async
-module Client = Csexp_rpc.Client
+module Client = Csexp_rpc_unix.Client
 
 let log_s = Log.Global.error_s
 
