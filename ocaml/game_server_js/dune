@@ -6,6 +6,7 @@
   csexp_rpc
   ctf
   js_of_ocaml
+  async_js
   )
  (modes js)
  (preprocess
