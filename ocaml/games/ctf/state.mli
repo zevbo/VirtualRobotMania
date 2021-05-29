@@ -51,6 +51,6 @@ val create
   -> t
 
 val set_world : t -> World.t -> unit
-val set_image : t -> Bot_name.t * string -> unit Async.Deferred.t
+val set_image : t -> Bot_name.t * string -> unit Async_kernel.Deferred.t
 val get_offense_bot_body : t -> Body.t
 val get_defense_bot_body : t -> Body.t

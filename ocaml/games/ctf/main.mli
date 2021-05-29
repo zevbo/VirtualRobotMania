@@ -1,10 +1,8 @@
-open! Core
-open! Async
+open! Core_kernel
+open! Async_kernel
 
 (** The shapes of the functions here mostly matches the protocol, except for the
     [State.t] argument in the front. *)
-
-type ('a, 'b) bot_func := State.t -> Bot_name.t * 'a -> 'b
 
 (** Non-user functions *)
 
@@ -15,6 +13,8 @@ val just_killed : State.t -> bool
 val enhance_border : State.t -> unit
 val setup_shield : State.t -> unit
 val num_flags : State.t -> int
+
+type ('a, 'b) bot_func := State.t -> Bot_name.t * 'a -> 'b
 
 (** User actuator functions *)
 

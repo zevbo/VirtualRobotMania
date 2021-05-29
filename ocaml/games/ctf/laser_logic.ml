@@ -2,8 +2,6 @@ open Virtuality2d
 open Geo
 open Base
 
-let _log_s sexp = Async.Log.Global.info_s sexp
-
 let laser ~(bot : Body.t) =
   let half_length = Vec.create (Ctf_consts.Bots.width /. 2.) 0. in
   let pos = Vec.add bot.pos (Vec.rotate half_length bot.angle) in

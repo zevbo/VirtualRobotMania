@@ -1,5 +1,5 @@
 open! Core_kernel
-open! Async
+open! Async_kernel
 
 let group () =
   let%map state = Main.init () in
