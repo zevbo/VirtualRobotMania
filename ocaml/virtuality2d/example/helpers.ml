@@ -1,5 +1,5 @@
 open Core
-open Geo_graph
+open Geo_graph_tsdl
 open Tsdl
 
 let fps = 20.

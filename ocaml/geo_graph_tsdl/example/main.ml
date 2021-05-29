@@ -1,7 +1,7 @@
 open! Base
 open! Stdio
 open Geo
-open Geo_graph
+open Geo_graph_tsdl
 open Tsdl
 
 let oe = function

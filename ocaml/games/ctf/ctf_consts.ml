@@ -1,6 +1,6 @@
 open Core_kernel
 open Virtuality2d
-open Geo_graph
+open Geo_graph_tsdl
 
 let frame_width = 800.
 let frame_height = 500.

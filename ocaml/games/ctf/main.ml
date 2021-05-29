@@ -3,7 +3,7 @@ open! Async
 open State
 open Virtuality2d
 module Sdl = Tsdl.Sdl
-open Geo_graph
+open Geo_graph_tsdl
 open! Geo
 
 let fps = 20.

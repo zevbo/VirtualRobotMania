@@ -1,7 +1,7 @@
 open! Core_kernel
 open Virtuality2d
 module Sdl = Tsdl.Sdl
-open Geo_graph
+open Geo_graph_tsdl
 
 type 'a with_id =
   { bot : 'a
