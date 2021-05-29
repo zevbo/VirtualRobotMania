@@ -9,8 +9,8 @@
 (define (make-PID p i predict)
   (PID p i (* predict p) 0.0 0.0))
 
-(define flag-pid (make-PID 0.006 0.0 10))
-(define return-pid (make-PID 0.006 0.0 30))
+(define flag-pid (make-PID 0.01 0.0 10))
+(define return-pid (make-PID 0.01 0.0 30))
 
 (define offense-bot
   (make-robot
