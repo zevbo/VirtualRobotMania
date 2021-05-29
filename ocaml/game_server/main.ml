@@ -14,18 +14,19 @@ let command name gen_impl =
   in
   name, command
 
+let find_root () =
+  Shexp_process.run "git" [ "rev-parse"; "--show-toplevel" ]
+  |> Shexp_process.capture_unit [ Stdout ]
+  |> Shexp_process.eval
+  |> String.strip
+
 let () =
   Command.group
     ~summary:"Game engine server"
     [ command "test" (fun () -> return Test_game.Implementation.group)
     ; command "ctf" (fun () ->
-          let%map root =
-            Process.run_exn
-              ~prog:"git"
-              ~args:[ "rev-parse"; "--show-toplevel" ]
-              ()
-            >>| String.strip
-          in
-          Ctf.Implementation.group ~root (module Geo_graph_tsdl.Display))
+          let root = find_root () in
+          return
+            (Ctf.Implementation.group ~root (module Geo_graph_tsdl.Display)))
     ]
   |> Command.run
