@@ -19,6 +19,13 @@ let () =
     ~summary:"Game engine server"
     [ command "test" (fun () -> return Test_game.Implementation.group)
     ; command "ctf" (fun () ->
-          Ctf.Implementation.group (module Geo_graph_tsdl.Display))
+          let%map root =
+            Process.run_exn
+              ~prog:"git"
+              ~args:[ "rev-parse"; "--show-toplevel" ]
+              ()
+            >>| String.strip
+          in
+          Ctf.Implementation.group ~root (module Geo_graph_tsdl.Display))
     ]
   |> Command.run

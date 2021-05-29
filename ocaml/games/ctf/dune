@@ -1,14 +1,12 @@
 (library
  (name ctf)
  (libraries
-  async
   async_kernel
   common
   core_kernel
   csexp_rpc
   geo
   geo_graph
-  tsdl
   virtuality2d
 )
  (preprocess

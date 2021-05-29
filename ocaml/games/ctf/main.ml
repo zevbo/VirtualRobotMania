@@ -1,5 +1,5 @@
-open! Core
-open! Async
+open! Core_kernel
+open! Async_kernel
 open Virtuality2d
 module Color = Geo_graph.Color
 open! Geo
@@ -20,16 +20,12 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
   let dt_sim = dt /. dt_sim_dt
   let speed_constant = 0.2
 
-  let init () =
+  let init ~root =
     let display =
       Display.init
         ~physical:frame
         ~logical:frame
         ~title:"Virtual Robotics Arena"
-    in
-    let%map root =
-      Process.run_exn ~prog:"git" ~args:[ "rev-parse"; "--show-toplevel" ] ()
-      >>| String.strip
     in
     let world = World.empty in
     let world =

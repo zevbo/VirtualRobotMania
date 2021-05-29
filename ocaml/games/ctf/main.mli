@@ -9,7 +9,7 @@ module Make (Display : Geo_graph.Display_intf.S) : sig
 
   module State := State.Make(Display)
 
-  val init : unit -> State.t Deferred.t
+  val init : root:string -> State.t
   val step : State.t -> unit -> unit
   val just_returned_flag : State.t -> bool
   val just_killed : State.t -> bool

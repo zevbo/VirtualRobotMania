@@ -1,6 +1,5 @@
 open Core_kernel
 open Virtuality2d
-module Sdl := Tsdl.Sdl
 
 module Make (Display : Geo_graph.Display_intf.S) : sig
   type 'a with_id =
@@ -55,7 +54,7 @@ module Make (Display : Geo_graph.Display_intf.S) : sig
   val set_image_contents
     :  t
     -> Bot_name.t * Image_contents.t
-    -> unit Async.Deferred.t
+    -> unit Async_kernel.Deferred.t
 
   val get_offense_bot_body : t -> Body.t
   val get_defense_bot_body : t -> Body.t
