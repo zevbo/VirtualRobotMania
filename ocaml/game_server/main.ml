@@ -28,18 +28,18 @@ let () =
     [ command "test" (fun () -> return Test_game.Implementation.group)
     ; command "ctf" (fun () ->
           let root = root () in
-          let%bind username = Unix.getlogin () in
-          let () =
-            Log.Global.set_output
-              [ Log.Output.file
-                  `Sexp_hum
-                  ~filename:(sprintf "/tmp/game-engine-%s.log" username)
-              ]
+          let group =
+            Ctf.Implementation.group
+              ~root
+              ~log_s
+              (module Geo_graph_tsdl.Display)
           in
-          return
-            (Ctf.Implementation.group
-               ~root
-               ~log_s
-               (module Geo_graph_tsdl.Display)))
+          let%map username = Unix.getlogin () in
+          Log.Global.set_output
+            [ Log.Output.file
+                `Sexp_hum
+                ~filename:(sprintf "/tmp/game-engine-%s.log" username)
+            ];
+          group)
     ]
   |> Command.run
