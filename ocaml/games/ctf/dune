@@ -2,13 +2,14 @@
  (name ctf)
  (libraries
   async
-  core_kernel
-  tsdl
+  async_kernel
   common
+  core_kernel
+  csexp_rpc
   geo
   geo_graph
+  tsdl
   virtuality2d
-  csexp_rpc
-  async_kernel)
+)
  (preprocess
   (pps ppx_jane)))
