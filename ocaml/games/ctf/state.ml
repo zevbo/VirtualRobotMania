@@ -77,23 +77,23 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
              image);
     return ()
 
-  let set_image t ((bot_name : Bot_name.t), filename) =
-    let id =
-      match bot_name with
-      | Defense -> t.defense_bot.id
-      | Offense -> t.offense_bot.id
-    in
-    load_bot_image t id (fun () -> Display.Image.of_file t.display ~filename)
+  let set_image_contents t id (image_contents : Image_contents.t) =
+    let { Image_contents.contents; format } = image_contents in
+    load_bot_image t id (fun () ->
+        Display.Image.of_contents t.display ~contents ~format)
 
-  let set_image_contents t (bot_name, (image_contents : Image_contents.t)) =
+  let set_robot_image_contents t (bot_name, image_contents) =
     let id =
       match (bot_name : Bot_name.t) with
       | Defense -> t.defense_bot.id
       | Offense -> t.offense_bot.id
     in
-    let { Image_contents.contents; format } = image_contents in
-    load_bot_image t id (fun () ->
-        Display.Image.of_contents t.display ~contents ~format)
+    set_image_contents t id image_contents
+
+  let set_flag_image_contents t = set_image_contents t t.flag
+
+  let set_flag_protector_image_contents t =
+    set_image_contents t t.flag_protector
 
   let get_offense_bot_body state =
     let body_op = Map.find state.world.bodies state.offense_bot.id in

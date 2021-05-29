@@ -20,7 +20,7 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
   let dt_sim = dt /. dt_sim_dt
   let speed_constant = 0.2
 
-  let init ~root ~log_s =
+  let init ~log_s =
     let display =
       Display.init
         ~log_s
@@ -57,18 +57,13 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
         offense_shield_id
     in
     state.world <- world;
-    let flag_img =
-      Display.Image.of_bmp_file state.display (Ctf_consts.Flag.image_path ~root)
-    in
-    let flag_protector_img =
-      Display.Image.of_bmp_file
-        state.display
-        (Ctf_consts.Flag.Protector.image_path ~root)
-    in
     state.invisible <- Set.add state.invisible state.offense_shield;
-    state.images <- Map.set state.images ~key:flag_id ~data:flag_img;
-    state.images
-      <- Map.set state.images ~key:flag_protector_id ~data:flag_protector_img;
+    (* let flag_img = Display.Image.of_bmp_file state.display
+       (Ctf_consts.Flag.image_path ~root) in let flag_protector_img =
+       Display.Image.of_bmp_file state.display
+       (Ctf_consts.Flag.Protector.image_path ~root) in state.images <- Map.set
+       state.images ~key:flag_id ~data:flag_img; state.images <- Map.set
+       state.images ~key:flag_protector_id ~data:flag_protector_img; *)
     state
 
   let _status_s sexp =

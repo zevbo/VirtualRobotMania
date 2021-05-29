@@ -121,8 +121,8 @@ let step t =
 
 open! Async
 
-let load_bot_image t id imagefile =
-  let id = World.Id.of_int id in
+let load_bot_image _t id imagefile =
+  let _id = World.Id.of_int id in
   let bmpfile = Caml.Filename.temp_file "image" ".bmp" in
   let%bind () =
     Process.run_expect_no_output_exn
@@ -130,10 +130,8 @@ let load_bot_image t id imagefile =
       ~args:[ imagefile; bmpfile ]
       ()
   in
-  let image = Display.Image.of_bmp_file t.display bmpfile in
+  (* let image = Display.Image.of_bmp_file t.display bmpfile in *)
   let%bind () = Unix.unlink bmpfile in
-  t.images
-    <- Map.update t.images id ~f:(fun old_image ->
-           Option.iter old_image ~f:Display.Image.destroy;
-           image);
+  (* t.images <- Map.update t.images id ~f:(fun old_image -> Option.iter
+     old_image ~f:Display.Image.destroy; image); *)
   return ()

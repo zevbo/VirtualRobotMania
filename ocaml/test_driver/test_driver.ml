@@ -68,12 +68,11 @@ let play_test client =
 let play_ctf client =
   let module Protocol = Ctf.Protocol in
   let dispatch x = Client.dispatch client x in
-  let%bind () =
-    dispatch Protocol.set_image (Defense, "../images/test-robot.JPEG")
-  in
-  let%bind () =
-    dispatch Protocol.set_image (Offense, "../images/test-robot.JPEG")
-  in
+  (* Got rid of the images for the robots cause we don't load from files
+     anymoreee *)
+  (* let%bind () = dispatch Protocol.set_image (Defense,
+     "../images/test-robot.JPEG") in let%bind () = dispatch Protocol.set_image
+     (Offense, "../images/test-robot.JPEG") in *)
   let maybe p then_ else_ =
     if Float.O.(Random.float 1. < p) then force then_ else force else_
   in

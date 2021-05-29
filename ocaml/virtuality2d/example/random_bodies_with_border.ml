@@ -94,9 +94,6 @@ let run () =
   let robots = List.map robot_positions ~f:create_random in
   let borders = [ border_1; border_2; border_3; border_4 ] in
   let world = ref (World.of_bodies (List.append robots borders)) in
-  let _image =
-    Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
-  in
   let ignore_it _ = () in
   let draw_robot robot_n =
     let robot = Map.find_exn !world.bodies (World.Id.of_int robot_n) in

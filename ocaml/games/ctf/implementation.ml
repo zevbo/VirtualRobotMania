@@ -1,10 +1,10 @@
 open! Core_kernel
 open! Async_kernel
 
-let group (module Display : Geo_graph.Display_intf.S) ~root ~log_s =
+let group (module Display : Geo_graph.Display_intf.S) ~log_s =
   let module State = State.Make (Display) in
   let module Main = Main.Make (Display) in
-  let state = Main.init ~root ~log_s in
+  let state = Main.init ~log_s in
   let enhance_border () = Main.enhance_border state in
   let setup_shield () = Main.setup_shield state in
   let just_returned_flag () = Main.just_returned_flag state in
@@ -25,8 +25,15 @@ let group (module Display : Geo_graph.Display_intf.S) ~root ~log_s =
     ; impl Protocol.just_killed just_killed
     ; impl Protocol.enhance_border enhance_border
     ; impl Protocol.setup_shield setup_shield
-    ; impl' Protocol.set_image (State.set_image state)
-    ; impl' Protocol.set_image_contents (State.set_image_contents state)
+    ; impl'
+        Protocol.set_robot_image_contents
+        (State.set_robot_image_contents state)
+    ; impl'
+        Protocol.set_flag_image_contents
+        (State.set_flag_image_contents state)
+    ; impl'
+        Protocol.set_flag_protector_image_contents
+        (State.set_flag_protector_image_contents state)
     ; impl Protocol.num_flags num_flags
     ; impl Protocol.angle_to_opp (Main.angle_to_opp state)
     ; impl Protocol.dist_to_opp (Main.dist_to_opp state)
