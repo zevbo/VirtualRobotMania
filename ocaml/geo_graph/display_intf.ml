@@ -6,7 +6,12 @@ module type S = sig
 
   (** Starts up the display, with the provided physical (i.e., screen) and
       logical dimentions. *)
-  val init : physical:int * int -> logical:int * int -> title:string -> t
+  val init
+    :  physical:int * int
+    -> logical:int * int
+    -> title:string
+    -> log_s:(Sexp.t -> unit)
+    -> t
 
   module Image : sig
     type display := t

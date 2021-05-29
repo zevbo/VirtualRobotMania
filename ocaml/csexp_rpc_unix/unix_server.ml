@@ -2,15 +2,7 @@ open! Core
 open! Async
 open! Import
 
-let run impl_group ~filename =
-  let%bind username = Unix.getlogin () in
-  let () =
-    Log.Global.set_output
-      [ Log.Output.file
-          `Sexp_hum
-          ~filename:(sprintf "/tmp/game-engine-%s.log" username)
-      ]
-  in
+let run impl_group ~filename ~log_s =
   log_s [%message "Starting server" (filename : string)];
   let%bind () =
     match%bind Sys.file_exists_exn filename with

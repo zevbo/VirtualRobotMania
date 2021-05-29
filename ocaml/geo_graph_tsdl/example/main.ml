@@ -16,7 +16,11 @@ let pair_map (a, b) ~f = f a, f b
 let main () =
   let frame = 1000, 800 in
   let display =
-    Display.init ~logical:frame ~physical:(500, 1000) ~title:"Image Display"
+    Display.init
+      ~logical:frame
+      ~physical:(500, 1000)
+      ~title:"Image Display"
+      ~log_s:Async.Log.Global.info_s
   in
   let image = Display.Image.of_bmp_file display "SignalsandThreads-3000.bmp" in
   let event = Sdl.Event.create () in

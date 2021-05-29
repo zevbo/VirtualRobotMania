@@ -3,14 +3,14 @@ open! Async
 module Protocol = Test_game.Protocol
 module Implementation = Csexp_rpc.Implementation
 
-let command name gen_impl =
+let command ~log_s name gen_impl =
   let command =
     Command.async
       ~summary:(name ^ " game")
       (let%map_open.Command filename = anon ("pipe" %: Filename.arg_type) in
        fun () ->
          let%bind impl = gen_impl () in
-         Csexp_rpc_unix.Unix_server.run impl ~filename)
+         Csexp_rpc_unix.Unix_server.run impl ~filename ~log_s)
   in
   name, command
 
@@ -21,12 +21,25 @@ let root () =
   |> String.strip
 
 let () =
+  let log_s = Async.Log.Global.info_s in
+  let command = command ~log_s in
   Command.group
     ~summary:"Game engine server"
     [ command "test" (fun () -> return Test_game.Implementation.group)
     ; command "ctf" (fun () ->
           let root = root () in
+          let%bind username = Unix.getlogin () in
+          let () =
+            Log.Global.set_output
+              [ Log.Output.file
+                  `Sexp_hum
+                  ~filename:(sprintf "/tmp/game-engine-%s.log" username)
+              ]
+          in
           return
-            (Ctf.Implementation.group ~root (module Geo_graph_tsdl.Display)))
+            (Ctf.Implementation.group
+               ~root
+               ~log_s
+               (module Geo_graph_tsdl.Display)))
     ]
   |> Command.run

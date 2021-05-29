@@ -30,6 +30,7 @@ let create () =
         ~physical:frame
         ~logical:frame
         ~title:"Virtual Robotics Arena"
+        ~log_s:Async.Log.Global.info_s
   }
 
 let rand_around_zero x = Random.float (x *. 2.) -. x

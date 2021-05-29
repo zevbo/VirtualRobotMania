@@ -14,7 +14,12 @@ module State = struct
 
   let create () =
     { event = Sdl.Event.create ()
-    ; display = Display.init ~logical:frame ~physical:frame ~title:"test"
+    ; display =
+        Display.init
+          ~logical:frame
+          ~physical:frame
+          ~title:"test"
+          ~log_s:Async.Log.Global.info_s
     }
 end
 

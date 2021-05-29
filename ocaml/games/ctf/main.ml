@@ -20,9 +20,10 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
   let dt_sim = dt /. dt_sim_dt
   let speed_constant = 0.2
 
-  let init ~root =
+  let init ~root ~log_s =
     let display =
       Display.init
+        ~log_s
         ~physical:frame
         ~logical:frame
         ~title:"Virtual Robotics Arena"
