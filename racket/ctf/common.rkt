@@ -1,5 +1,6 @@
 #lang racket
 (require "driver.rkt")
+(require net/rfc6455)
 (provide (all-defined-out))
 
 (define (bot-rpc-ang msg args)
@@ -17,9 +18,32 @@
 (define (get-opp-angle) (bot-rpc-ang #"get-opp-angle" '()))
 (define (looking-dist theta)
   (bot-rpc-num #"looking-dist" (to-radians theta)))
+(define (offense-has-flag?) (bot-rpc-bool #"offense-has-flag" '()))
+
+(define (flmod x m)
+  (- x (* (floor (/ x m)) m)))
+(define (normalize-angle angle)
+  (set! angle (to-radians angle))
+  (define floored (inexact->exact (floor angle)))
+  (of-radians (+ (- angle floored) (- (flmod (+ floored pi) (* 2 pi)) pi))))
+
+(define (with-ws? run-internal)
+  (define (run offense defense ws?)
+    (cond
+      [ws?
+       (ws-serve
+        #:port 8080
+        (lambda (conn s)
+          ;(run-internal offense defense #:ws-conn conn)
+          ; testing by just running it normally here
+          (run-internal offense defense)
+          ))]
+      [else (run-internal offense defense)]))
+  run)
+
+(define run (with-ws? run-internal))
+(define run-double (with-ws? run-double-internal))
 
 (define degrees-mode degrees-mode-internal)
 (define radians-mode radians-mode-internal)
 
-(define run run-internal)
-(define run-double run-double-internal)

@@ -39,4 +39,5 @@ let group (module Display : Geo_graph.Display_intf.S) ~root =
     ; impl Protocol.just_boosted (Main.just_boosted state)
     ; impl Protocol.boost_cooldown_left (Main.boost_cooldown_left state)
     ; impl Protocol.looking_dist (Main.looking_dist state)
+    ; impl Protocol.offense_has_flag (Main.offense_has_flag state)
     ]

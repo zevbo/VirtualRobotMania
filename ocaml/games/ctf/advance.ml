@@ -28,7 +28,7 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
          < state.ts)
     then remove_shield state
 
-  let run (state : State.t) ~dt =
+  let run (state : State.t) ~dt i =
     let update_bodies f =
       state.world <- { World.bodies = f state.world.bodies }
     in
@@ -44,7 +44,14 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     update_body state.defense_bot.id (fun body ->
         Defense_bot.update state.defense_bot.bot ~dt body);
     update_body state.offense_shield (fun body ->
-        Offense_bot.update_shield (State.get_offense_bot_body state) body);
+        Offense_bot.update_shield
+          (World.get_body_exn state.world state.offense_shield)
+          body);
+    if i = 1
+    then
+      assert (
+        (World.get_body_exn state.world state.offense_shield).collision_group
+        = 6);
     check_wall_enhance state;
     check_shield state;
     Flag_logic.update state;

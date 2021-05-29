@@ -1,6 +1,6 @@
 open Virtuality2d
 open Geo
-open Base
+open Core_kernel
 
 module Make (Display : Geo_graph.Display_intf.S) = struct
   module State = State.Make (Display)
@@ -37,18 +37,22 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     state.defense_bot.bot.loaded_laser <- None;
     state.world <- world
 
+  let out_of_frame (laser : Body.t) =
+    Float.O.(
+      Float.abs laser.pos.x -. (Ctf_consts.Laser.length /. 2.)
+      > Ctf_consts.frame_width /. 2.
+      || Float.abs laser.pos.y -. (Ctf_consts.Laser.length /. 2.)
+         > Ctf_consts.frame_height /. 2.)
+
   let update_moving (state : State.t) id =
     let laser = Map.find_exn state.world.bodies id in
-    if Float.O.(
-         Float.abs laser.pos.x -. (Ctf_consts.Laser.length /. 2.)
-         > Ctf_consts.frame_width /. 2.
-         || Float.abs laser.pos.y -. (Ctf_consts.Laser.length /. 2.)
-            > Ctf_consts.frame_height /. 2.)
+    if out_of_frame laser
     then state.world <- World.remove_body state.world id
     else (
       let offense_bodies =
         World.all_of_coll_group state.world Ctf_consts.Bots.Offense.coll_group
       in
+      assert (List.length offense_bodies = 1);
       let hit_offense_body =
         Option.is_some
           (List.find offense_bodies ~f:(fun (_id, body) ->

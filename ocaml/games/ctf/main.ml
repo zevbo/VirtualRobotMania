@@ -82,8 +82,8 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
 
   let step (state : State.t) () =
     Display.maybe_exit state.display;
-    for _i = 1 to Int.of_float dt_sim_dt do
-      Advance.run state ~dt:(dt_sim *. speed_constant);
+    for i = 1 to Int.of_float dt_sim_dt do
+      Advance.run state ~dt:(dt_sim *. speed_constant) i;
       state.ts <- state.ts +. dt_sim
     done;
     Display.clear state.display Color.white;
@@ -332,4 +332,6 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
   let just_killed (state : State.t) =
     Float.O.(
       state.offense_bot.bot.last_kill +. dt +. (dt_sim /. 2.) >= state.ts)
+
+  let offense_has_flag (state : State.t) (_, _) = state.offense_bot.bot.has_flag
 end

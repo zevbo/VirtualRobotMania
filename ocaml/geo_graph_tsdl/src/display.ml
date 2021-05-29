@@ -102,7 +102,7 @@ module Image = struct
     let bmpfile = Caml.Filename.temp_file "image" ".bmp" in
     let%bind () =
       Process.run_expect_no_output_exn
-        ~prog:"convert"
+        ~prog:"/usr/local/bin/convert"
         ~args:[ filename; bmpfile ]
         ()
     in

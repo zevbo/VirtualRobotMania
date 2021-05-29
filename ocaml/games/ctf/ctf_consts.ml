@@ -7,7 +7,7 @@ let frame_height = 500.
 
 module Border = struct
   let enhance_period = 10.
-  let energy_ret = 1.
+  let energy_ret = 1.2
   let coll_group = 0
   let black_list = [ 3 ]
   let enhanced_black_list = []
@@ -57,7 +57,7 @@ module Laser = struct
   let length = 25.
   let width = 5.
   let next_level_time = 1.
-  let colors = [ Color.rgb 255 255 0; Color.rgb 255 165 0; Color.red ]
+  let colors = [ Color.red; Color.rgb 200 0 0; Color.rgb 150 0 0 ]
   let coll_group = 3
   let black_list = [ 1; 2; 3; 4 ]
   let material = Material.create ~energy_ret:2.
