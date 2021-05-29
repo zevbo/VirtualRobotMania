@@ -9,6 +9,13 @@ let oe = function
 
 let ok_exn x = Or_error.ok_exn (oe x)
 
+module Image0 = struct
+  type t =
+    { texture : Sdl.texture
+    ; size : int * int
+    }
+end
+
 type t =
   { renderer : Sdl.renderer
   ; window : Sdl.window
@@ -47,16 +54,19 @@ let init ~physical ~logical ~title =
          Sdl.Pixel.format_rgba8888
          Sdl.Texture.access_streaming
   in
-  let pixel_ba = Bigarray.Array1.create Bigarray.Int32 Bigarray.c_layout 1 in
-  let pixel_format = Sdl.alloc_format Sdl.Pixel.format_rgba8888 |> ok_exn in
-  let event = Sdl.Event.create () in
-  { renderer; window; size = logical; pixel; pixel_ba; pixel_format; event }
+  { renderer
+  ; window
+  ; size = logical
+  ; pixel
+  ; pixel_ba = Bigarray.Array1.create Bigarray.Int32 Bigarray.c_layout 1
+  ; pixel_format = Sdl.alloc_format Sdl.Pixel.format_rgba8888 |> ok_exn
+  ; event = Sdl.Event.create ()
+  }
 
 module Image = struct
-  type t =
-    { texture : Sdl.texture
-    ; size : int * int
-    }
+  type display = t
+
+  include Image0
 
   let pixel display color =
     let color =
@@ -76,7 +86,7 @@ module Image = struct
     ok_exn (Sdl.update_texture texture None display.pixel_ba 1);
     { texture; size = 1, 1 }
 
-  let of_bmp_file display file =
+  let of_bmp_file (display : display) file =
     let surface = ok_exn (Sdl.load_bmp file) in
     let size = Sdl.get_surface_size surface in
     let texture =
@@ -86,9 +96,28 @@ module Image = struct
 
   let destroy t = Sdl.destroy_texture t.texture
   let size t = t.size
-end
 
-let image_of_bmp_file = Image.of_bmp_file
+  let of_file display ~filename =
+    let open Async in
+    let bmpfile = Caml.Filename.temp_file "image" ".bmp" in
+    let%bind () =
+      Process.run_expect_no_output_exn
+        ~prog:"convert"
+        ~args:[ filename; bmpfile ]
+        ()
+    in
+    let image = of_bmp_file display bmpfile in
+    let%bind () = Unix.unlink bmpfile in
+    return image
+
+  let of_contents t ~contents ~format =
+    let open Async in
+    let filename = Caml.Filename.temp_file "input-image" ("." ^ format) in
+    let%bind () = Writer.save filename ~contents in
+    let%bind image = of_file t ~filename in
+    let%bind () = Unix.unlink filename in
+    return image
+end
 
 let clear t color =
   let r, g, b = Color.to_tuple color in

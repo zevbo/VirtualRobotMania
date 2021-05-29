@@ -67,17 +67,9 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
 
   let set_world t world = t.world <- world
 
-  let load_bot_image t id imagefile =
-    let open Async in
-    let bmpfile = Caml.Filename.temp_file "image" ".bmp" in
-    let%bind () =
-      Process.run_expect_no_output_exn
-        ~prog:"convert"
-        ~args:[ imagefile; bmpfile ]
-        ()
-    in
-    let image = Display.image_of_bmp_file t.display bmpfile in
-    let%bind () = Unix.unlink bmpfile in
+  let load_bot_image t id image_thunk =
+    let open Async_kernel in
+    let%bind image = image_thunk () in
     t.images
       <- Map.update t.images id ~f:(fun old_image ->
              Option.iter old_image ~f:(fun old_image ->
@@ -85,13 +77,23 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
              image);
     return ()
 
-  let set_image t ((bot_name : Bot_name.t), imagefile) =
+  let set_image t ((bot_name : Bot_name.t), filename) =
     let id =
       match bot_name with
       | Defense -> t.defense_bot.id
       | Offense -> t.offense_bot.id
     in
-    load_bot_image t id imagefile
+    load_bot_image t id (fun () -> Display.Image.of_file t.display ~filename)
+
+  let set_image_contents t (bot_name, (image_contents : Image_contents.t)) =
+    let id =
+      match (bot_name : Bot_name.t) with
+      | Defense -> t.defense_bot.id
+      | Offense -> t.offense_bot.id
+    in
+    let { Image_contents.contents; format } = image_contents in
+    load_bot_image t id (fun () ->
+        Display.Image.of_contents t.display ~contents ~format)
 
   let get_offense_bot_body state =
     let body_op = Map.find state.world.bodies state.offense_bot.id in

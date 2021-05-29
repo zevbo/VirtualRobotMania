@@ -95,7 +95,7 @@ let run () =
   let borders = [ border_1; border_2; border_3; border_4 ] in
   let world = ref (World.of_bodies (List.append robots borders)) in
   let _image =
-    Display.image_of_bmp_file state.display "../../../images/test-robot.bmp"
+    Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
   in
   let ignore_it _ = () in
   let draw_robot robot_n =

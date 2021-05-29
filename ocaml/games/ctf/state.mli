@@ -51,6 +51,12 @@ module Make (Display : Geo_graph.Display_intf.S) : sig
 
   val set_world : t -> World.t -> unit
   val set_image : t -> Bot_name.t * string -> unit Async_kernel.Deferred.t
+
+  val set_image_contents
+    :  t
+    -> Bot_name.t * Image_contents.t
+    -> unit Async.Deferred.t
+
   val get_offense_bot_body : t -> Body.t
   val get_defense_bot_body : t -> Body.t
 end

@@ -61,10 +61,10 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     in
     state.world <- world;
     let flag_img =
-      Display.image_of_bmp_file state.display (Ctf_consts.Flag.image_path ~root)
+      Display.Image.of_bmp_file state.display (Ctf_consts.Flag.image_path ~root)
     in
     let flag_protector_img =
-      Display.image_of_bmp_file
+      Display.Image.of_bmp_file
         state.display
         (Ctf_consts.Flag.Protector.image_path ~root)
     in

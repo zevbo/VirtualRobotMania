@@ -43,7 +43,7 @@ let run () =
   in
   let world = ref (World.of_bodies [ robot; robot_2 ]) in
   let _image =
-    Display.image_of_bmp_file state.display "../../../images/test-robot.bmp"
+    Display.Image.of_bmp_file state.display "../../../images/test-robot.bmp"
   in
   let draw_robot robot_n =
     let robot = Map.find_exn !world.bodies (World.Id.of_int robot_n) in

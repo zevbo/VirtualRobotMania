@@ -1,7 +1,9 @@
 (library
  (name ctf)
  (libraries
+  async
   core_kernel
+  tsdl
   common
   geo
   geo_graph

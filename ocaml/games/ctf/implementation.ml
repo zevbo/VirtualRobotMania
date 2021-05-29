@@ -26,6 +26,7 @@ let group (module Display : Geo_graph.Display_intf.S) =
     ; impl Protocol.enhance_border enhance_border
     ; impl Protocol.setup_shield setup_shield
     ; impl' Protocol.set_image (State.set_image state)
+    ; impl' Protocol.set_image_contents (State.set_image_contents state)
     ; impl Protocol.num_flags num_flags
     ; impl Protocol.angle_to_opp (Main.angle_to_opp state)
     ; impl Protocol.dist_to_opp (Main.dist_to_opp state)

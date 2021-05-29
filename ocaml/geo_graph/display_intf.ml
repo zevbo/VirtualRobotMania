@@ -15,6 +15,19 @@ module type S = sig
     val pixel : display -> Color.t -> t
     val destroy : t -> unit
     val size : t -> int * int
+
+    (* TODO: replace these with more portable interfaces *)
+
+    val of_bmp_file : display -> string -> t
+    val of_file : display -> filename:string -> t Async_kernel.Deferred.t
+
+    val of_contents
+      :  display
+      -> contents:string
+      -> format:string
+           (** The extension that indicates the format of the data, e.g., "jpg"
+               or "gif" *)
+      -> t Async_kernel.Deferred.t
   end
 
   (** Take whatever has been drawn, and present that to the user *)
@@ -50,9 +63,6 @@ module type S = sig
 
   (** destroy the renderer and the window, and quit SDL *)
   val shutdown : t -> unit
-
-  (* TODO: make a more portable interface here. *)
-  val image_of_bmp_file : t -> string -> Image.t
 
   (** Exit the display if someone has asked you to. *)
   val maybe_exit : t -> unit
