@@ -1,6 +1,10 @@
 open Virtuality2d
 
-val laser : bot:Body.t -> Body.t
-val update : State.t -> unit
-val restock_laser : State.t -> World.Id.t -> unit
-val shoot_laser : State.t -> World.Id.t -> unit
+module Make (Display : Geo_graph.Display_intf.S) : sig
+  type state := State.Make(Display).t
+
+  val laser : bot:Body.t -> Body.t
+  val update : state -> unit
+  val restock_laser : state -> World.Id.t -> unit
+  val shoot_laser : state -> World.Id.t -> unit
+end

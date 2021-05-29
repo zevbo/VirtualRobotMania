@@ -1,6 +1,6 @@
 (library
  (name csexp_rpc)
  (inline_tests)
- (libraries core async csexp)
+ (libraries core_kernel async_kernel csexp)
  (preprocess
   (pps ppx_jane)))

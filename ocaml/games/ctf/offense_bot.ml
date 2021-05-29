@@ -1,6 +1,6 @@
 open Virtuality2d
 open Common
-open Core
+open Core_kernel
 open Geo
 
 type t =

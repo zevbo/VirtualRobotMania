@@ -1,13 +1,10 @@
-open! Core
-open! Async
+open! Core_kernel
+open! Async_kernel
+open! Import
 
 type t
 
-(** Connect to the server over the specified Unix pipe *)
-val connect : filename:string -> t Deferred.t
-
-(** Like connect, but keep on trying until you succeed *)
-val connect_aggressively : filename:string -> t Deferred.t
+val create : Input.t -> Output.t -> t
 
 (** Dispatch a call over the connection, return the result *)
 val dispatch : t -> ('a, 'b) Call.t -> 'a -> 'b Deferred.t

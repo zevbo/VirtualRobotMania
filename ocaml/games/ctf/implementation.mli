@@ -1,4 +1,6 @@
-open! Core
-open Async
+open! Core_kernel
 
-val group : unit -> Csexp_rpc.Implementation.Group.t Deferred.t
+val group
+  :  (module Geo_graph.Display_intf.S)
+  -> root:string
+  -> Csexp_rpc.Implementation.Group.t

@@ -1,5 +1,5 @@
 (executables
  (names main)
- (libraries core async csexp_rpc test_game ctf)
+ (libraries core async csexp_rpc_unix test_game ctf)
  (preprocess
   (pps ppx_jane)))

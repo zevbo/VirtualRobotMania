@@ -1,4 +1,4 @@
-open! Core
+open! Core_kernel
 module Call = Csexp_rpc.Call
 
 module With_bot (M : Sexpable) = struct
@@ -8,6 +8,12 @@ end
 let step = Call.create "step" (module Unit) (module Unit)
 
 let set_image = Call.create "set-image" (module With_bot (String)) (module Unit)
+
+let set_image_contents =
+  Call.create
+    "set-image-contents"
+    (module With_bot (Image_contents))
+    (module Unit)
 
 let set_motors =
   let module Query = struct

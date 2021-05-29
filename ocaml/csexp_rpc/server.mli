@@ -1,5 +1,12 @@
-open! Core
-open! Async
+open! Core_kernel
+open! Async_kernel
+open! Import
 
-(** Start a server listening on a unix-domain socket *)
-val run : Implementation.Group.t -> filename:string -> unit Deferred.t
+(** Handles the server side of a single connection *)
+val run
+  :  Implementation.Group.t
+  -> context:string
+  -> Input.t
+  -> Output.t
+  -> log_s:(Sexp.t -> unit)
+  -> unit Deferred.t

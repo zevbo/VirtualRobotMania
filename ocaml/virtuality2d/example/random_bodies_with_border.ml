@@ -1,6 +1,6 @@
 open Core_kernel
 open Virtuality2d
-open Geo_graph
+open Geo_graph_tsdl
 open Geo
 open Helpers
 

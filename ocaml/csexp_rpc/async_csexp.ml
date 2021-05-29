@@ -1,10 +1,10 @@
-open! Core
-open! Async
+open! Core_kernel
+open! Async_kernel
 open! Import
 
-let read ~context r of_sexp =
+let read ~context ~really_read of_sexp =
   let length = Bytes.create 2 in
-  match%bind Reader.really_read r length with
+  match%bind really_read length with
   | `Eof bytes_read ->
     raise_s
       [%message
@@ -12,7 +12,7 @@ let read ~context r of_sexp =
   | `Ok ->
     let length = Csexp.decode_length length in
     let body = Bytes.create length in
-    (match%bind Reader.really_read r body with
+    (match%bind really_read body with
     | `Eof bytes_read ->
       raise_s
         [%message
@@ -41,4 +41,4 @@ let read ~context r of_sexp =
                 (exn : Exn.t)]
         | value -> return value)))
 
-let write w sexp = Writer.write_bytes w (Csexp.encode sexp)
+let write ~write sexp = write (Csexp.encode sexp)

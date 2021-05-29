@@ -1,27 +1,23 @@
-open! Core
-open! Async
+open! Core_kernel
+open! Async_kernel
 open! Import
 
 type t =
-  { r : Reader.t
-  ; w : Writer.t
+  { input : Input.t
+  ; output : Output.t
   }
 
-let connect ~filename =
-  let%map _, r, w = Tcp.connect (Tcp.Where_to_connect.of_file filename) in
-  { r; w }
+let create input output = { input; output }
 
-let rec connect_aggressively ~filename =
-  match%bind try_with (fun () -> connect ~filename) with
-  | Error _ ->
-    let%bind () = Clock.after (Time.Span.of_ms 20.) in
-    connect_aggressively ~filename
-  | Ok t -> return t
-
-let dispatch t (type a b) (call : (a, b) Call.t) (query : a) =
+let dispatch (t : t) (type a b) (call : (a, b) Call.t) (query : a) =
   let (module Query) = call.query in
-  Async_csexp.write t.w (List [ Atom call.name; Query.sexp_of_t query ]);
+  Async_csexp.write
+    ~write:(Output.write_bytes t.output)
+    (List [ Atom call.name; Query.sexp_of_t query ]);
   let (module Resp) = call.response in
-  Async_csexp.read ~context:call.name t.r Resp.t_of_sexp
+  Async_csexp.read
+    ~context:call.name
+    ~really_read:(fun bytes -> Input.really_read t.input bytes)
+    Resp.t_of_sexp
 
-let close t = Deferred.all_unit [ Reader.close t.r; Writer.close t.w ]
+let close t = Deferred.all_unit [ Input.close t.input; Output.close t.output ]

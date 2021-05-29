@@ -2,7 +2,8 @@ open! Core
 open Geo
 open Virtuality2d
 module Sdl = Tsdl.Sdl
-open Geo_graph
+open Geo_graph_tsdl
+module Color = Geo_graph.Color
 
 let fps = 20.
 let frame = 700, 700

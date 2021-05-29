@@ -1,7 +1,8 @@
 open! Base
 open! Stdio
 open Geo
-open Geo_graph
+open Geo_graph_tsdl
+module Color = Geo_graph.Color
 open Tsdl
 
 let oe = function

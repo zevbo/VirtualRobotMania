@@ -1,0 +1,12 @@
+(executable
+ (name main)
+ (libraries
+  core_kernel
+  async_kernel
+  csexp_rpc
+  ctf
+  js_of_ocaml
+  )
+ (modes js)
+ (preprocess
+  (pps ppx_jane js_of_ocaml-ppx)))

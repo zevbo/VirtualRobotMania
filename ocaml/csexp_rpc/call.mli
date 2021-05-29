@@ -1,4 +1,4 @@
-open! Core
+open! Core_kernel
 
 (** Represents a call that can be executed over the network, with an input and
     output type *)
