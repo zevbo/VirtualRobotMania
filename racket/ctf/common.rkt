@@ -1,5 +1,6 @@
 #lang racket
 (require "driver.rkt")
+(require net/rfc6455)
 (provide (all-defined-out))
 
 (define degrees-over-radians (/ 180 pi))
@@ -24,7 +25,21 @@
   (define floored (inexact->exact (floor angle)))
   (+ (- angle floored) (- (modulo (+ floored 180) 360) 180)))
 
-(define run run-internal)
-(define run-double run-double-internal)
+(define (with-ws? run-internal)
+  (define (run offense defense ws?)
+    (cond
+      [ws?
+       (ws-serve
+        #:port 8080
+        (lambda (conn s)
+          ;(run-internal offense defense #:ws-conn conn)
+          ; testing by just running it normally here
+          (run-internal offense defense)
+          ))]
+      [else (run-internal offense defense)]))
+  run)
+
+(define run (with-ws? run-internal))
+(define run-double (with-ws? run-double-internal))
 
 

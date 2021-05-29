@@ -87,7 +87,7 @@ module Laser = struct
 
   let width = 5.
 
-  let next_level_time = 0.4
+  let next_level_time = 1.
 
   let colors = [ Color.red; Color.rgb 200 0 0; Color.rgb 150 0 0 ]
 
