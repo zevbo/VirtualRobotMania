@@ -1,8 +1,6 @@
 open! Geo
 open! Base
 
-let log_s sexp = Async.Log.Global.info_s sexp
-
 type mass =
   | Inertial of float
   | Static
@@ -557,21 +555,12 @@ let rec get_collision_from_intersections t1 t2 intersections =
       let is_inwards = is_inwards t inter.pt force_angle in
       if is_inwards then force_angle else force_angle +. Float.pi
     in
-    let msg =
-      Printf.sprintf
-        "min escape v: %f. flat edge: (%f, %f), (%f, %f). dist_sq: %f. sharp \
-         acc angle: %f"
-        min_escape_v
-        (Line_like.get_p1 flat_edge.ls).x
-        (Line_like.get_p1 flat_edge.ls).y
-        (Line_like.get_p2 flat_edge.ls).x
-        (Line_like.get_p2 flat_edge.ls).y
-        pertruding_distance_sq
-        (Vec.normalize_angle (flat_edge_acc_angle +. Float.pi)
-        *. 180.
-        /. Float.pi)
-    in
-    log_s [%message msg];
+    (* let msg = Printf.sprintf "min escape v: %f. flat edge: (%f, %f), (%f,
+       %f). dist_sq: %f. sharp \ acc angle: %f" min_escape_v (Line_like.get_p1
+       flat_edge.ls).x (Line_like.get_p1 flat_edge.ls).y (Line_like.get_p2
+       flat_edge.ls).x (Line_like.get_p2 flat_edge.ls).y pertruding_distance_sq
+       (Vec.normalize_angle (flat_edge_acc_angle +. Float.pi) *. 180. /.
+       Float.pi) in *)
     let t1_acc_angle =
       if is_edge_1_flat
       then flat_edge_acc_angle
