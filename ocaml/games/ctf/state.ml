@@ -1,5 +1,7 @@
 open! Core_kernel
 open Virtuality2d
+
+(* TODO: remove explicit SDL dependency *)
 module Sdl = Tsdl.Sdl
 module Color = Geo_graph.Color
 
