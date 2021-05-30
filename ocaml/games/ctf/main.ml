@@ -20,7 +20,7 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
   let dt_sim = dt /. dt_sim_dt
   let speed_constant = 0.2
 
-  let init ~root ~log_s =
+  let init ~log_s =
     let display =
       Display.init
         ~log_s
@@ -57,18 +57,13 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
         offense_shield_id
     in
     state.world <- world;
-    let flag_img =
-      Display.Image.of_bmp_file state.display (Ctf_consts.Flag.image_path ~root)
-    in
-    let flag_protector_img =
-      Display.Image.of_bmp_file
-        state.display
-        (Ctf_consts.Flag.Protector.image_path ~root)
-    in
     state.invisible <- Set.add state.invisible state.offense_shield;
-    state.images <- Map.set state.images ~key:flag_id ~data:flag_img;
-    state.images
-      <- Map.set state.images ~key:flag_protector_id ~data:flag_protector_img;
+    (* let flag_img = Display.Image.of_bmp_file state.display
+       (Ctf_consts.Flag.image_path ~root) in let flag_protector_img =
+       Display.Image.of_bmp_file state.display
+       (Ctf_consts.Flag.Protector.image_path ~root) in state.images <- Map.set
+       state.images ~key:flag_id ~data:flag_img; state.images <- Map.set
+       state.images ~key:flag_protector_id ~data:flag_protector_img; *)
     state
 
   let _status_s sexp =
@@ -309,14 +304,14 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
            Ctf_consts.Bots.Offense.boost_cooldown
       then state.offense_bot.bot.last_boost <- state.ts
 
-  let enhance_border (state : State.t) =
+  let enhance_border (state : State.t) () =
     state.last_wall_enhance <- state.ts;
     state.world
       <- Border.set_border_black_list
            state.world
            Ctf_consts.Border.enhanced_black_list
 
-  let setup_shield (state : State.t) =
+  let setup_shield (state : State.t) () =
     state.offense_bot.bot.last_shield <- state.ts;
     state.invisible <- Set.remove state.invisible state.offense_shield;
     let shield = World.get_body_exn state.world state.offense_shield in
@@ -325,12 +320,12 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     in
     state.world <- World.set_body state.world state.offense_shield shield
 
-  let num_flags (state : State.t) = state.offense_bot.bot.num_flags
+  let num_flags (state : State.t) () = state.offense_bot.bot.num_flags
 
-  let just_returned_flag (state : State.t) =
+  let just_returned_flag (state : State.t) () =
     Float.O.(state.offense_bot.bot.last_flag_return = state.ts)
 
-  let just_killed (state : State.t) =
+  let just_killed (state : State.t) () =
     Float.O.(
       state.offense_bot.bot.last_kill +. dt +. (dt_sim /. 2.) >= state.ts)
 

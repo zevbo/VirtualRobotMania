@@ -32,9 +32,24 @@
 (define (set-robot-image c robot)
   (define file (make-temporary-file "robot-~a.png"))
   (save-image (robot-image robot) file)
-  (define msg `(#"set-image" (,(rpc-name robot) ,(path->bytes file))))
+  (define contents (file->bytes file))
+  (define msg `(#"set-robot-image-contents" (,(rpc-name robot) ((#"contents" ,contents) (#"format" #"png")))))
   (rpc c msg)
-  (delete-file file))
+  (delete-file file)
+  )
+
+(define (set-image c protector?)
+  (define extra
+    (with-output-to-string
+      (lambda () (system "git rev-parse --show-prefix"))))
+  (define depth (- (length (string-split extra "/")) 1))
+  (define image-name (if protector? "green-outline.bmp" "flag.png"))
+  (define format (if protector? #"bmp" #"png"))
+  (define file (string-append (string-join (make-list depth "..") "/") "/images/" image-name))
+  (define contents (file->bytes file))
+  (define command-name (if protector? #"set-flag-protector-image-contents" #"set-flag-image-contents"))
+  (define msg `(,command-name ((#"contents" ,contents) (#"format" ,format))))
+  (rpc c msg))
 
 (define (unknown-kind kind)
   (error "Your bot kind should be either 'offense or 'defense. This was neither" kind))
@@ -61,8 +76,11 @@
 (define (startup offense defense #:ws-conn [ws-conn #f])
   (check-offense-defense offense defense)
   (set! the-connection (launch-and-connect "ctf" #:ws-conn ws-conn))
+  (set-image the-connection #f)
+  (set-image the-connection #t)
   (set-robot-image the-connection offense)
   (set-robot-image the-connection defense)
+  
   the-connection)
 (define (run-internal offense defense #:ws-conn [ws-conn #f])
   (set! the-connection (startup offense defense #:ws-conn ws-conn))

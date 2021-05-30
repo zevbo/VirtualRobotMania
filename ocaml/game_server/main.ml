@@ -27,12 +27,8 @@ let () =
     ~summary:"Game engine server"
     [ command "test" (fun () -> return Test_game.Implementation.group)
     ; command "ctf" (fun () ->
-          let root = root () in
           let group =
-            Ctf.Implementation.group
-              ~root
-              ~log_s
-              (module Geo_graph_tsdl.Display)
+            Ctf.Implementation.group ~log_s (module Geo_graph_tsdl.Display)
           in
           let%map username = Unix.getlogin () in
           Log.Global.set_output
