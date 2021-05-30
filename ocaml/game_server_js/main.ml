@@ -72,16 +72,16 @@ let () =
      in
      let%bind pelosi = Display.Image.of_name display pelosi in
      let rec loop n =
-       let angle = Float.of_int n *. Float.pi /. 10. in
+       let angle = Float.of_int n *. Float.pi /. 1000. in
        let size = 200. *. (1. +. Float.sin (Float.of_int n /. 15.)) in
-       print_s [%message "loop" (angle : float) (size : float)];
+       print_s [%message "main" (size : float)];
        Display.clear display Color.white;
        Display.draw_image
          display
          pelosi
          ~angle
-         ~center:(Vec.create (-250.) (-250.));
-       let%bind () = Async_js.sleep 0.05 in
+         ~center:(Vec.create size (size /. 2.));
+       let%bind () = Async_js.sleep 0.1 in
        Display.present display;
        loop (n + 1)
      in
