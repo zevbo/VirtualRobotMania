@@ -22,7 +22,8 @@ let load_image url =
   return img
 
 type t =
-  { physical : int * int
+  { mutable physical : int * int
+  ; w_over_h : float
   ; logical : int * int
   ; title : string
   ; log_s : Sexp.t -> unit
@@ -42,18 +43,39 @@ let init ~physical ~logical ~title ~log_s =
   Document.set_title G.document (Jstr.of_string title);
   let body = Document.body G.document in
   El.set_children body [ Canvas.to_el canvas ];
+  let c2d = C2d.create canvas in
+  Async_js.init ();
+  let w_over_h =
+    let pw, ph = physical in
+    pw // ph
+  in
+  let t = { physical; logical; title; log_s; c2d; w_over_h } in
   let size_canvas () =
-    let h = Float.to_int (window_inner_h G.window) in
-    let w = Float.to_int (window_inner_w G.window) in
-    print_s [%message "Size" (h : int) (w : int)];
-    Canvas.set_h canvas h;
-    Canvas.set_w canvas w
+    let wh = window_inner_h G.window in
+    let ww = window_inner_w G.window in
+    let win_w_over_h = ww /. wh in
+    let pw, ph =
+      match Float.O.(win_w_over_h > t.w_over_h) with
+      | true ->
+        print_s
+          [%message "match height" (t.w_over_h : float) (win_w_over_h : float)];
+        wh *. t.w_over_h, wh
+      | false ->
+        print_s
+          [%message "match width" (t.w_over_h : float) (win_w_over_h : float)];
+        ww, ww /. t.w_over_h
+    in
+    let pw = Float.to_int pw in
+    let ph = Float.to_int ph in
+    print_s
+      [%message "new physical" (ww : float) (wh : float) (pw : int) (ph : int)];
+    Canvas.set_w canvas pw;
+    Canvas.set_h canvas ph;
+    t.physical <- pw, ph
   in
   size_canvas ();
   Ev.listen Ev.resize (fun _ -> size_canvas ()) (Window.as_target G.window);
-  let c2d = C2d.create canvas in
-  Async_js.init ();
-  { physical; logical; title; log_s; c2d }
+  t
 
 module Image = struct
   type t =

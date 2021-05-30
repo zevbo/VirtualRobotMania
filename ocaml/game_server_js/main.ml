@@ -65,8 +65,8 @@ let () =
     (print_s [%message "starting up"];
      let display =
        Display.init
-         ~physical:(1000, 500)
-         ~logical:(1000, 500)
+         ~physical:(600, 500)
+         ~logical:(600, 500)
          ~title:"This is my title"
          ~log_s:print_s
      in
@@ -76,7 +76,6 @@ let () =
        let angle = Float.of_int n *. Float.pi /. 50. in
        let size = 200. *. (1. +. Float.sin (Float.of_int n /. 25.)) in
        let scale = Float.O.((1. + Float.sin (Float.of_int n /. 100.)) / 2.) in
-       Async_js.log_s [%message "Scale factor" (scale : float)];
        Display.clear display Color.black;
        Display.draw_image
          display
