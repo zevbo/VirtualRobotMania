@@ -30,6 +30,13 @@ module type S = sig
            (** The extension that indicates the format of the data, e.g., "jpg"
                or "gif" *)
       -> t Async_kernel.Deferred.t
+
+    (** This provides a logical name (with file extension, e.g. "flag.bmp") that
+        will be loaded by the engine. Each instance of the engine can have its
+        own way of implementing this. e.g., a JavaScript implementation may load
+        the corresponding URL from the hosting server, whereas a native one
+        might look in a standard directory for the image in question. *)
+    val of_name : display -> string -> t Async_kernel.Deferred.t
   end
 
   (** Take whatever has been drawn, and present that to the user *)

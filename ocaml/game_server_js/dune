@@ -1,14 +1,15 @@
 (executable
  (name main)
  (libraries
+   async_js
+   async_kernel
    brr
-  core_kernel
-  async_kernel
-  csexp_rpc
-  ctf
-  js_of_ocaml
-  async_js
+   core_kernel
+   csexp_rpc
+   ctf
+   geo_graph_js
+   js_of_ocaml
   )
  (modes js)
  (preprocess
-  (pps ppx_jane js_of_ocaml-ppx)))
+  (pps ppx_jane)))
