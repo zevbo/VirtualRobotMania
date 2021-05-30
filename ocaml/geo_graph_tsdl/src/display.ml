@@ -31,7 +31,7 @@ type t =
 
 let set_pixel_color t color =
   let color =
-    let r, g, b = Color.to_tuple color in
+    let r, g, b = Color.to_rgb_tuple color in
     Sdl.map_rgba t.pixel_format r g b 255
   in
   t.pixel_ba.{0} <- color;
@@ -72,7 +72,7 @@ module Image = struct
 
   let pixel display color =
     let color =
-      let r, g, b = Color.to_tuple color in
+      let r, g, b = Color.to_rgb_tuple color in
       Sdl.map_rgba display.pixel_format r g b 255
     in
     display.pixel_ba.{0} <- color;
@@ -120,10 +120,12 @@ module Image = struct
     let%bind image = of_file t ~filename in
     let%bind () = Unix.unlink filename in
     return image
+
+  let of_name _ = assert false
 end
 
 let clear t color =
-  let r, g, b = Color.to_tuple color in
+  let r, g, b = Color.to_rgb_tuple color in
   ok_exn @@ Sdl.set_render_draw_color t.renderer r g b 0;
   ok_exn @@ Sdl.render_fill_rect t.renderer None
 
