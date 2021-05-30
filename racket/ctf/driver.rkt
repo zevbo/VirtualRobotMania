@@ -43,11 +43,12 @@
     (with-output-to-string
       (lambda () (system "git rev-parse --show-prefix"))))
   (define depth (- (length (string-split extra "/")) 1))
-  (define image-name (if protector? "flag.bmp" "green-outline.bmp"))
+  (define image-name (if protector? "green-outline.bmp" "flag.png"))
+  (define format (if protector? #"bmp" #"png"))
   (define file (string-append (string-join (make-list depth "..") "/") "/images/" image-name))
   (define contents (file->bytes file))
   (define command-name (if protector? #"set-flag-protector-image-contents" #"set-flag-image-contents"))
-  (define msg `(,command-name ((#"contents" ,contents) (#"format" #"bmp"))))
+  (define msg `(,command-name ((#"contents" ,contents) (#"format" ,format))))
   (rpc c msg))
 
 (define (unknown-kind kind)

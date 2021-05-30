@@ -304,14 +304,14 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
            Ctf_consts.Bots.Offense.boost_cooldown
       then state.offense_bot.bot.last_boost <- state.ts
 
-  let enhance_border (state : State.t) =
+  let enhance_border (state : State.t) () =
     state.last_wall_enhance <- state.ts;
     state.world
       <- Border.set_border_black_list
            state.world
            Ctf_consts.Border.enhanced_black_list
 
-  let setup_shield (state : State.t) =
+  let setup_shield (state : State.t) () =
     state.offense_bot.bot.last_shield <- state.ts;
     state.invisible <- Set.remove state.invisible state.offense_shield;
     let shield = World.get_body_exn state.world state.offense_shield in
@@ -320,12 +320,12 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     in
     state.world <- World.set_body state.world state.offense_shield shield
 
-  let num_flags (state : State.t) = state.offense_bot.bot.num_flags
+  let num_flags (state : State.t) () = state.offense_bot.bot.num_flags
 
-  let just_returned_flag (state : State.t) =
+  let just_returned_flag (state : State.t) () =
     Float.O.(state.offense_bot.bot.last_flag_return = state.ts)
 
-  let just_killed (state : State.t) =
+  let just_killed (state : State.t) () =
     Float.O.(
       state.offense_bot.bot.last_kill +. dt +. (dt_sim /. 2.) >= state.ts)
 

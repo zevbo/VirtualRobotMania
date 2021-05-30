@@ -9,15 +9,16 @@ module Make (Display : Geo_graph.Display_intf.S) : sig
 
   module State := State.Make(Display)
 
-  val init : log_s:(Sexp.t -> unit) -> State.t
-  val step : State.t -> unit -> unit
-  val just_returned_flag : State.t -> bool
-  val just_killed : State.t -> bool
-  val enhance_border : State.t -> unit
-  val setup_shield : State.t -> unit
-  val num_flags : State.t -> int
-
   type ('a, 'b) bot_func := State.t -> Bot_name.t * 'a -> 'b
+  type ('a, 'b) state_func := State.t -> 'a -> 'b
+
+  val init : log_s:(Sexp.t -> unit) -> State.t
+  val step : (unit, unit) state_func
+  val just_returned_flag : (unit, bool) state_func
+  val just_killed : (unit, bool) state_func
+  val enhance_border : (unit, unit) state_func
+  val setup_shield : (unit, unit) state_func
+  val num_flags : (unit, int) state_func
 
   (** User actuator functions *)
 
