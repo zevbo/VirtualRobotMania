@@ -23,6 +23,9 @@ module type S = sig
 
     (* TODO: replace these with more portable interfaces *)
 
+    val of_bmp_file : display -> string -> t
+    val of_file : display -> filename:string -> t Async_kernel.Deferred.t
+
     val of_contents
       :  display
       -> contents:string
