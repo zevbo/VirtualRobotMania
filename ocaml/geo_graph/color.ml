@@ -6,6 +6,7 @@ type t =
   ; b : int
   ; a : int
   }
+[@@deriving sexp]
 
 let rgb r g b = { r; g; b; a = 255 }
 let rgba r g b a = { r; g; b; a }

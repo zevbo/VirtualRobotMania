@@ -99,19 +99,26 @@ let draw_image_base
     ~angle
   =
   let iw, ih = Image.size image in
-  let shift x = -.Float.of_int x /. 2. in
-  C2d.translate t.c2d ~x:(shift iw) ~y:(shift ih);
+  let pw, ph = t.physical in
+  C2d.scale t.c2d ~sy:(-1.) ~sx:1.;
+  C2d.translate t.c2d ~x:(Float.of_int pw /. 2.) ~y:(-.Float.of_int ph /. 2.);
+  C2d.translate t.c2d ~x:center.x ~y:center.y;
   C2d.rotate t.c2d (-.angle);
-  C2d.translate t.c2d ~x:(-.center.x) ~y:(-.center.y);
   C2d.scale t.c2d ~sx:(Float.of_int iw /. w) ~sy:(Float.of_int ih /. h);
+  let shift x = -.Float.of_int x /. 2. in
   (match image with
   | Pixel color ->
     let color = Color.alpha color alpha |> color_to_style in
     C2d.set_fill_style t.c2d color;
-    C2d.fill_rect t.c2d ~x:0. ~y:0. ~w:(Float.of_int iw) ~h:(Float.of_int ih)
+    C2d.fill_rect
+      t.c2d
+      ~x:(shift iw)
+      ~y:(shift ih)
+      ~w:(Float.of_int iw)
+      ~h:(Float.of_int ih)
   | Image image ->
     let src = C2d.image_src_of_el image in
-    C2d.draw_image t.c2d src ~x:0. ~y:0.);
+    C2d.draw_image t.c2d src ~x:(shift iw) ~y:(shift ih));
   C2d.reset_transform t.c2d
 
 let draw_image_wh t ~w ~h ?(alpha = 255) image ~center ~angle =

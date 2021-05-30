@@ -65,24 +65,40 @@ let () =
     (print_s [%message "starting up"];
      let display =
        Display.init
-         ~physical:(500, 500)
-         ~logical:(500, 500)
+         ~physical:(1000, 500)
+         ~logical:(1000, 500)
          ~title:"This is my title"
          ~log_s:print_s
      in
      let%bind pelosi = Display.Image.of_name display pelosi in
+     let square = Display.Image.pixel display Color.red in
      let rec loop n =
-       let angle = Float.of_int n *. Float.pi /. 1000. in
-       let size = 200. *. (1. +. Float.sin (Float.of_int n /. 15.)) in
-       print_s [%message "main" (size : float)];
-       Display.clear display Color.white;
+       let angle = Float.of_int n *. Float.pi /. 50. in
+       let size = 200. *. (1. +. Float.sin (Float.of_int n /. 25.)) in
+       let scale = Float.O.((1. + Float.sin (Float.of_int n /. 100.)) / 2.) in
+       print_s [%message "Scale factor" (scale : float)];
+       Display.clear display Color.black;
        Display.draw_image
          display
          pelosi
          ~angle
+         ~scale
          ~center:(Vec.create size (size /. 2.));
-       let%bind () = Async_js.sleep 0.1 in
+       Display.draw_image
+         display
+         pelosi
+         ~angle:(angle *. 2.)
+         ~center:(Vec.create size (size /. 2.));
+       Display.draw_image_wh
+         display
+         square
+         ~alpha:200
+         ~w:30.
+         ~h:80.
+         ~center:(Vec.create (size /. 2.) size)
+         ~angle:(angle /. 2.);
        Display.present display;
+       let%bind () = Async_js.sleep 0.01 in
        loop (n + 1)
      in
      loop 0)
