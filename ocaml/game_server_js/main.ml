@@ -81,7 +81,7 @@ let () =
        Display.draw_image
          display
          pelosi
-         ~angle
+         ~angle:(-.angle)
          ~scale
          ~center:(Vec.create size (size /. 2.));
        Display.draw_image

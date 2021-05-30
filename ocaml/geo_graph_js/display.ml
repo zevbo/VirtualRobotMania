@@ -29,10 +29,28 @@ type t =
   ; c2d : C2d.t
   }
 
+let window_inner_w (w : Window.t) =
+  let w = Window.to_jv w in
+  Jv.Float.get w "innerWidth"
+
+let window_inner_h (w : Window.t) =
+  let w = Window.to_jv w in
+  Jv.Float.get w "innerHeight"
+
 let init ~physical ~logical ~title ~log_s =
-  let canvas = Canvas.create ~w:(fst physical) ~h:(snd physical) [] in
+  let canvas = Canvas.create [] in
   Document.set_title G.document (Jstr.of_string title);
-  El.set_children (Document.body G.document) [ Canvas.to_el canvas ];
+  let body = Document.body G.document in
+  El.set_children body [ Canvas.to_el canvas ];
+  let size_canvas () =
+    let h = Float.to_int (window_inner_h G.window) in
+    let w = Float.to_int (window_inner_w G.window) in
+    print_s [%message "Size" (h : int) (w : int)];
+    Canvas.set_h canvas h;
+    Canvas.set_w canvas w
+  in
+  size_canvas ();
+  Ev.listen Ev.resize (fun _ -> size_canvas ()) (Window.as_target G.window);
   let c2d = C2d.create canvas in
   Async_js.init ();
   { physical; logical; title; log_s; c2d }
