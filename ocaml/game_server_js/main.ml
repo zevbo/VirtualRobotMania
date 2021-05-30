@@ -76,7 +76,11 @@ let () =
        let size = 200. *. (1. +. Float.sin (Float.of_int n /. 15.)) in
        print_s [%message "loop" (angle : float) (size : float)];
        Display.clear display Color.white;
-       Display.draw_image display pelosi ~angle ~center:(Vec.create 0. 0.);
+       Display.draw_image
+         display
+         pelosi
+         ~angle
+         ~center:(Vec.create (-250.) (-250.));
        let%bind () = Async_js.sleep 0.05 in
        Display.present display;
        loop (n + 1)
