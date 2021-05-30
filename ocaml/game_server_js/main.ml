@@ -1,6 +1,8 @@
 open! Core_kernel
 open! Async_kernel
+open Geo
 open Brr
+module Color = Geo_graph.Color
 module Canvas = Brr_canvas.Canvas
 module C2d = Brr_canvas.C2d
 module Matrix4 = Brr_canvas.Matrix4
@@ -22,7 +24,7 @@ let load_image url =
   Ev.unlisten Ev.load on_load (El.as_target img);
   return img
 
-let () =
+let run () =
   don't_wait_for
     (let w = 500 in
      let h = 500 in
@@ -52,6 +54,31 @@ let () =
        draw_lines [ 0., 0.; size, size ];
        draw_lines [ 0., size; size, 0. ];
        let%bind () = Async_js.sleep 0.01 in
+       loop (n + 1)
+     in
+     loop 0)
+
+module Display = Geo_graph_js.Display
+
+let () =
+  don't_wait_for
+    (print_s [%message "starting up"];
+     let display =
+       Display.init
+         ~physical:(500, 500)
+         ~logical:(500, 500)
+         ~title:"This is my title"
+         ~log_s:print_s
+     in
+     let%bind pelosi = Display.Image.of_name display pelosi in
+     let rec loop n =
+       let angle = Float.of_int n *. Float.pi /. 10. in
+       let size = 200. *. (1. +. Float.sin (Float.of_int n /. 15.)) in
+       print_s [%message "loop" (angle : float) (size : float)];
+       Display.clear display Color.white;
+       Display.draw_image display pelosi ~angle ~center:(Vec.create 0. 0.);
+       let%bind () = Async_js.sleep 0.05 in
+       Display.present display;
        loop (n + 1)
      in
      loop 0)
