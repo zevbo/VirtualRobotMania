@@ -76,7 +76,7 @@ let () =
        let angle = Float.of_int n *. Float.pi /. 50. in
        let size = 200. *. (1. +. Float.sin (Float.of_int n /. 25.)) in
        let scale = Float.O.((1. + Float.sin (Float.of_int n /. 100.)) / 2.) in
-       print_s [%message "Scale factor" (scale : float)];
+       Async_js.log_s [%message "Scale factor" (scale : float)];
        Display.clear display Color.black;
        Display.draw_image
          display
@@ -87,15 +87,16 @@ let () =
        Display.draw_image
          display
          pelosi
+         ~alpha:100
          ~angle:(angle *. 2.)
-         ~center:(Vec.create size (size /. 2.));
+         ~center:(Vec.create (-.size) (size /. 2.));
        Display.draw_image_wh
          display
          square
-         ~alpha:200
+         ~alpha:50
          ~w:30.
          ~h:80.
-         ~center:(Vec.create (size /. 2.) size)
+         ~center:(Vec.create (size /. 2.) (-.size))
          ~angle:(angle /. 2.);
        Display.present display;
        let%bind () = Async_js.sleep 0.01 in
