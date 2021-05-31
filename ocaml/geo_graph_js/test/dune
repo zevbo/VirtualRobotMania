@@ -6,7 +6,6 @@
    brr
    core_kernel
    csexp_rpc
-   csexp_rpc_js
    ctf
    geo_graph_js
    js_of_ocaml

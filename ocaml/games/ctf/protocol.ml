@@ -13,14 +13,23 @@ let set_robot_image_contents =
     (module With_bot (Image_contents))
     (module Unit)
 
+let set_robot_image_by_name =
+  Call.create "set-robot-image-by-name" (module With_bot (String)) (module Unit)
+
 let set_flag_image_contents =
   Call.create "set-flag-image-contents" (module Image_contents) (module Unit)
+
+let set_flag_image_by_name =
+  Call.create "set-flag-image-by-name" (module String) (module Unit)
 
 let set_flag_protector_image_contents =
   Call.create
     "set-flag-protector-image-contents"
     (module Image_contents)
     (module Unit)
+
+let set_flag_protector_image_by_name =
+  Call.create "set-flag-protector-image-by-name" (module String) (module Unit)
 
 let set_motors =
   let module Query = struct

@@ -1,5 +1,0 @@
-(library
- (name ctf_unix)
- (libraries core_kernel common ctf geo virtuality2d csexp_rpc)
- (preprocess
-  (pps ppx_jane)))
