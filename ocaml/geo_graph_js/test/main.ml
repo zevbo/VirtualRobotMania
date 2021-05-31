@@ -37,7 +37,7 @@ let () =
           let v = Vec.create in
           pairs [ v (-.x) (-.y); v x (-.y); v x y; v (-.x) y; v (-.x) (-.y) ])
          ~f:(fun (v1, v2) ->
-           Display.draw_line display ~width:10. v1 v2 Color.blue);
+           Display.draw_line display ~width:0.2 v1 v2 Color.blue);
        Display.draw_image
          display
          pelosi

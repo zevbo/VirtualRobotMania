@@ -118,12 +118,12 @@ let clear t color =
 let color_to_style color =
   Color.to_js_string color |> Jstr.of_string |> C2d.color
 
-(* Convertst he physical to the logical dimensions. Here we assume that the
+(* Converts the physical to the logical dimensions. Here we assume that the
    physical and logical dimensions have the same aspect ratio. The desired frame
    of reference has the origin at zero, and has positive x pointing up, and
    positive y pointing to the right, which requires a mirror tranformation *)
 let physical_to_logical t =
-  (* Make y go up *)
+  (* Make y point up instead of down *)
   C2d.scale t.c2d ~sy:(-1.) ~sx:1.;
   (* Move the origin to the center *)
   C2d.translate t.c2d ~x:(t.physical.x /. 2.) ~y:(-.t.physical.y /. 2.);
