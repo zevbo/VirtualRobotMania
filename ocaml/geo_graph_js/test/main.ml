@@ -15,6 +15,14 @@ let rec pairs l =
 
 let v = Vec.create
 
+let nth_color n =
+  let open Float.O in
+  let to_byte x = Float.iround_down_exn ((x + 1.) / 2. * 256.) in
+  Color.rgb
+    (to_byte (Float.sin (Float.of_int n / 25.)))
+    (to_byte (Float.sin (Float.of_int n / 27.)))
+    (to_byte (Float.sin (Float.of_int n / 24.)))
+
 let () =
   don't_wait_for
     (print_s [%message "starting up"];
@@ -38,7 +46,7 @@ let () =
           let y = 200. in
           pairs [ v (-.x) (-.y); v x (-.y); v x y; v (-.x) y; v (-.x) (-.y) ])
          ~f:(fun (v1, v2) ->
-           Display.draw_line display ~width:0.2 v1 v2 Color.blue);
+           Display.draw_line display ~width:5. v1 v2 (nth_color n));
        Display.draw_image
          display
          pelosi
