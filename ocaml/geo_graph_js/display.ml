@@ -51,19 +51,13 @@ let init ~physical ~logical ~title ~log_s =
   in
   let t = { physical; logical; title; log_s; c2d; w_over_h } in
   let size_canvas () =
-    let wh = window_inner_h G.window in
-    let ww = window_inner_w G.window in
+    let wh = window_inner_h G.window -. 10. in
+    let ww = window_inner_w G.window -. 10. in
     let win_w_over_h = ww /. wh in
     let pw, ph =
       match Float.O.(win_w_over_h > t.w_over_h) with
-      | true ->
-        print_s
-          [%message "match height" (t.w_over_h : float) (win_w_over_h : float)];
-        wh *. t.w_over_h, wh
-      | false ->
-        print_s
-          [%message "match width" (t.w_over_h : float) (win_w_over_h : float)];
-        ww, ww /. t.w_over_h
+      | true -> wh *. t.w_over_h, wh
+      | false -> ww, ww /. t.w_over_h
     in
     let pw = Float.to_int pw in
     let ph = Float.to_int ph in
@@ -142,9 +136,11 @@ let draw_image_base
   let pw, ph = t.physical in
   C2d.scale t.c2d ~sy:(-1.) ~sx:1.;
   C2d.translate t.c2d ~x:(Float.of_int pw /. 2.) ~y:(-.Float.of_int ph /. 2.);
+  C2d.scale t.c2d ~sx:(w /. Float.of_int iw) ~sy:(h /. Float.of_int ih);
   C2d.translate t.c2d ~x:center.x ~y:center.y;
   C2d.rotate t.c2d (-.angle);
-  C2d.scale t.c2d ~sx:(w /. Float.of_int iw) ~sy:(h /. Float.of_int ih);
+  let pl_ratio = fst t.physical // fst t.logical in
+  C2d.scale t.c2d ~sx:pl_ratio ~sy:pl_ratio;
   let shift x = -.Float.of_int x /. 2. in
   (match image with
   | Pixel color ->
@@ -177,6 +173,11 @@ let draw_image t ?(scale = 1.0) ?alpha (img : Image.t) ~center ~angle =
   draw_image_wh t ?alpha ~w ~h img ~center ~angle
 
 let draw_line t ~width (v1 : Vec.t) (v2 : Vec.t) color =
+  let pw, ph = t.physical in
+  C2d.scale t.c2d ~sy:(-1.) ~sx:1.;
+  C2d.translate t.c2d ~x:(Float.of_int pw /. 2.) ~y:(-.Float.of_int ph /. 2.);
+  let pl_ratio = fst t.physical // fst t.logical in
+  C2d.scale t.c2d ~sx:pl_ratio ~sy:pl_ratio;
   let path = C2d.Path.create () in
   C2d.Path.move_to path ~x:v1.x ~y:v1.y;
   C2d.Path.line_to path ~x:v2.x ~y:v2.y;

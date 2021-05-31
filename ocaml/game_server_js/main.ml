@@ -65,8 +65,8 @@ let () =
     (print_s [%message "starting up"];
      let display =
        Display.init
-         ~physical:(600, 500)
-         ~logical:(600, 500)
+         ~physical:(1000, 500)
+         ~logical:(1000, 500)
          ~title:"This is my title"
          ~log_s:print_s
      in
