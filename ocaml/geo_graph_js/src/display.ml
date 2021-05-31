@@ -19,10 +19,9 @@ let load_image url =
   return img
 
 type t =
-  { mutable physical : int * int
-  ; w_over_h : float
-  ; logical : int * int
-  ; title : string
+  { mutable physical : Vec.t
+  ; x_over_y : float
+  ; logical : Vec.t
   ; log_s : Sexp.t -> unit
   ; c2d : C2d.t
   }
@@ -36,33 +35,33 @@ let window_inner_h (w : Window.t) =
   Jv.Float.get w "innerHeight"
 
 let init ~physical ~logical ~title ~log_s =
+  let vec (x, y) = Vec.create (Float.of_int x) (Float.of_int y) in
+  let physical = vec physical in
+  let logical = vec logical in
   let canvas = Canvas.create [] in
   Document.set_title G.document (Jstr.of_string title);
   let body = Document.body G.document in
   El.set_children body [ Canvas.to_el canvas ];
   let c2d = C2d.create canvas in
   Async_js.init ();
-  let w_over_h =
-    let pw, ph = physical in
-    pw // ph
-  in
-  let t = { physical; logical; title; log_s; c2d; w_over_h } in
+  let x_over_y = physical.x /. physical.y in
+  let t = { physical; logical; log_s; c2d; x_over_y } in
   let size_canvas () =
-    let wh = window_inner_h G.window -. 10. in
-    let ww = window_inner_w G.window -. 10. in
-    let win_w_over_h = ww /. wh in
-    let pw, ph =
-      match Float.O.(win_w_over_h > t.w_over_h) with
-      | true -> wh *. t.w_over_h, wh
-      | false -> ww, ww /. t.w_over_h
+    let win =
+      Vec.create
+        (window_inner_w G.window -. 10.)
+        (window_inner_h G.window -. 10.)
     in
-    let pw = Float.to_int pw in
-    let ph = Float.to_int ph in
-    print_s
-      [%message "new physical" (ww : float) (wh : float) (pw : int) (ph : int)];
-    Canvas.set_w canvas pw;
-    Canvas.set_h canvas ph;
-    t.physical <- pw, ph
+    let win_x_over_y = win.x /. win.y in
+    let new_physical =
+      match Float.O.(win_x_over_y > t.x_over_y) with
+      | true -> Vec.create (win.y *. t.x_over_y) win.y
+      | false -> Vec.create win.x (win.x /. t.x_over_y)
+    in
+    print_s [%message "new physical" (win : Vec.t) (new_physical : Vec.t)];
+    Canvas.set_w canvas (Float.to_int new_physical.x);
+    Canvas.set_h canvas (Float.to_int new_physical.y);
+    t.physical <- new_physical
   in
   size_canvas ();
   Ev.listen Ev.resize (fun _ -> size_canvas ()) (Window.as_target G.window);
@@ -114,8 +113,7 @@ let present _t = ()
 let clear t color =
   let color = C2d.color (Jstr.of_string (Color.to_js_string color)) in
   C2d.set_fill_style t.c2d color;
-  let w, h = t.physical in
-  C2d.fill_rect t.c2d ~x:0. ~y:0. ~w:(Float.of_int w) ~h:(Float.of_int h)
+  C2d.fill_rect t.c2d ~x:0. ~y:0. ~w:t.physical.x ~h:t.physical.y
 
 let color_to_style color =
   Color.to_js_string color |> Jstr.of_string |> C2d.color
@@ -128,10 +126,9 @@ let physical_to_logical t =
   (* Make y go up *)
   C2d.scale t.c2d ~sy:(-1.) ~sx:1.;
   (* Move the origin to the center *)
-  let pw, ph = t.physical in
-  C2d.translate t.c2d ~x:(Float.of_int pw /. 2.) ~y:(-.Float.of_int ph /. 2.);
+  C2d.translate t.c2d ~x:(t.physical.x /. 2.) ~y:(-.t.physical.y /. 2.);
   (* Scale from physical to logical size dimensions *)
-  let pl_ratio = fst t.physical // fst t.logical in
+  let pl_ratio = t.physical.x /. t.logical.x in
   C2d.scale t.c2d ~sx:pl_ratio ~sy:pl_ratio
 
 let draw_image_base
@@ -190,7 +187,7 @@ let draw_line t ~width (v1 : Vec.t) (v2 : Vec.t) color =
   C2d.set_line_cap t.c2d (Jstr.of_string "round");
   C2d.set_stroke_style t.c2d (color_to_style color);
   C2d.stroke t.c2d path;
-  u C2d.reset_transform t.c2d
+  C2d.reset_transform t.c2d
 
 (** Nothing to do in Javascript land... *)
 let shutdown _t = ()
