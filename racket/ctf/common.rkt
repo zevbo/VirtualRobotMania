@@ -1,6 +1,7 @@
 #lang racket
 (require "driver.rkt")
 (require net/rfc6455)
+(require 2htdp/image)
 (provide (all-defined-out))
 
 (define (bot-rpc-ang msg args)
@@ -27,17 +28,50 @@
   (define floored (inexact->exact (floor angle)))
   (of-radians (+ (- angle floored) (- (flmod (+ floored pi) (* 2 pi)) pi))))
 
+(define-syntax-rule (our-service-mapper main [(image-name image) ...] [(file-image-name image-file) ...])
+  (ws-service-mapper
+   [(string-append "/image/" file-image-name)
+    [(#f) ; if client did not request any subprotocol
+     (lambda (c)
+       (ws-send! c (file->bytes image-file)))]]
+   ...
+   
+   [(string-append "/image/" image-name)
+    [(#f) ; if client did not request any subprotocol
+     (lambda (c)
+       (define file (make-temporary-file "image-~a.png"))
+       (save-image image file)
+       (ws-send! c (file->bytes file))
+       (delete-file file))]]
+   ...
+   [""
+    [(#f) 
+     main]]))
+
 (define (with-ws? run-internal)
+  (define extra
+    (with-output-to-string
+      (lambda () (system "git rev-parse --show-prefix"))))
+  (define depth (- (length (string-split extra "/")) 1))
+  (define images-folder (string-append (string-join (make-list depth "..") "/") "/images/"))
   (define (run offense defense ws?)
     (cond
       [ws?
-       (ws-serve
+       (ws-serve*
         #:port 8080
-        (lambda (conn s)
-          ;(run-internal offense defense #:ws-conn conn)
-          ; testing by just running it normally here
-          (run-internal offense defense)
-          ))]
+        (our-service-mapper
+         (lambda (conn s)
+           ;(run-internal offense defense #:ws-conn conn)
+           ; testing by just running it normally here
+           (run-internal offense defense)
+           )
+         [("offense-bot" (robot-image offense)) ("defense-bot" (robot-image defense))]
+         [("flag" (string-append images-folder "flag.png"))
+          ("flag-protector" (string-append images-folder "green-outline.bmp"))]
+         ))
+       (system "open --new -a \"Google Chrome\" --args \"http://localhost:8080\"")
+
+       ]
       [else (run-internal offense defense)]))
   run)
 
