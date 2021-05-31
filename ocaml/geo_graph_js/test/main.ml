@@ -1,17 +1,72 @@
 open! Core_kernel
 open! Async_kernel
 open Geo
-open Brr
 module Color = Geo_graph.Color
-module Canvas = Brr_canvas.Canvas
-module C2d = Brr_canvas.C2d
-module Matrix4 = Brr_canvas.Matrix4
 
 let pelosi =
   "https://cdn.britannica.com/s:250x250,c:crop/93/204193-050-16E326DA/Nancy-Pelosi-2018.jpg"
 
-let def fut =
-  Deferred.create (fun ivar -> Fut.await fut (fun x -> Ivar.fill ivar x))
+module Display = Geo_graph_js.Display
+
+let rec pairs l =
+  match l with
+  | [] | [ _ ] -> []
+  | x :: y :: rest -> (x, y) :: pairs (y :: rest)
+
+let () =
+  don't_wait_for
+    (print_s [%message "starting up"];
+     let display =
+       Display.init
+         ~physical:(1000, 500)
+         ~logical:(1000, 500)
+         ~title:"This is my title"
+         ~log_s:print_s
+     in
+     let%bind pelosi = Display.Image.of_name display pelosi in
+     let square = Display.Image.pixel display Color.red in
+     let rec loop n =
+       let angle = Float.of_int n *. Float.pi /. 50. in
+       let size = 200. *. (1. +. Float.sin (Float.of_int n /. 25.)) in
+       let scale = Float.O.((1. + Float.sin (Float.of_int n /. 100.)) / 2.) in
+       Display.clear display (Color.rgb 100 100 150);
+       List.iter
+         (let x = 200. in
+          let v = Vec.create in
+          pairs [ v (-.x) (-.x); v x (-.x); v x x; v (-.x) x; v (-.x) (-.x) ])
+         ~f:(fun (v1, v2) ->
+           Display.draw_line display ~width:10. v1 v2 Color.blue);
+       Display.draw_image
+         display
+         pelosi
+         ~angle:(-.angle)
+         ~scale
+         ~center:(Vec.create size (size /. 2.));
+       Display.draw_image
+         display
+         pelosi
+         ~alpha:100
+         ~angle:(angle *. 2.)
+         ~center:(Vec.create (-.size) (size /. 2.));
+       Display.draw_image_wh
+         display
+         square
+         ~alpha:50
+         ~w:30.
+         ~h:80.
+         ~center:(Vec.create (size /. 2.) (-.size))
+         ~angle:(angle /. 2.);
+       Display.present display;
+       let%bind () = Async_js.sleep 0.016 in
+       loop (n + 1)
+     in
+     loop 0)
+
+(* UNUSED BELOW HERE *)
+
+open Brr
+module Canvas = Brr_canvas.Canvas
+module C2d = Brr_canvas.C2d
 
 let load_image url =
   let img = El.img ~at:[ At.src (Jstr.of_string url) ] () in
@@ -24,7 +79,7 @@ let load_image url =
   Ev.unlisten Ev.load on_load (El.as_target img);
   return img
 
-let run () =
+let _run () =
   don't_wait_for
     (let w = 500 in
      let h = 500 in
@@ -53,51 +108,6 @@ let run () =
        draw_lines [ 0., 0.; 0., size; size, size; size, 0.; 0., 0. ];
        draw_lines [ 0., 0.; size, size ];
        draw_lines [ 0., size; size, 0. ];
-       let%bind () = Async_js.sleep 0.01 in
-       loop (n + 1)
-     in
-     loop 0)
-
-module Display = Geo_graph_js.Display
-
-let () =
-  don't_wait_for
-    (print_s [%message "starting up"];
-     let display =
-       Display.init
-         ~physical:(1000, 500)
-         ~logical:(1000, 500)
-         ~title:"This is my title"
-         ~log_s:print_s
-     in
-     let%bind pelosi = Display.Image.of_name display pelosi in
-     let square = Display.Image.pixel display Color.red in
-     let rec loop n =
-       let angle = Float.of_int n *. Float.pi /. 50. in
-       let size = 200. *. (1. +. Float.sin (Float.of_int n /. 25.)) in
-       let scale = Float.O.((1. + Float.sin (Float.of_int n /. 100.)) / 2.) in
-       Display.clear display Color.black;
-       Display.draw_image
-         display
-         pelosi
-         ~angle:(-.angle)
-         ~scale
-         ~center:(Vec.create size (size /. 2.));
-       Display.draw_image
-         display
-         pelosi
-         ~alpha:100
-         ~angle:(angle *. 2.)
-         ~center:(Vec.create (-.size) (size /. 2.));
-       Display.draw_image_wh
-         display
-         square
-         ~alpha:50
-         ~w:30.
-         ~h:80.
-         ~center:(Vec.create (size /. 2.) (-.size))
-         ~angle:(angle /. 2.);
-       Display.present display;
        let%bind () = Async_js.sleep 0.01 in
        loop (n + 1)
      in

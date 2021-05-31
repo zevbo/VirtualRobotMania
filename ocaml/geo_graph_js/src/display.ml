@@ -182,8 +182,10 @@ let draw_line t ~width (v1 : Vec.t) (v2 : Vec.t) color =
   C2d.Path.move_to path ~x:v1.x ~y:v1.y;
   C2d.Path.line_to path ~x:v2.x ~y:v2.y;
   C2d.set_line_width t.c2d width;
+  C2d.set_line_cap t.c2d (Jstr.of_string "round");
   C2d.set_stroke_style t.c2d (color_to_style color);
-  C2d.stroke t.c2d path
+  C2d.stroke t.c2d path;
+  C2d.reset_transform t.c2d
 
 (** Nothing to do in Javascript land... *)
 let shutdown _t = ()
