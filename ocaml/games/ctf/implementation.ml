@@ -20,11 +20,6 @@ let group (module Display : Geo_graph.Display_intf.S) ~log_s =
     ; impl Protocol.just_killed Main.just_killed
     ; impl Protocol.enhance_border Main.enhance_border
     ; impl Protocol.setup_shield Main.setup_shield
-    ; impl' Protocol.set_robot_image_contents State.set_robot_image_contents
-    ; impl' Protocol.set_flag_image_contents State.set_flag_image_contents
-    ; impl'
-        Protocol.set_flag_protector_image_contents
-        State.set_flag_protector_image_contents
     ; impl Protocol.num_flags Main.num_flags
     ; impl Protocol.angle_to_opp Main.angle_to_opp
     ; impl Protocol.dist_to_opp Main.dist_to_opp
@@ -38,4 +33,14 @@ let group (module Display : Geo_graph.Display_intf.S) ~log_s =
     ; impl Protocol.boost_cooldown_left Main.boost_cooldown_left
     ; impl Protocol.looking_dist Main.looking_dist
     ; impl Protocol.offense_has_flag Main.offense_has_flag
+    ; impl' Protocol.set_robot_image_contents State.set_robot_image_contents
+    ; impl' Protocol.set_robot_image_by_name State.set_robot_image_by_name
+    ; impl' Protocol.set_flag_image_contents State.set_flag_image_contents
+    ; impl' Protocol.set_flag_image_by_name State.set_flag_image_by_name
+    ; impl'
+        Protocol.set_flag_protector_image_contents
+        State.set_flag_protector_image_contents
+    ; impl'
+        Protocol.set_flag_image_by_name
+        State.set_flag_protector_image_by_name
     ]
