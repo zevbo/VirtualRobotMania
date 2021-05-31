@@ -7,9 +7,6 @@ module Canvas = Brr_canvas.Canvas
 module C2d = Brr_canvas.C2d
 module Matrix4 = Brr_canvas.Matrix4
 
-(* let def fut = Deferred.create (fun ivar -> Fut.await fut (fun x -> Ivar.fill
-   ivar x)) *)
-
 let load_image url =
   let img = El.img ~at:[ At.src (Jstr.of_string url) ] () in
   let loaded = Ivar.create () in
@@ -193,7 +190,7 @@ let draw_line t ~width (v1 : Vec.t) (v2 : Vec.t) color =
   C2d.set_line_cap t.c2d (Jstr.of_string "round");
   C2d.set_stroke_style t.c2d (color_to_style color);
   C2d.stroke t.c2d path;
-  C2d.reset_transform t.c2d
+  u C2d.reset_transform t.c2d
 
 (** Nothing to do in Javascript land... *)
 let shutdown _t = ()
