@@ -75,12 +75,14 @@
 
 (define (startup offense defense #:ws-conn [ws-conn #f])
   (check-offense-defense offense defense)
-  (set! the-connection (launch-and-connect "ctf" #:ws-conn ws-conn))
+  (set! the-connection
+        (if (boolean? ws-conn)
+            (launch-and-connect "ctf")
+            (launch-and-connect-ws "ctf" ws-conn)))
   (set-image the-connection #f)
   (set-image the-connection #t)
   (set-robot-image the-connection offense)
   (set-robot-image the-connection defense)
-  
   the-connection)
 (define (run-internal offense defense #:ws-conn [ws-conn #f])
   (set! the-connection (startup offense defense #:ws-conn ws-conn))

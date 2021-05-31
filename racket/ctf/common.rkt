@@ -28,46 +28,52 @@
   (define floored (inexact->exact (floor angle)))
   (of-radians (+ (- angle floored) (- (flmod (+ floored pi) (* 2 pi)) pi))))
 
-(define-syntax-rule (our-service-mapper main [(image-name image) ...] [(file-image-name image-file) ...])
+(define-syntax-rule (our-service-mapper (main ...) [(image-name image) ...] [(file-name file) ...])
   (ws-service-mapper
-   [(string-append "/image/" file-image-name)
+   [file-name
     [(#f) ; if client did not request any subprotocol
      (lambda (c)
-       (ws-send! c (file->bytes image-file)))]]
+       (ws-send! c (file->bytes file)))]]
    ...
    
-   [(string-append "/image/" image-name)
+   [image-name
     [(#f) ; if client did not request any subprotocol
      (lambda (c)
-       (define file (make-temporary-file "image-~a.png"))
-       (save-image image file)
-       (ws-send! c (file->bytes file))
-       (delete-file file))]]
-   ...
-   [""
-    [(#f) 
-     main]]))
+       (define image-file (make-temporary-file "image-~a.png"))
+       (save-image image image-file)
+       (ws-send! c (file->bytes image-file))
+       (delete-file image-file))]]
+   ... 
+   main
+   ...))
 
 (define (with-ws? run-internal)
   (define extra
     (with-output-to-string
       (lambda () (system "git rev-parse --show-prefix"))))
   (define depth (- (length (string-split extra "/")) 1))
-  (define images-folder (string-append (string-join (make-list depth "..") "/") "/images/"))
+  (define head (string-append (string-join (make-list depth "..") "/")))
+  (define images-folder (string-append head "/images/"))
+  (define game-server-js (string-append head "/ocaml/_build/game_server_js"))
   (define (run offense defense ws?)
     (cond
       [ws?
        (ws-serve*
         #:port 8080
         (our-service-mapper
-         (lambda (conn s)
-           ;(run-internal offense defense #:ws-conn conn)
-           ; testing by just running it normally here
-           (run-internal offense defense)
-           )
-         [("offense-bot" (robot-image offense)) ("defense-bot" (robot-image defense))]
-         [("flag" (string-append images-folder "flag.png"))
-          ("flag-protector" (string-append images-folder "green-outline.bmp"))]
+         ([""
+          [(#f)
+           (lambda (conn s)
+             ;(run-internal offense defense #:ws-conn conn)
+             ; testing by just running it normally here
+             (run-internal offense defense)
+             )]]
+          )
+         [("/offense-bot" (robot-image offense)) ("/defense-bot" (robot-image defense))]
+         [("/flag" (string-append images-folder "flag.png"))
+          ("/flag-protector" (string-append images-folder "green-outline.bmp"))
+          ("/index.html" (string-append game-server-js "index.html"))
+          ("/main.bc.js" (string-append game-server-js "main.bc.js"))]
          ))
        (system "open --new -a \"Google Chrome\" --args \"http://localhost:8080\"")
 

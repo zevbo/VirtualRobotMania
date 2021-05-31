@@ -4,7 +4,7 @@
 (require csexp)
 (require net/rfc6455)
 (provide
- (struct-out conn) conn-close rpc launch-and-connect)
+ (struct-out conn) conn-close rpc launch-and-connect launch-and-connect-ws)
 
 (define (encode-length n)
   (bytes
@@ -47,8 +47,8 @@
     ([exn:fail? (lambda (exn) (sleep 0.1) (connect-loop pipename ws-conn))])
     (get-conn pipename ws-conn)))
 
-(define (launch-and-connect name #:ws-conn [ws-conn #false])
-  (define pipename (if (ws-conn? ws-conn) #false (path->string (make-temporary-file "game-~a.pipe"))))
+(define (launch-and-connect name)
+  (define pipename (path->string (make-temporary-file "game-~a.pipe")))
   (define cmd
     (string-append
      ;; Hack for Zev's machine, because, sigh.
@@ -59,7 +59,18 @@
      "dune exec -- game_server/main.exe " name " " pipename))
   ;; For new, javascript world, maybe just do "dune build @all"
   (process cmd)
-  (connect-loop pipename ws-conn))
+  (connect-loop pipename #false))
+(define (launch-and-connect-ws name ws-conn)
+  (define cmd
+    (string-append
+     ;; Hack for Zev's machine, because, sigh.
+     (if (equal? (system-type) 'macosx)
+         "eval $(/usr/local/bin/opam env); "
+         "eval $(opam env); ")
+     "cd $(git rev-parse --show-toplevel)/ocaml; "
+     "dune build @all"))
+  (process cmd)
+  (connect-loop #false ws-conn))
 
 
 ;; How is this gonna work?
