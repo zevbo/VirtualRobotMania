@@ -13,6 +13,8 @@ let rec pairs l =
   | [] | [ _ ] -> []
   | x :: y :: rest -> (x, y) :: pairs (y :: rest)
 
+let v = Vec.create
+
 let () =
   don't_wait_for
     (print_s [%message "starting up"];
@@ -34,7 +36,6 @@ let () =
        List.iter
          (let x = 450. in
           let y = 200. in
-          let v = Vec.create in
           pairs [ v (-.x) (-.y); v x (-.y); v x y; v (-.x) y; v (-.x) (-.y) ])
          ~f:(fun (v1, v2) ->
            Display.draw_line display ~width:0.2 v1 v2 Color.blue);
@@ -43,27 +44,27 @@ let () =
          pelosi
          ~angle:(-.angle)
          ~scale
-         ~center:(Vec.create size (size /. 2.));
+         ~center:(v size (size /. 2.));
        Display.draw_image
          display
          pelosi
          ~alpha:100
          ~angle:(angle *. 2.)
-         ~center:(Vec.create (-.size) (size /. 2.));
+         ~center:(v (-.size) (size /. 2.));
        Display.draw_image_wh
          display
          red
          ~alpha:150
          ~w:50.
          ~h:20.
-         ~center:(Vec.create size (-.size))
+         ~center:(v size (-.size))
          ~angle;
        Display.draw_image
          display
          blue
          ~alpha:150
          ~scale:50.
-         ~center:(Vec.add (Vec.create 100. 100.) (Vec.create size (-.size)))
+         ~center:(Vec.add (v 100. 100.) (v size (-.size)))
          ~angle;
        Display.present display;
        let%bind () = Async_js.sleep 0.016 in
