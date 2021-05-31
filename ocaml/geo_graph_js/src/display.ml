@@ -123,6 +123,20 @@ let clear t color =
 let color_to_style color =
   Color.to_js_string color |> Jstr.of_string |> C2d.color
 
+(* Convertst he physical to the logical dimensions. Here we assume that the
+   physical and logical dimensions have the same aspect ratio. The desired frame
+   of reference has the origin at zero, and has positive x pointing up, and
+   positive y pointing to the right, which requires a mirror tranformation *)
+let physical_to_logical t =
+  (* Make y go up *)
+  C2d.scale t.c2d ~sy:(-1.) ~sx:1.;
+  (* Move the origin to the center *)
+  let pw, ph = t.physical in
+  C2d.translate t.c2d ~x:(Float.of_int pw /. 2.) ~y:(-.Float.of_int ph /. 2.);
+  (* Scale from physical to logical size dimensions *)
+  let pl_ratio = fst t.physical // fst t.logical in
+  C2d.scale t.c2d ~sx:pl_ratio ~sy:pl_ratio
+
 let draw_image_base
     t
     ~(w : float)
@@ -132,15 +146,13 @@ let draw_image_base
     ~(center : Vec.t)
     ~angle
   =
+  (* physical-to-logical *)
+  physical_to_logical t;
+  (* Now, for image placement *)
   let iw, ih = Image.size image in
-  let pw, ph = t.physical in
-  C2d.scale t.c2d ~sy:(-1.) ~sx:1.;
-  C2d.translate t.c2d ~x:(Float.of_int pw /. 2.) ~y:(-.Float.of_int ph /. 2.);
-  C2d.scale t.c2d ~sx:(w /. Float.of_int iw) ~sy:(h /. Float.of_int ih);
   C2d.translate t.c2d ~x:center.x ~y:center.y;
   C2d.rotate t.c2d (-.angle);
-  let pl_ratio = fst t.physical // fst t.logical in
-  C2d.scale t.c2d ~sx:pl_ratio ~sy:pl_ratio;
+  C2d.scale t.c2d ~sx:(w /. Float.of_int iw) ~sy:(h /. Float.of_int ih);
   let shift x = -.Float.of_int x /. 2. in
   (match image with
   | Pixel color ->
@@ -173,11 +185,7 @@ let draw_image t ?(scale = 1.0) ?alpha (img : Image.t) ~center ~angle =
   draw_image_wh t ?alpha ~w ~h img ~center ~angle
 
 let draw_line t ~width (v1 : Vec.t) (v2 : Vec.t) color =
-  let pw, ph = t.physical in
-  C2d.scale t.c2d ~sy:(-1.) ~sx:1.;
-  C2d.translate t.c2d ~x:(Float.of_int pw /. 2.) ~y:(-.Float.of_int ph /. 2.);
-  let pl_ratio = fst t.physical // fst t.logical in
-  C2d.scale t.c2d ~sx:pl_ratio ~sy:pl_ratio;
+  physical_to_logical t;
   let path = C2d.Path.create () in
   C2d.Path.move_to path ~x:v1.x ~y:v1.y;
   C2d.Path.line_to path ~x:v2.x ~y:v2.y;

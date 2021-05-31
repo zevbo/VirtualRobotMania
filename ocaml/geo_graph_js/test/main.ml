@@ -24,16 +24,18 @@ let () =
          ~log_s:print_s
      in
      let%bind pelosi = Display.Image.of_name display pelosi in
-     let square = Display.Image.pixel display Color.red in
+     let red = Display.Image.pixel display Color.red in
+     let blue = Display.Image.pixel display Color.blue in
      let rec loop n =
        let angle = Float.of_int n *. Float.pi /. 50. in
-       let size = 200. *. (1. +. Float.sin (Float.of_int n /. 25.)) in
-       let scale = Float.O.((1. + Float.sin (Float.of_int n /. 100.)) / 2.) in
+       let size = 100. *. (1. +. Float.sin (Float.of_int n /. 25.)) in
+       let scale = Float.O.((1. + Float.sin (Float.of_int n /. 100.)) /. 2.) in
        Display.clear display (Color.rgb 100 100 150);
        List.iter
-         (let x = 200. in
+         (let x = 450. in
+          let y = 200. in
           let v = Vec.create in
-          pairs [ v (-.x) (-.x); v x (-.x); v x x; v (-.x) x; v (-.x) (-.x) ])
+          pairs [ v (-.x) (-.y); v x (-.y); v x y; v (-.x) y; v (-.x) (-.y) ])
          ~f:(fun (v1, v2) ->
            Display.draw_line display ~width:10. v1 v2 Color.blue);
        Display.draw_image
@@ -50,12 +52,19 @@ let () =
          ~center:(Vec.create (-.size) (size /. 2.));
        Display.draw_image_wh
          display
-         square
-         ~alpha:50
-         ~w:30.
-         ~h:80.
-         ~center:(Vec.create (size /. 2.) (-.size))
-         ~angle:(angle /. 2.);
+         red
+         ~alpha:150
+         ~w:50.
+         ~h:20.
+         ~center:(Vec.create size (-.size))
+         ~angle;
+       Display.draw_image
+         display
+         blue
+         ~alpha:150
+         ~scale:50.
+         ~center:(Vec.add (Vec.create 100. 100.) (Vec.create size (-.size)))
+         ~angle;
        Display.present display;
        let%bind () = Async_js.sleep 0.016 in
        loop (n + 1)
