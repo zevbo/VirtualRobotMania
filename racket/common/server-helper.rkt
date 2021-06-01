@@ -29,10 +29,10 @@
 (define (serve-website pages default port)
   (serve/servlet
    (gen-handler pages default)
-   #:launch-browser? #t
+   #:launch-browser? #f
    #:quit? #f
    #:listen-ip "127.0.0.1"
-   #:port 8000
+   #:port port
    #:servlet-regexp #rx""))
 
 ;; Start the server.

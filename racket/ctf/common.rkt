@@ -65,16 +65,19 @@
        (define BMP-MIME #"image/bmp; charset=utf-8")
        (define index (cons HTML-MIME (file->bytes (string-append game-server-js "index.html"))))
        (define main-js (cons JS-MIME (file->bytes (string-append game-server-js "main.bc.js"))))
+       (define main-runtime-js (cons JS-MIME (file->bytes (string-append game-server-js "main.bc.runtime.js"))))
        (define pages
          (make-immutable-hash
-          (list (cons "offense-bot" (cons PNG-MIME (image->bytes (robot-image offense))))
-                (cons "defense-bot" (cons PNG-MIME (image->bytes (robot-image defense))))
-                (cons "flag" (cons PNG-MIME (file->bytes (string-append images-folder "flag.png"))))
-                (cons "flag-protector" (cons BMP-MIME (file->bytes (string-append images-folder "green-outline.bmp"))))
-                (cons "index.html" index)
-                (cons "main.bc.js" main-js))))
-       (serve-website pages index 8081)
-       ;(system "open --new -a \"Google Chrome\" --args \"http://localhost:8081\"")
+          (list
+           (cons "offense-bot" (cons PNG-MIME (image->bytes (robot-image offense))))
+           (cons "defense-bot" (cons PNG-MIME (image->bytes (robot-image defense))))
+           (cons "flag" (cons PNG-MIME (file->bytes (string-append images-folder "flag.png"))))
+           (cons "flag-protector" (cons BMP-MIME (file->bytes (string-append images-folder "green-outline.bmp"))))
+           (cons "index.html" index)
+           (cons "main.bc.js" main-js)
+           (cons "main.bc.runtime.js" main-runtime-js))))
+       (thread (lambda () (serve-website pages index 8000)))
+       (system "open --new -a \"Google Chrome\" --args \"http://localhost:8000\"")
        ]
       [else (run-internal offense defense)]
       )
