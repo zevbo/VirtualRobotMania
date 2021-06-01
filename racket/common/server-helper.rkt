@@ -33,6 +33,7 @@
    #:quit? #f
    #:listen-ip "127.0.0.1"
    #:port port
+   #:servlet-path ""
    #:servlet-regexp #rx""))
 
 ;; Start the server.
