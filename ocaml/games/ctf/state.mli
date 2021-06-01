@@ -1,4 +1,5 @@
 open Core_kernel
+open Async_kernel
 open Virtuality2d
 
 module Make (Display : Geo_graph.Display_intf.S) : sig
@@ -46,14 +47,14 @@ module Make (Display : Geo_graph.Display_intf.S) : sig
     -> World.Id.t
     -> World.Id.t
     -> World.Id.t
-    -> t
+    -> t Deferred.t
 
   val set_world : t -> World.t -> unit
 
   val set_robot_image_contents
     :  t
     -> Bot_name.t * Image_contents.t
-    -> unit Async_kernel.Deferred.t
+    -> unit Deferred.t
 
   val set_robot_image_by_name
     :  t

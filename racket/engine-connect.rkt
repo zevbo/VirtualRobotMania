@@ -78,8 +78,8 @@
 ;;
 ;; - First, run "dune build @all"
 ;; - Racket server needs to serve a bunch of "files", on some port (say, 8080)
-;;    - index.html (from ocaml/_build/game_server_js/index.html)
-;;    - main.bc.js (from ocaml/_build/game_server_js/main.bc.js)
+;;    - index.html (from ocaml/_build/default/game_server_js/index.html)
+;;    - main.bc.js (from ocaml/_build/default/game_server_js/main.bc.js)
 ;;    - one each for every image, i.e., offense.png, or whatever.
 ;; - Start chrome pointing at http://localhost:8080/index.html
 ;; - Chrome will load main.bc.js, and start the engine

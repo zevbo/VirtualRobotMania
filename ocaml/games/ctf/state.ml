@@ -1,4 +1,5 @@
 open! Core_kernel
+open! Async_kernel
 open Virtuality2d
 module Color = Geo_graph.Color
 
@@ -38,35 +39,6 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     ; mutable last_wall_enhance : float
     }
 
-  let create
-      world
-      images
-      display
-      offense_bot
-      defense_bot
-      flag_id
-      flag_protector_id
-      offense_shield_id
-    =
-    { world
-    ; last_step_end = None
-    ; images
-    ; invisible = Set.empty (module World.Id)
-    ; lasers = Map.empty (module World.Id)
-    ; display
-    ; offense_bot
-    ; defense_bot
-    ; flag = flag_id
-    ; flag_protector = flag_protector_id
-    ; ts = 0.
-    ; laser = List.map Ctf_consts.Laser.colors ~f:(Display.Image.pixel display)
-    ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
-    ; offense_shield = offense_shield_id
-    ; last_wall_enhance = -.Ctf_consts.Border.enhance_period
-    }
-
-  let set_world t world = t.world <- world
-
   let set_image_gen t id image_thunk =
     let open Async_kernel in
     let%bind image = image_thunk () in
@@ -77,13 +49,52 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
              image);
     return ()
 
+  let set_image_by_name t id name =
+    set_image_gen t id (fun () -> Display.Image.of_name t.display name)
+
+  let create
+      world
+      images
+      display
+      offense_bot
+      defense_bot
+      flag_id
+      flag_protector_id
+      offense_shield_id
+    =
+    let state =
+      { world
+      ; last_step_end = None
+      ; images
+      ; invisible = Set.empty (module World.Id)
+      ; lasers = Map.empty (module World.Id)
+      ; display
+      ; offense_bot
+      ; defense_bot
+      ; flag = flag_id
+      ; flag_protector = flag_protector_id
+      ; ts = 0.
+      ; laser =
+          List.map Ctf_consts.Laser.colors ~f:(Display.Image.pixel display)
+      ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
+      ; offense_shield = offense_shield_id
+      ; last_wall_enhance = -.Ctf_consts.Border.enhance_period
+      }
+    in
+    let%bind () = set_image_by_name state state.offense_bot.id "offense-bot" in
+    let%bind () = set_image_by_name state state.defense_bot.id "defense-bot" in
+    let%bind () = set_image_by_name state state.flag "flag" in
+    let%bind () =
+      set_image_by_name state state.flag_protector "flag-protector"
+    in
+    return state
+
+  let set_world t world = t.world <- world
+
   let set_image_contents t id (image_contents : Image_contents.t) =
     let { Image_contents.contents; format } = image_contents in
     set_image_gen t id (fun () ->
         Display.Image.of_contents t.display ~contents ~format)
-
-  let set_image_by_name t id name =
-    set_image_gen t id (fun () -> Display.Image.of_name t.display name)
 
   let set_robot_image_contents t (bot_name, image_contents) =
     let id =

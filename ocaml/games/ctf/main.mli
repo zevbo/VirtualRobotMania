@@ -12,7 +12,7 @@ module Make (Display : Geo_graph.Display_intf.S) : sig
   type ('a, 'b) bot_func := State.t -> Bot_name.t * 'a -> 'b
   type ('a, 'b) state_func := State.t -> 'a -> 'b
 
-  val init : log_s:(Sexp.t -> unit) -> State.t
+  val init : log_s:(Sexp.t -> unit) -> State.t Deferred.t
   val step : (unit, unit) state_func
   val just_returned_flag : (unit, bool) state_func
   val just_killed : (unit, bool) state_func

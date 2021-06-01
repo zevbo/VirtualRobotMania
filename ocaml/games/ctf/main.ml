@@ -45,7 +45,7 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
         world
         (Flag_logic.flag_protector (World.get_body_exn world flag_id))
     in
-    let state =
+    let%bind state =
       State.create
         world
         (Map.empty (module World.Id))
@@ -58,13 +58,7 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     in
     state.world <- world;
     state.invisible <- Set.add state.invisible state.offense_shield;
-    (* let flag_img = Display.Image.of_bmp_file state.display
-       (Ctf_consts.Flag.image_path ~root) in let flag_protector_img =
-       Display.Image.of_bmp_file state.display
-       (Ctf_consts.Flag.Protector.image_path ~root) in state.images <- Map.set
-       state.images ~key:flag_id ~data:flag_img; state.images <- Map.set
-       state.images ~key:flag_protector_id ~data:flag_protector_img; *)
-    state
+    return state
 
   let _status_s sexp =
     let data =

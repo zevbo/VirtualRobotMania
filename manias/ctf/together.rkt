@@ -5,4 +5,4 @@
 (require net/rfc6455)
 (require net/url)
 
-(run offense-bot defense-bot #f)
+(run offense-bot defense-bot #t)

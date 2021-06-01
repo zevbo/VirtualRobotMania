@@ -1,5 +1,0 @@
-(executables
- (names main)
- (libraries core async csexp_rpc_unix test_game ctf shexp.process)
- (preprocess
-  (pps ppx_jane)))
