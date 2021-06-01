@@ -77,7 +77,7 @@
            (cons "main.bc.js" main-js)
            (cons "main.bc.runtime.js" main-runtime-js))))
        (thread (lambda () (serve-website pages index 8000)))
-       (system "open --new -a \"Google Chrome\" --args \"http://localhost:8000\"")
+       ;(system "open --new -a \"Google Chrome\" --args \"http://localhost:8000\"")
        ]
       [else (run-internal offense defense)]
       )

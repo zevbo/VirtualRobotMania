@@ -29,7 +29,7 @@
 (define (serve-website pages default port)
   (serve/servlet
    (gen-handler pages default)
-   #:launch-browser? #f
+   #:launch-browser? #t
    #:quit? #f
    #:listen-ip "127.0.0.1"
    #:port port
