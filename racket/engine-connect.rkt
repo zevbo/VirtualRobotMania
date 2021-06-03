@@ -26,6 +26,7 @@
 (define (rpc c message)
   (define w-bytes (csexp->bytes message))
   (printf "writing message~n")
+  (printf "MESSAGE: ~s~n" message)
   (define w-length (encode-length (bytes-length w-bytes)))
   (write-bytes w-length (conn-w c))
   (write-bytes w-bytes (conn-w c))
