@@ -4,7 +4,7 @@
 (require csexp)
 (require net/rfc6455)
 (provide
- (struct-out conn) conn-close rpc launch-and-connect launch-and-connect-ws)
+ (struct-out conn) rpc launch-and-connect launch-and-connect-ws)
 
 (define (encode-length n)
   (bytes
@@ -19,10 +19,6 @@
 
 (struct conn (r w) #:mutable)
 
-(define (conn-close c)
-  (close-output-port (conn-w c))
-  (close-input-port (conn-r c)))
-
 (define (rpc c message)
   (define w-bytes (csexp->bytes message))
   (printf "writing message~n")
@@ -33,19 +29,18 @@
   (ws-send! (conn-w c) (bytes-append w-length w-bytes) #:payload-type 'binary)
   (printf "reading response~n")
   (flush-output (current-output-port))
-  (define read-length (decode-length (read-bytes 2 (conn-r c))))
+  (define (get-read-length)
+    (define len (read-bytes 2 (conn-r c)))
+    (if (eof-object? len)
+        (get-read-length)
+        (decode-length len)))
+  (define read-length (get-read-length))
   (printf "length of response read~n")
   (flush-output (current-output-port))
   (define response (bytes->csexp (read-bytes read-length (conn-r c))))
   (printf "read response~n")
   (flush-output (current-output-port))
   response)
-
-(define (read-until-eof in)
-  (define c (read-char in))
-  (if (eof-object? c)
-      ""
-      (string-append c (read-until-eof in))))
 
 (define (get-conn pipename ws-conn)
   (cond
