@@ -17,7 +17,7 @@
    (arithmetic-shift (bytes-ref bytes 0) 8)
    (bytes-ref bytes 1)))
 
-(struct conn (r w flush) #:mutable)
+(struct conn (r w) #:mutable)
 
 (define (conn-close c)
   (close-output-port (conn-w c))
@@ -26,12 +26,10 @@
 (define (rpc c message)
   (define w-bytes (csexp->bytes message))
   (printf "writing message~n")
-  (printf "MESSAGE: ~s~n" message)
   (define w-length (encode-length (bytes-length w-bytes)))
-  (write-bytes w-length (conn-w c))
-  (write-bytes w-bytes (conn-w c))
-  (printf "flushing message~n")
-  (set-conn-w! c ((conn-flush c)))
+  (printf "length: ~s~n" w-length)
+  (printf "MESSAGE: ~s~n" (bytes-append w-length w-bytes))
+  (ws-send! (conn-w c) (bytes-append w-length w-bytes))
   (printf "reading response~n")
   (define read-length (decode-length (read-bytes 2 (conn-r c))))
   (printf "length of response read")
@@ -51,20 +49,7 @@
      (printf "getting connection~n")
      (define r (ws-recv-stream ws-conn))
      (printf "r gotten~n")
-     (define-values (in out) (make-pipe))
-     (printf "pipe made~n")
-     (conn r out
-           (lambda ()
-             (printf "ws sending message~n")
-             (close-output-port out)
-             ;(define msg (string->bytes/utf-8 (read-until-eof in)))
-             ;(printf "msg sending: ~s~n" msg)
-             (ws-send! ws-conn in #:payload-type 'binary)
-             (close-input-port in)
-             (define-values (new-in new-out) (make-pipe))
-             (printf "ws message sent~n")
-             (set! in new-in)
-             new-out))]
+     (conn r ws-conn)]
     [else
      (define-values (r w) (unix-socket-connect pipename))
      (conn r w (lambda () (flush-output w) w))]))
@@ -88,7 +73,7 @@
   (process cmd)
   (connect-loop pipename #false))
 (define (launch-and-connect-ws name ws-conn)
-  (printf "launching and connecting")
+  (printf "launching and connecting~n")
   (define cmd
     (string-append
      ;; Hack for Zev's machine, because, sigh.
