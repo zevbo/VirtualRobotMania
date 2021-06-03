@@ -48,15 +48,12 @@
   (define (run offense defense ws?)
     (cond
       [ws?
-       (ws-serve*
+       (ws-serve
         #:port 8080
-        (ws-service-mapper
-         ["/ws"
-          [(csexp)
-           (lambda (conn)
-             (run-internal offense defense #:ws-conn conn)
-             )]]
-         ))
+        (lambda (conn s)
+          (printf "running internal")
+          (run-internal offense defense #:ws-conn conn)
+          ))
        (define JS-MIME #"text/javascript; charset=utf-8")
        (define HTML-MIME #"text/html; charset=utf-8")
        (define PNG-MIME #"image/png; charset=utf-8")

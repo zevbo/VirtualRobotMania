@@ -31,12 +31,19 @@
   (write-bytes w-length (conn-w c))
   (write-bytes w-bytes (conn-w c))
   (printf "flushing message~n")
-  (set-conn-w! c (conn-flush c))
+  (set-conn-w! c ((conn-flush c)))
   (printf "reading response~n")
   (define read-length (decode-length (read-bytes 2 (conn-r c))))
+  (printf "length of response read")
   (define response (bytes->csexp (read-bytes read-length (conn-r c))))
   (printf "read response~n")
   response)
+
+(define (read-until-eof in)
+  (define c (read-char in))
+  (if (eof-object? c)
+      ""
+      (string-append c (read-until-eof in))))
 
 (define (get-conn pipename ws-conn)
   (cond
@@ -50,6 +57,8 @@
            (lambda ()
              (printf "ws sending message~n")
              (close-output-port out)
+             ;(define msg (string->bytes/utf-8 (read-until-eof in)))
+             ;(printf "msg sending: ~s~n" msg)
              (ws-send! ws-conn in #:payload-type 'binary)
              (close-input-port in)
              (define-values (new-in new-out) (make-pipe))
