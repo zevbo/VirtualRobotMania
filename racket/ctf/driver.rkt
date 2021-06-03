@@ -53,8 +53,10 @@
 
 (define (startup offense defense #:ws-conn [ws-conn #f])
   (printf "take this bitch I got one~n")
+  (flush-output (current-output-port))
   (check-offense-defense offense defense)
   (printf "gonna launch and connect~n")
+  (flush-output (current-output-port))
   (set! the-connection
         (if (boolean? ws-conn)
             (launch-and-connect "ctf")
@@ -64,13 +66,15 @@
   (set! the-connection (startup offense defense #:ws-conn ws-conn))
   (define tick-num 0)
   (define (loop)
-    (printf "looping")
+    (printf "looping~n")
+    (flush-output (current-output-port))
     (set! the-current-robot offense)
     ((robot-on-tick offense) tick-num)
     (set! the-current-robot defense)
     ((robot-on-tick defense) tick-num)
     (set! the-current-robot '())
-    (printf "stepping")
+    (printf "stepping~n")
+    (flush-output (current-output-port))
     (step)
     (set! tick-num (+ tick-num 1))
     (loop))
@@ -118,6 +122,7 @@
        `(,name ,arg)))
 (define (bot-rpc name arg)
   (printf "definitely calling rpc~n")
+  (flush-output (current-output-port))
   (rpc the-connection
        `(,name (,(rpc-name the-current-robot) ,arg))))
 

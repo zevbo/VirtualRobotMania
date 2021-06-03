@@ -27,16 +27,21 @@
   (define w-bytes (csexp->bytes message))
   (printf "writing message~n")
   (printf "MESSAGE: ~s~n" message)
+  (flush-output (current-output-port))
   (define w-length (encode-length (bytes-length w-bytes)))
   (write-bytes w-length (conn-w c))
   (write-bytes w-bytes (conn-w c))
   (printf "flushing message~n")
+  (flush-output (current-output-port))
   (set-conn-w! c ((conn-flush c)))
   (printf "reading response~n")
+  (flush-output (current-output-port))
   (define read-length (decode-length (read-bytes 2 (conn-r c))))
-  (printf "length of response read")
+  (printf "length of response read~n")
+  (flush-output (current-output-port))
   (define response (bytes->csexp (read-bytes read-length (conn-r c))))
   (printf "read response~n")
+  (flush-output (current-output-port))
   response)
 
 (define (read-until-eof in)
@@ -49,13 +54,17 @@
   (cond
     [(ws-conn? ws-conn)
      (printf "getting connection~n")
+     (flush-output (current-output-port))
      (define r (ws-recv-stream ws-conn))
      (printf "r gotten~n")
+     (flush-output (current-output-port))
      (define-values (in out) (make-pipe))
      (printf "pipe made~n")
+     (flush-output (current-output-port))
      (conn r out
            (lambda ()
              (printf "ws sending message~n")
+             (flush-output (current-output-port))
              (close-output-port out)
              ;(define msg (string->bytes/utf-8 (read-until-eof in)))
              ;(printf "msg sending: ~s~n" msg)
@@ -63,6 +72,7 @@
              (close-input-port in)
              (define-values (new-in new-out) (make-pipe))
              (printf "ws message sent~n")
+             (flush-output (current-output-port))
              (set! in new-in)
              new-out))]
     [else
@@ -88,7 +98,8 @@
   (process cmd)
   (connect-loop pipename #false))
 (define (launch-and-connect-ws name ws-conn)
-  (printf "launching and connecting")
+  (printf "launching and connecting~n")
+  (flush-output (current-output-port))
   (define cmd
     (string-append
      ;; Hack for Zev's machine, because, sigh.
