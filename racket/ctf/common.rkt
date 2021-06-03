@@ -51,12 +51,12 @@
        (ws-serve*
         #:port 8080
         (ws-service-mapper
-         [""
-          [(#f)
-           (lambda (conn s)
-             ;(run-internal offense defense #:ws-conn conn)
+         ["/ws"
+          [(csexp)
+           (lambda (conn)
+             (run-internal offense defense #:ws-conn conn)
              ; testing by just running it normally here
-             (run-internal offense defense)
+             ;(run-internal offense defense)
              )]]
          ))
        (define JS-MIME #"text/javascript; charset=utf-8")
@@ -80,7 +80,7 @@
        ]
       [else (run-internal offense defense)]
       )
-    
+
     )
   run)
 
@@ -89,4 +89,3 @@
 
 (define degrees-mode degrees-mode-internal)
 (define radians-mode radians-mode-internal)
-

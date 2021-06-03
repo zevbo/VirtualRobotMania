@@ -25,19 +25,24 @@
 
 (define (rpc c message)
   (define w-bytes (csexp->bytes message))
+  (printf "writing message: ~s~n" w-bytes)
   (define w-length (encode-length (bytes-length w-bytes)))
   (write-bytes w-length (conn-w c))
   (write-bytes w-bytes (conn-w c))
+  (printf "flushing message: ~s~n" w-bytes)
   ((conn-flush c))
+  (printf "reading response")
   (define read-length (decode-length (read-bytes 2 (conn-r c))))
-  (bytes->csexp (read-bytes read-length (conn-r c))))
+  (define response (bytes->csexp (read-bytes read-length (conn-r c))))
+  (printf "read response: ~s~n" response)
+  response)
 
 (define (get-conn pipename ws-conn)
   (cond
     [(ws-conn? ws-conn)
      (define r (ws-recv-stream ws-conn))
      (define-values (in out) (make-pipe))
-     (conn r out (lambda () (ws-send! ws-conn in)))]
+     (conn r out (lambda () (ws-send! ws-conn in #:payload-type 'binary)))]
     [else
      (define-values (r w) (unix-socket-connect pipename))
      (conn r w (lambda () (flush-output w)))]))
