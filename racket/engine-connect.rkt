@@ -17,7 +17,7 @@
    (arithmetic-shift (bytes-ref bytes 0) 8)
    (bytes-ref bytes 1)))
 
-(struct conn (r w flush))
+(struct conn (r w flush) #:mutable)
 
 (define (conn-close c)
   (close-output-port (conn-w c))
@@ -31,7 +31,7 @@
   (write-bytes w-length (conn-w c))
   (write-bytes w-bytes (conn-w c))
   (printf "flushing message~n")
-  ((conn-flush c))
+  (set-conn-w! c (conn-flush c))
   (printf "reading response~n")
   (define read-length (decode-length (read-bytes 2 (conn-r c))))
   (define response (bytes->csexp (read-bytes read-length (conn-r c))))
@@ -46,10 +46,19 @@
      (printf "r gotten~n")
      (define-values (in out) (make-pipe))
      (printf "pipe made~n")
-     (conn r out (lambda () (ws-send! ws-conn in #:payload-type 'binary)))]
+     (conn r out
+           (lambda ()
+             (printf "ws sending message~n")
+             (close-output-port out)
+             (ws-send! ws-conn in #:payload-type 'binary)
+             (close-input-port in)
+             (define-values (new-in new-out) (make-pipe))
+             (printf "ws message sent~n")
+             (set! in new-in)
+             new-out))]
     [else
      (define-values (r w) (unix-socket-connect pipename))
-     (conn r w (lambda () (flush-output w)))]))
+     (conn r w (lambda () (flush-output w) w))]))
 
 (define (connect-loop pipename ws-conn)
   (with-handlers
