@@ -40,8 +40,11 @@
 (define (get-conn pipename ws-conn)
   (cond
     [(ws-conn? ws-conn)
+     (printf "getting connection~n")
      (define r (ws-recv-stream ws-conn))
+     (printf "r gotten~n")
      (define-values (in out) (make-pipe))
+     (printf "pipe made~n")
      (conn r out (lambda () (ws-send! ws-conn in #:payload-type 'binary)))]
     [else
      (define-values (r w) (unix-socket-connect pipename))
