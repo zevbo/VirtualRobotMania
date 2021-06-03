@@ -7,7 +7,7 @@ open! Brr
 let websocket () =
   let host = Window.location G.window |> Uri.host |> Jstr.to_string in
   let addr = Jstr.of_string ("ws://" ^ host ^ ":8080/ws") in
-  Websocket.create addr ~protocols:[ Jstr.of_string "csexp" ]
+  Websocket.create addr
 
 let run impl_group =
   let ws = websocket () in

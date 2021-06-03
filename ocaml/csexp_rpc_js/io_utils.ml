@@ -44,6 +44,10 @@ end = struct
 
   let maybe_consume t dst =
     let dst_len = Bytes.length dst in
+    let msg =
+      Printf.sprintf "dist, consumable: %n, %n" dst_len (consumable t)
+    in
+    print_s [%message msg];
     if consumable t < dst_len
     then Not_enough_data
     else (
@@ -74,8 +78,11 @@ let input_of_websocket ws closed =
   let rec really_read () dst =
     print_s [%message "really read"];
     match Iobuf.maybe_consume input_buf dst with
-    | Consumed -> return `Ok
+    | Consumed ->
+      print_s [%message "consumed"];
+      return `Ok
     | Not_enough_data ->
+      print_s [%message "not enough data"];
       let%bind () = Bvar.wait input_arrived in
       really_read () dst
   in
