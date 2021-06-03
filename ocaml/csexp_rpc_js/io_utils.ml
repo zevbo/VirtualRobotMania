@@ -65,12 +65,14 @@ let input_of_websocket ws closed =
   Ev.listen
     Message.Ev.message
     (fun message ->
+      print_s [%message "received message"];
       Bvar.broadcast input_arrived ();
       let message = Ev.as_type message in
       Iobuf.compact input_buf;
       Iobuf.fill input_buf (Jstr.to_string (Message.Ev.data message : Jstr.t)))
     (Websocket.as_target ws);
   let rec really_read () dst =
+    print_s [%message "really read"];
     match Iobuf.maybe_consume input_buf dst with
     | Consumed -> return `Ok
     | Not_enough_data ->
@@ -93,6 +95,7 @@ let output_of_websocket ws closed =
       closed)
     ~close_finished:(fun () -> closed)
     ~write_bytes:(fun () bytes ->
+      print_s [%message "writing bytes"];
       Websocket.send_string ws (Jstr.of_string (Bytes.to_string bytes)))
 
 let io_of_websocket ws =
