@@ -1,13 +1,11 @@
 (library
  (name csexp_rpc_js)
- (inline_tests)
  (libraries
    async_kernel
    brr
    core_kernel
    csexp
    csexp_rpc
-   core_kernel.iobuf
    js_of_ocaml
  )
  (preprocess

@@ -37,7 +37,7 @@
     [(ws-conn? ws-conn)
      (define r (ws-recv-stream ws-conn))
      (define-values (in out) (make-pipe))
-     (conn r out (lambda () (ws-send! ws-conn in)))]
+     (conn r out (lambda () (ws-send! ws-conn in #:payload-type 'binary)))]
     [else
      (define-values (r w) (unix-socket-connect pipename))
      (conn r w (lambda () (flush-output w)))]))
