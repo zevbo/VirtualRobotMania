@@ -52,6 +52,7 @@
     [other (unknown-kind other)]))
 
 (define (startup offense defense #:ws-conn [ws-conn #f])
+  (printf "take this bitch I got one~n")
   (check-offense-defense offense defense)
   (printf "gonna launch and connect~n")
   (set! the-connection

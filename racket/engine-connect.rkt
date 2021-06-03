@@ -69,6 +69,7 @@
   (process cmd)
   (connect-loop pipename #false))
 (define (launch-and-connect-ws name ws-conn)
+  (printf "launching and connecting")
   (define cmd
     (string-append
      ;; Hack for Zev's machine, because, sigh.
