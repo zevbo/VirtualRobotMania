@@ -62,11 +62,13 @@
   (set! the-connection (startup offense defense #:ws-conn ws-conn))
   (define tick-num 0)
   (define (loop)
+    (printf "looping")
     (set! the-current-robot offense)
     ((robot-on-tick offense) tick-num)
     (set! the-current-robot defense)
     ((robot-on-tick defense) tick-num)
     (set! the-current-robot '())
+    (printf "stepping")
     (step)
     (set! tick-num (+ tick-num 1))
     (loop))
@@ -113,6 +115,7 @@
   (rpc the-connection
        `(,name ,arg)))
 (define (bot-rpc name arg)
+  (printf "definitely calling rpc~n")
   (rpc the-connection
        `(,name (,(rpc-name the-current-robot) ,arg))))
 

@@ -16,10 +16,12 @@
   (make-robot
    "Green offenders"
    (lambda (tick#)
+     (printf "testing rpc with simple request~n")
+     (set-motors 0 0)
      (define pid-using (if (offense-has-flag?) return-pid flag-pid))
      (define error (if (offense-has-flag?) (normalize-angle (- 180 (get-robot-angle))) (angle-to-flag)))
      (cond
-       [(= (modulo tick# 50) 0) (printf "error: ~s ~n" error)]) 
+       [(= (modulo tick# 50) 0) (printf "error: ~s~n" error)]) 
      (add-error pid-using error)
      (define control (PID-output pid-using))
      (set-motors (- 1 control) (+ 1 control)))
