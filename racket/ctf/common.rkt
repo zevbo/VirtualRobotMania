@@ -55,8 +55,6 @@
           [(csexp)
            (lambda (conn)
              (run-internal offense defense #:ws-conn conn)
-             ; testing by just running it normally here
-             ;(run-internal offense defense)
              )]]
          ))
        (define JS-MIME #"text/javascript; charset=utf-8")
