@@ -51,7 +51,8 @@
        (ws-serve
         #:port 8080
         (lambda (conn s)
-          (printf "running internal")
+          (printf "running internal~n")
+          (flush-output (current-output-port))
           (run-internal offense defense #:ws-conn conn)
           ))
        (define JS-MIME #"text/javascript; charset=utf-8")

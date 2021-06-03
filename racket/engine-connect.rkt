@@ -31,10 +31,13 @@
   (printf "MESSAGE: ~s~n" (bytes-append w-length w-bytes))
   (ws-send! (conn-w c) (bytes-append w-length w-bytes))
   (printf "reading response~n")
+  (flush-output (current-output-port))
   (define read-length (decode-length (read-bytes 2 (conn-r c))))
-  (printf "length of response read")
+  (printf "length of response read~n")
+  (flush-output (current-output-port))
   (define response (bytes->csexp (read-bytes read-length (conn-r c))))
   (printf "read response~n")
+  (flush-output (current-output-port))
   response)
 
 (define (read-until-eof in)
@@ -47,6 +50,7 @@
   (cond
     [(ws-conn? ws-conn)
      (printf "getting connection~n")
+     (flush-output (current-output-port))
      (define r (ws-recv-stream ws-conn))
      (printf "r gotten~n")
      (conn r ws-conn)]
@@ -74,6 +78,7 @@
   (connect-loop pipename #false))
 (define (launch-and-connect-ws name ws-conn)
   (printf "launching and connecting~n")
+  (flush-output (current-output-port))
   (define cmd
     (string-append
      ;; Hack for Zev's machine, because, sigh.
