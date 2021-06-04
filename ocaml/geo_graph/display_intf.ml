@@ -18,21 +18,7 @@ module type S = sig
     type t
 
     val pixel : display -> Color.t -> t
-    val destroy : t -> unit
     val size : t -> int * int
-
-    (* TODO: replace these with more portable interfaces *)
-
-    val of_bmp_file : display -> string -> t
-    val of_file : display -> filename:string -> t Async_kernel.Deferred.t
-
-    val of_contents
-      :  display
-      -> contents:string
-      -> format:string
-           (** The extension that indicates the format of the data, e.g., "jpg"
-               or "gif" *)
-      -> t Async_kernel.Deferred.t
 
     (** This provides a logical name (with file extension, e.g. "flag.bmp") that
         will be loaded by the engine. Each instance of the engine can have its
@@ -72,12 +58,4 @@ module type S = sig
     -> unit
 
   val draw_line : t -> width:float -> Vec.t -> Vec.t -> Color.t -> unit
-
-  (** destroy the renderer and the window, and quit SDL *)
-  val shutdown : t -> unit
-
-  (** Exit the display if someone has asked you to. *)
-  val maybe_exit : t -> unit
-
-  val delay_ms : int -> unit
 end

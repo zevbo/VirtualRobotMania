@@ -74,33 +74,12 @@ module Image = struct
 
   let pixel _display (color : Color.t) = Pixel color
 
-  (** Javascript is garbage collected, so, no need to explicitly deallocate
-      images. *)
-  let destroy _t = ()
-
   let size t =
     match t with
     | Pixel _ -> 1, 1
     | Image image ->
       let get prop = El.prop prop image in
       get El.Prop.width, get El.Prop.height
-
-  let of_bmp_file _ filename =
-    raise_s
-      [%message
-        "Display.of_bmp_file is unimplemented in JavaScript" (filename : string)]
-
-  let of_file _ ~filename =
-    raise_s
-      [%message
-        "Display.of_file is unimplemented in JavaScript" (filename : string)]
-
-  let of_contents _ ~contents ~format =
-    raise_s
-      [%message
-        "Display.of_contents is unimplemented in JavaScript"
-          (contents : string)
-          (format : string)]
 
   let of_name _display name =
     let%map image = load_image name in
@@ -191,13 +170,3 @@ let draw_line t ~width (v1 : Vec.t) (v2 : Vec.t) color =
   C2d.set_stroke_style t.c2d (color_to_style color);
   C2d.stroke t.c2d path;
   C2d.reset_transform t.c2d
-
-(** Nothing to do in Javascript land... *)
-let shutdown _t = ()
-
-(** Again, nothing to do in Javascript land *)
-let maybe_exit _t = ()
-
-(* Can't do anything here without returning a Deferred....so, we need to fix the
-   API, maybe? *)
-let delay_ms _ms = ()

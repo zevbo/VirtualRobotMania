@@ -51,27 +51,12 @@ module Make (Display : Geo_graph.Display_intf.S) : sig
 
   val set_world : t -> World.t -> unit
 
-  val set_robot_image_contents
-    :  t
-    -> Bot_name.t * Image_contents.t
-    -> unit Deferred.t
-
   val set_robot_image_by_name
     :  t
     -> Bot_name.t * string
     -> unit Async_kernel.Deferred.t
 
-  val set_flag_image_contents
-    :  t
-    -> Image_contents.t
-    -> unit Async_kernel.Deferred.t
-
   val set_flag_image_by_name : t -> string -> unit Async_kernel.Deferred.t
-
-  val set_flag_protector_image_contents
-    :  t
-    -> Image_contents.t
-    -> unit Async_kernel.Deferred.t
 
   val set_flag_protector_image_by_name
     :  t

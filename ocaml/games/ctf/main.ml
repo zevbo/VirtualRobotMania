@@ -71,7 +71,6 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     Out_channel.write_all "/tmp/status.sexp" ~data
 
   let step (state : State.t) () =
-    Display.maybe_exit state.display;
     for i = 1 to Int.of_float dt_sim_dt do
       Advance.run state ~dt:(dt_sim *. speed_constant) i;
       state.ts <- state.ts +. dt_sim
@@ -126,8 +125,9 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
       let now = Time.now () in
       let elapsed_ms = Time.Span.to_ms (Time.diff now last_step_end) in
       let target_delay_ms = 1000. *. dt in
-      let time_left_ms = Float.max 0. (target_delay_ms -. elapsed_ms) in
-      Display.delay_ms (Int.of_float time_left_ms));
+      let _time_left_ms = Float.max 0. (target_delay_ms -. elapsed_ms) in
+      (* TODO: we need to actually delay in this loop *)
+      ());
     state.last_step_end <- Some (Time.now ())
 
   let max_input = 1.

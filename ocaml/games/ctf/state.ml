@@ -42,11 +42,7 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
   let set_image_gen t id image_thunk =
     let open Async_kernel in
     let%bind image = image_thunk () in
-    t.images
-      <- Map.update t.images id ~f:(fun old_image ->
-             Option.iter old_image ~f:(fun old_image ->
-                 Display.Image.destroy old_image);
-             image);
+    t.images <- Map.set t.images ~key:id ~data:image;
     return ()
 
   let set_image_by_name t id name =
@@ -91,19 +87,6 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
 
   let set_world t world = t.world <- world
 
-  let set_image_contents t id (image_contents : Image_contents.t) =
-    let { Image_contents.contents; format } = image_contents in
-    set_image_gen t id (fun () ->
-        Display.Image.of_contents t.display ~contents ~format)
-
-  let set_robot_image_contents t (bot_name, image_contents) =
-    let id =
-      match (bot_name : Bot_name.t) with
-      | Defense -> t.defense_bot.id
-      | Offense -> t.offense_bot.id
-    in
-    set_image_contents t id image_contents
-
   let set_robot_image_by_name t (bot_name, name) =
     let id =
       match (bot_name : Bot_name.t) with
@@ -112,12 +95,7 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     in
     set_image_by_name t id name
 
-  let set_flag_image_contents t = set_image_contents t t.flag
   let set_flag_image_by_name t = set_image_by_name t t.flag
-
-  let set_flag_protector_image_contents t =
-    set_image_contents t t.flag_protector
-
   let set_flag_protector_image_by_name t = set_image_by_name t t.flag_protector
 
   let get_offense_bot_body state =
