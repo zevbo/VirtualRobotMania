@@ -145,7 +145,10 @@ let draw_image_base
   (* Now, for image placement *)
   let iw, ih = Image.size image in
   C2d.translate t.c2d ~x:center.x ~y:center.y;
-  C2d.rotate t.c2d (-.angle);
+  C2d.rotate t.c2d angle;
+  (* Undo the mirror transformation so the image isn't reversed *)
+  C2d.scale t.c2d ~sy:(-1.) ~sx:1.;
+  (* scale to get the image to the right size *)
   C2d.scale t.c2d ~sx:(w /. Float.of_int iw) ~sy:(h /. Float.of_int ih);
   let shift x = -.Float.of_int x /. 2. in
   (match image with
