@@ -58,7 +58,6 @@ let init ~physical ~logical ~title ~log_s =
       | true -> Vec.create (win.y *. t.x_over_y) win.y
       | false -> Vec.create win.x (win.x /. t.x_over_y)
     in
-    print_s [%message "new physical" (win : Vec.t) (new_physical : Vec.t)];
     Canvas.set_w canvas (Float.to_int new_physical.x);
     Canvas.set_h canvas (Float.to_int new_physical.y);
     t.physical <- new_physical

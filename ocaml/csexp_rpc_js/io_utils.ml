@@ -50,7 +50,6 @@ end = struct
       let string = Jstr.to_string text in
       Bytes.From_string.blito ~src:string ~dst:t.bytes ~dst_pos:t.data_start ();
       t.data_stop <- t.data_stop + String.length string;
-      print_s [%message "fill" (String.length string : int) (t : t)];
       return ()
 
   type consume_result =
@@ -60,7 +59,6 @@ end = struct
 
   let maybe_consume t dst =
     let dst_len = Bytes.length dst in
-    print_s [%message "maybe_consume" (dst_len : int) (consumable t : int)];
     if consumable t < dst_len
     then Not_enough_data
     else (
@@ -85,7 +83,6 @@ let input_of_websocket ws closed =
     (fun message ->
       don't_wait_for
         (Throttle.enqueue seq (fun () ->
-             print_s [%message "received message"];
              let message = Ev.as_type message in
              Iobuf.compact input_buf;
              let%bind () =
@@ -95,13 +92,9 @@ let input_of_websocket ws closed =
              return ())))
     (Websocket.as_target ws);
   let rec really_read () dst =
-    print_s [%message "really read"];
     match Iobuf.maybe_consume input_buf dst with
-    | Consumed ->
-      print_s [%message "consumed"];
-      return `Ok
+    | Consumed -> return `Ok
     | Not_enough_data ->
-      print_s [%message "not enough data"];
       let%bind () = Bvar.wait input_arrived in
       really_read () dst
   in
@@ -121,10 +114,8 @@ let output_of_websocket ws closed =
       closed)
     ~close_finished:(fun () -> closed)
     ~write_bytes:(fun () bytes ->
-      print_s [%message "writing bytes"];
       Websocket.send_string ws (Jstr.of_string (Bytes.to_string bytes)))
 
 let io_of_websocket ws =
-  print_s [%message (Jstr.to_string (Websocket.binary_type ws) : string)];
   let closed = closed ws in
   input_of_websocket ws closed, output_of_websocket ws closed
