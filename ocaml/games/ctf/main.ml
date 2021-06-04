@@ -71,12 +71,11 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     Out_channel.write_all "/tmp/status.sexp" ~data
 
   let step (state : State.t) () =
-    Display.maybe_exit state.display;
     for i = 1 to Int.of_float dt_sim_dt do
       Advance.run state ~dt:(dt_sim *. speed_constant) i;
       state.ts <- state.ts +. dt_sim
     done;
-    Display.clear state.display Color.white;
+    Display.clear state.display (Color.rgb 240 240 240);
     Display.draw_image_wh
       state.display
       ~w:Ctf_consts.End_line.w
@@ -120,14 +119,16 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
                 ~center:robot.pos
                 ~angle:robot.angle)));
     Display.present state.display;
-    (match state.last_step_end with
-    | None -> ()
-    | Some last_step_end ->
-      let now = Time.now () in
-      let elapsed_ms = Time.Span.to_ms (Time.diff now last_step_end) in
-      let target_delay_ms = 1000. *. dt in
-      let time_left_ms = Float.max 0. (target_delay_ms -. elapsed_ms) in
-      Display.delay_ms (Int.of_float time_left_ms));
+    let%map () =
+      match state.last_step_end with
+      | None -> return ()
+      | Some last_step_end ->
+        let now = Time.now () in
+        let elapsed_ms = Time.Span.to_ms (Time.diff now last_step_end) in
+        let target_delay_ms = 1000. *. dt in
+        let time_left_ms = Float.max 0. (target_delay_ms -. elapsed_ms) in
+        Clock_ns.after (Time_ns.Span.of_ms time_left_ms)
+    in
     state.last_step_end <- Some (Time.now ())
 
   let max_input = 1.

@@ -1,5 +1,0 @@
-(executables
- (names direct main)
- (libraries geo base tsdl geo_graph_tsdl)
- (preprocess
-  (pps ppx_jane)))

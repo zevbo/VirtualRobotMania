@@ -13,10 +13,10 @@ let run impl_group ~context input output ~log_s =
           ~really_read:(fun bytes -> Input.really_read input bytes)
           Fn.id
       in
-      log_s [%message "received query" (sexp : Sexp.t)];
+      if debug then log_s [%message "received query" (sexp : Sexp.t)];
       let%bind response = Implementation.Group.handle_query impl_group sexp in
       Async_csexp.write ~write:(Output.write_bytes output) response;
-      log_s [%message "wrote resp" (response : Sexp.t)];
+      if debug then log_s [%message "wrote resp" (response : Sexp.t)];
       loop ())
   in
   Deferred.any_unit

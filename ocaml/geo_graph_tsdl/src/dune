@@ -1,5 +1,0 @@
-(library
- (name geo_graph_tsdl)
- (libraries core_kernel async base geo_graph geo tsdl)
- (preprocess
-  (pps ppx_jane)))
