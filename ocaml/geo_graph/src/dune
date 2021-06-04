@@ -1,15 +1,13 @@
-(executable
- (name main)
+(library
+ (name geo_graph)
  (libraries
    async_js
    async_kernel
+   base
    brr
    core_kernel
-   csexp_rpc
-   ctf
-   geo_graph_js
+   geo
    js_of_ocaml
-  )
- (modes js)
+ )
  (preprocess
   (pps ppx_jane)))

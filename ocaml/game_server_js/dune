@@ -9,7 +9,7 @@
   csexp_rpc_js
   ctf
   common
-  geo_graph_js
+  geo_graph
   js_of_ocaml)
  (modes js)
  (preprocess
