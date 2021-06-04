@@ -53,7 +53,7 @@
 
 (define (run-internal offense defense #:ws-conn [ws-conn #f])
   (check-offense-defense offense defense)
-  (launch-and-connect "ctf")
+  (build-ocaml)
   (set! the-connection ws-conn)
   (define tick-num 0)
   (define (loop)

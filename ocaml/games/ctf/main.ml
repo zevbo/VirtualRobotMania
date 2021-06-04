@@ -75,7 +75,7 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
       Advance.run state ~dt:(dt_sim *. speed_constant) i;
       state.ts <- state.ts +. dt_sim
     done;
-    Display.clear state.display Color.white;
+    Display.clear state.display (Color.rgb 240 240 240);
     Display.draw_image_wh
       state.display
       ~w:Ctf_consts.End_line.w
