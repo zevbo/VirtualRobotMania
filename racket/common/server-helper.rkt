@@ -3,6 +3,8 @@
 (require web-server/servlet-env)
 (provide serve-website
          TEXT/JAVASCRIPT-MIME-TYPE)
+(require net/rfc6455)
+(require net/url)
 
 ;; Returns a HTTP response given a HTTP request.
 (define (uri-extention request)

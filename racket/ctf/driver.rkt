@@ -51,12 +51,10 @@
       "You put an offense both in the second spot, which is reserved for defense")]
     [other (unknown-kind other)]))
 
-(define (startup offense defense ws-conn)
-  (check-offense-defense offense defense)
-  (set! the-connection (launch-and-connect-ws "ctf" ws-conn))
-  the-connection)
 (define (run-internal offense defense #:ws-conn [ws-conn #f])
-  (set! the-connection (startup offense defense ws-conn))
+  (check-offense-defense offense defense)
+  (launch-and-connect "ctf")
+  (set! the-connection ws-conn)
   (define tick-num 0)
   (define (loop)
     (printf "looping~n")
@@ -73,6 +71,9 @@
     (loop))
   (loop))
 (define start-wait-time 5)
+(define (run-double-internal)
+  #false)
+#|
 (define (run-double-internal off1 def1 off2 def2 #:ws-conn [ws-conn #f])
   (check-offense-defense off1 def1)
   (check-offense-defense off2 def2)
@@ -103,7 +104,7 @@
     (tick)
     (loop))
   (loop))
-
+|#
 (define (encode-number x)
   (string->bytes/utf-8 (number->string x)))
 
@@ -126,7 +127,7 @@
   (match (bytes->string/utf-8 b)
     ["true" #t]
     ["false" #f]
-    [other (error "Expected true or false" other)]))
+    [other #t]));(error "Expected true or false" other)]))
 
 (define (bot-rpc-bool name arg)
   (decode-bool (bot-rpc name arg)))

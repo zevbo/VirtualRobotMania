@@ -3,8 +3,7 @@
 (require racket/system)
 (require csexp)
 (require net/rfc6455)
-(provide
- (struct-out conn) rpc launch-and-connect-ws)
+(provide rpc launch-and-connect)
 
 (define (encode-length n)
   (bytes
@@ -17,44 +16,15 @@
    (arithmetic-shift (bytes-ref bytes 0) 8)
    (bytes-ref bytes 1)))
 
-(struct conn (r w) #:mutable)
-
 (define (rpc c message)
   (define w-bytes (csexp->bytes message))
-  (printf "writing message~n")
   (define w-length (encode-length (bytes-length w-bytes)))
-  (printf "length: ~s ~s~n" (bytes-length w-bytes) w-length)
-  (printf "MESSAGE: ~s~n" (bytes-append w-length w-bytes))
-  (flush-output (current-output-port))
-  (ws-send! (conn-w c) (bytes-append w-length w-bytes) #:payload-type 'binary)
-  (printf "reading response~n")
-  (flush-output (current-output-port))
-  (define read-length (decode-length (read-bytes 2 (conn-r c))))
-  (printf "length of response read~n")
-  (flush-output (current-output-port))
-  (define response (bytes->csexp (read-bytes read-length (conn-r c))))
-  (printf "read response~n")
-  (flush-output (current-output-port))
+  (ws-send! c (bytes-append w-length w-bytes) #:payload-type 'binary)
+  (define raw-resp (ws-recv c #:payload-type 'binary))
+  (define response (bytes->csexp (subbytes raw-resp 2)))
   response)
 
-(define (get-conn pipename ws-conn)
-  (cond
-    [(ws-conn? ws-conn)
-     (printf "getting connection~n")
-     (flush-output (current-output-port))
-     (define r (ws-recv-stream ws-conn))
-     (printf "r gotten~n")
-     (conn r ws-conn)]
-    [else
-     (define-values (r w) (unix-socket-connect pipename))
-     (conn r w (lambda () (flush-output w) w))]))
-
-(define (connect-loop pipename ws-conn)
-  (with-handlers
-    ([exn:fail? (lambda (exn) (sleep 0.1) (connect-loop pipename ws-conn))])
-    (get-conn pipename ws-conn)))
-
-(define (launch-and-connect-ws name ws-conn)
+(define (launch-and-connect name)
   (printf "launching and connecting~n")
   (flush-output (current-output-port))
   (define cmd
@@ -65,8 +35,7 @@
          "eval $(opam env); ")
      "cd $(git rev-parse --show-toplevel)/ocaml; "
      "dune build @all"))
-  (process cmd)
-  (connect-loop #false ws-conn))
+  (process cmd))
 
 
 ;; How is this gonna work?
