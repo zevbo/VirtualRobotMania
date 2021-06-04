@@ -1,4 +1,5 @@
 open! Core_kernel
+open! Async_kernel
 open Virtuality2d
 module Color = Geo_graph.Color
 
@@ -38,6 +39,19 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
     ; mutable last_wall_enhance : float
     }
 
+  let set_image_gen t id image_thunk =
+    let open Async_kernel in
+    let%bind image = image_thunk () in
+    t.images
+      <- Map.update t.images id ~f:(fun old_image ->
+             Option.iter old_image ~f:(fun old_image ->
+                 Display.Image.destroy old_image);
+             image);
+    return ()
+
+  let set_image_by_name t id name =
+    set_image_gen t id (fun () -> Display.Image.of_name t.display name)
+
   let create
       world
       images
@@ -48,52 +62,63 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
       flag_protector_id
       offense_shield_id
     =
-    { world
-    ; last_step_end = None
-    ; images
-    ; invisible = Set.empty (module World.Id)
-    ; lasers = Map.empty (module World.Id)
-    ; display
-    ; offense_bot
-    ; defense_bot
-    ; flag = flag_id
-    ; flag_protector = flag_protector_id
-    ; ts = 0.
-    ; laser = List.map Ctf_consts.Laser.colors ~f:(Display.Image.pixel display)
-    ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
-    ; offense_shield = offense_shield_id
-    ; last_wall_enhance = -.Ctf_consts.Border.enhance_period
-    }
+    let state =
+      { world
+      ; last_step_end = None
+      ; images
+      ; invisible = Set.empty (module World.Id)
+      ; lasers = Map.empty (module World.Id)
+      ; display
+      ; offense_bot
+      ; defense_bot
+      ; flag = flag_id
+      ; flag_protector = flag_protector_id
+      ; ts = 0.
+      ; laser =
+          List.map Ctf_consts.Laser.colors ~f:(Display.Image.pixel display)
+      ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
+      ; offense_shield = offense_shield_id
+      ; last_wall_enhance = -.Ctf_consts.Border.enhance_period
+      }
+    in
+    let%bind () = set_image_by_name state state.offense_bot.id "offense-bot" in
+    let%bind () = set_image_by_name state state.defense_bot.id "defense-bot" in
+    let%bind () = set_image_by_name state state.flag "flag" in
+    let%bind () =
+      set_image_by_name state state.flag_protector "flag-protector"
+    in
+    return state
 
   let set_world t world = t.world <- world
 
-  let load_bot_image t id image_thunk =
-    let open Async_kernel in
-    let%bind image = image_thunk () in
-    t.images
-      <- Map.update t.images id ~f:(fun old_image ->
-             Option.iter old_image ~f:(fun old_image ->
-                 Display.Image.destroy old_image);
-             image);
-    return ()
+  let set_image_contents t id (image_contents : Image_contents.t) =
+    let { Image_contents.contents; format } = image_contents in
+    set_image_gen t id (fun () ->
+        Display.Image.of_contents t.display ~contents ~format)
 
-  let set_image t ((bot_name : Bot_name.t), filename) =
-    let id =
-      match bot_name with
-      | Defense -> t.defense_bot.id
-      | Offense -> t.offense_bot.id
-    in
-    load_bot_image t id (fun () -> Display.Image.of_file t.display ~filename)
-
-  let set_image_contents t (bot_name, (image_contents : Image_contents.t)) =
+  let set_robot_image_contents t (bot_name, image_contents) =
     let id =
       match (bot_name : Bot_name.t) with
       | Defense -> t.defense_bot.id
       | Offense -> t.offense_bot.id
     in
-    let { Image_contents.contents; format } = image_contents in
-    load_bot_image t id (fun () ->
-        Display.Image.of_contents t.display ~contents ~format)
+    set_image_contents t id image_contents
+
+  let set_robot_image_by_name t (bot_name, name) =
+    let id =
+      match (bot_name : Bot_name.t) with
+      | Defense -> t.defense_bot.id
+      | Offense -> t.offense_bot.id
+    in
+    set_image_by_name t id name
+
+  let set_flag_image_contents t = set_image_contents t t.flag
+  let set_flag_image_by_name t = set_image_by_name t t.flag
+
+  let set_flag_protector_image_contents t =
+    set_image_contents t t.flag_protector
+
+  let set_flag_protector_image_by_name t = set_image_by_name t t.flag_protector
 
   let get_offense_bot_body state =
     let body_op = Map.find state.world.bodies state.offense_bot.id in

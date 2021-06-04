@@ -1,10 +1,7 @@
 *.rkt~
 *.dep
 *.zo
-*.jpg
-*.png
 *.mov
-*.JPEG
 \#*#
 *.DS_Store
 

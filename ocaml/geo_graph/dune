@@ -1,5 +1,6 @@
 (library
  (name geo_graph)
  (libraries core_kernel async_kernel geo)
+ (inline_tests)
  (preprocess
   (pps ppx_jane)))

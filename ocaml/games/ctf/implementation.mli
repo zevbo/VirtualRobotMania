@@ -1,6 +1,7 @@
 open! Core_kernel
+open Async_kernel
 
 val group
   :  (module Geo_graph.Display_intf.S)
-  -> root:string
-  -> Csexp_rpc.Implementation.Group.t
+  -> log_s:(Sexp.t -> unit)
+  -> Csexp_rpc.Implementation.Group.t Deferred.t

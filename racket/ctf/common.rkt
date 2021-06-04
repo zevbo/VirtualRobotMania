@@ -1,6 +1,9 @@
 #lang racket
 (require "driver.rkt")
 (require net/rfc6455)
+(require "../common/server-helper.rkt")
+
+(require 2htdp/image)
 (provide (all-defined-out))
 
 (define (bot-rpc-ang msg args)
@@ -27,18 +30,52 @@
   (define floored (inexact->exact (floor angle)))
   (of-radians (+ (- angle floored) (- (flmod (+ floored pi) (* 2 pi)) pi))))
 
+(define (image->bytes image)
+  (define image-file (make-temporary-file "image-~a.png"))
+  (save-image image image-file)
+  (define bytes (file->bytes image-file))
+  (delete-file image-file)
+  bytes)
+
 (define (with-ws? run-internal)
+  (define extra
+    (with-output-to-string
+      (lambda () (system "git rev-parse --show-prefix"))))
+  (define depth (- (length (string-split extra "/")) 1))
+  (define head (string-append (string-join (make-list depth "..") "/")))
+  (define images-folder (string-append head "/images/"))
+  (define game-server-js (string-append head "/ocaml/_build/default/game_server_js/"))
   (define (run offense defense ws?)
     (cond
       [ws?
        (ws-serve
         #:port 8080
         (lambda (conn s)
-          ;(run-internal offense defense #:ws-conn conn)
-          ; testing by just running it normally here
-          (run-internal offense defense)
-          ))]
-      [else (run-internal offense defense)]))
+          (run-internal offense defense #:ws-conn conn)
+          ))
+       (define JS-MIME #"text/javascript; charset=utf-8")
+       (define HTML-MIME #"text/html; charset=utf-8")
+       (define PNG-MIME #"image/png; charset=utf-8")
+       (define BMP-MIME #"image/bmp; charset=utf-8")
+       (define index (cons HTML-MIME (file->bytes (string-append game-server-js "index.html"))))
+       (define main-js (cons JS-MIME (file->bytes (string-append game-server-js "main.bc.js"))))
+       (define main-runtime-js (cons JS-MIME (file->bytes (string-append game-server-js "main.bc.runtime.js"))))
+       (define pages
+         (make-immutable-hash
+          (list
+           (cons "offense-bot" (cons PNG-MIME (image->bytes (robot-image offense))))
+           (cons "defense-bot" (cons PNG-MIME (image->bytes (robot-image defense))))
+           (cons "flag" (cons PNG-MIME (file->bytes (string-append images-folder "flag.png"))))
+           (cons "flag-protector" (cons BMP-MIME (file->bytes (string-append images-folder "green-outline.bmp"))))
+           (cons "index.html" index)
+           (cons "main.bc.js" main-js)
+           (cons "main.bc.runtime.js" main-runtime-js))))
+       (serve-website pages index 8000)
+       ]
+      [else (run-internal offense defense)]
+      )
+
+    )
   run)
 
 (define run (with-ws? run-internal))
@@ -46,4 +83,3 @@
 
 (define degrees-mode degrees-mode-internal)
 (define radians-mode radians-mode-internal)
-

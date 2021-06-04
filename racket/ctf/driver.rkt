@@ -29,13 +29,6 @@
     ['offense #"Offense"]
     ['defense #"Defense"]))
 
-(define (set-robot-image c robot)
-  (define file (make-temporary-file "robot-~a.png"))
-  (save-image (robot-image robot) file)
-  (define msg `(#"set-image" (,(rpc-name robot) ,(path->bytes file))))
-  (rpc c msg)
-  (delete-file file))
-
 (define (unknown-kind kind)
   (error "Your bot kind should be either 'offense or 'defense. This was neither" kind))
 
@@ -58,14 +51,10 @@
       "You put an offense both in the second spot, which is reserved for defense")]
     [other (unknown-kind other)]))
 
-(define (startup offense defense #:ws-conn [ws-conn #f])
-  (check-offense-defense offense defense)
-  (set! the-connection (launch-and-connect "ctf" #:ws-conn ws-conn))
-  (set-robot-image the-connection offense)
-  (set-robot-image the-connection defense)
-  the-connection)
 (define (run-internal offense defense #:ws-conn [ws-conn #f])
-  (set! the-connection (startup offense defense #:ws-conn ws-conn))
+  (check-offense-defense offense defense)
+  (launch-and-connect "ctf")
+  (set! the-connection ws-conn)
   (define tick-num 0)
   (define (loop)
     (set! the-current-robot offense)
@@ -78,6 +67,9 @@
     (loop))
   (loop))
 (define start-wait-time 5)
+(define (run-double-internal)
+  #false)
+#|
 (define (run-double-internal off1 def1 off2 def2 #:ws-conn [ws-conn #f])
   (check-offense-defense off1 def1)
   (check-offense-defense off2 def2)
@@ -108,7 +100,7 @@
     (tick)
     (loop))
   (loop))
-
+|#
 (define (encode-number x)
   (string->bytes/utf-8 (number->string x)))
 
@@ -119,6 +111,7 @@
   (rpc the-connection
        `(,name ,arg)))
 (define (bot-rpc name arg)
+  (flush-output (current-output-port))
   (rpc the-connection
        `(,name (,(rpc-name the-current-robot) ,arg))))
 
@@ -129,7 +122,7 @@
   (match (bytes->string/utf-8 b)
     ["true" #t]
     ["false" #f]
-    [other (error "Expected true or false" other)]))
+    [other #t]));(error "Expected true or false" other)]))
 
 (define (bot-rpc-bool name arg)
   (decode-bool (bot-rpc name arg)))

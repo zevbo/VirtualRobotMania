@@ -1,0 +1,12 @@
+(library
+ (name csexp_rpc_js)
+ (libraries
+   async_kernel
+   brr
+   core_kernel
+   csexp
+   csexp_rpc
+   js_of_ocaml
+ )
+ (preprocess
+  (pps ppx_jane)))

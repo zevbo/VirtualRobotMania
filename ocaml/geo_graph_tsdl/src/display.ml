@@ -26,17 +26,18 @@ type t =
         (** The bigarray used to blit a color into our one-pixel texture. *)
   ; pixel_format : Sdl.pixel_format
   ; event : Sdl.event
+  ; log_s : Sexp.t -> unit
   }
 
 let set_pixel_color t color =
   let color =
-    let r, g, b = Color.to_tuple color in
+    let r, g, b = Color.to_rgb_tuple color in
     Sdl.map_rgba t.pixel_format r g b 255
   in
   t.pixel_ba.{0} <- color;
   Sdl.update_texture t.pixel None t.pixel_ba 1 |> ok_exn
 
-let init ~physical ~logical ~title =
+let init ~physical ~logical ~title ~log_s =
   let () = ok_exn @@ Sdl.init Sdl.Init.(video + events) in
   let window =
     let w, h = physical in
@@ -61,6 +62,7 @@ let init ~physical ~logical ~title =
   ; pixel_ba = Bigarray.Array1.create Bigarray.Int32 Bigarray.c_layout 1
   ; pixel_format = Sdl.alloc_format Sdl.Pixel.format_rgba8888 |> ok_exn
   ; event = Sdl.Event.create ()
+  ; log_s
   }
 
 module Image = struct
@@ -70,7 +72,7 @@ module Image = struct
 
   let pixel display color =
     let color =
-      let r, g, b = Color.to_tuple color in
+      let r, g, b = Color.to_rgb_tuple color in
       Sdl.map_rgba display.pixel_format r g b 255
     in
     display.pixel_ba.{0} <- color;
@@ -112,15 +114,18 @@ module Image = struct
 
   let of_contents t ~contents ~format =
     let open Async in
+    t.log_s [%message "of_contents" (contents : string) (format : string)];
     let filename = Caml.Filename.temp_file "input-image" ("." ^ format) in
     let%bind () = Writer.save filename ~contents in
     let%bind image = of_file t ~filename in
     let%bind () = Unix.unlink filename in
     return image
+
+  let of_name _ = assert false
 end
 
 let clear t color =
-  let r, g, b = Color.to_tuple color in
+  let r, g, b = Color.to_rgb_tuple color in
   ok_exn @@ Sdl.set_render_draw_color t.renderer r g b 0;
   ok_exn @@ Sdl.render_fill_rect t.renderer None
 
