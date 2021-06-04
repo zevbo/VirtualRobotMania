@@ -13,7 +13,7 @@ module Make (Display : Geo_graph.Display_intf.S) : sig
   type ('a, 'b) state_func := State.t -> 'a -> 'b
 
   val init : log_s:(Sexp.t -> unit) -> State.t Deferred.t
-  val step : (unit, unit) state_func
+  val step : State.t -> unit -> unit Deferred.t
   val just_returned_flag : (unit, bool) state_func
   val just_killed : (unit, bool) state_func
   val enhance_border : (unit, unit) state_func

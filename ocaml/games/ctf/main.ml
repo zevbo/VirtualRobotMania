@@ -119,15 +119,16 @@ module Make (Display : Geo_graph.Display_intf.S) = struct
                 ~center:robot.pos
                 ~angle:robot.angle)));
     Display.present state.display;
-    (match state.last_step_end with
-    | None -> ()
-    | Some last_step_end ->
-      let now = Time.now () in
-      let elapsed_ms = Time.Span.to_ms (Time.diff now last_step_end) in
-      let target_delay_ms = 1000. *. dt in
-      let _time_left_ms = Float.max 0. (target_delay_ms -. elapsed_ms) in
-      (* TODO: we need to actually delay in this loop *)
-      ());
+    let%map () =
+      match state.last_step_end with
+      | None -> return ()
+      | Some last_step_end ->
+        let now = Time.now () in
+        let elapsed_ms = Time.Span.to_ms (Time.diff now last_step_end) in
+        let target_delay_ms = 1000. *. dt in
+        let time_left_ms = Float.max 0. (target_delay_ms -. elapsed_ms) in
+        Clock_ns.after (Time_ns.Span.of_ms time_left_ms)
+    in
     state.last_step_end <- Some (Time.now ())
 
   let max_input = 1.

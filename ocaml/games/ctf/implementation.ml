@@ -6,6 +6,7 @@ let group (module Display : Geo_graph.Display_intf.S) ~log_s =
   let module Main = Main.Make (Display) in
   let%bind state = Main.init ~log_s in
   let impl protocol f = Csexp_rpc.Implementation.create protocol (f state) in
+  let impl' protocol f = Csexp_rpc.Implementation.create' protocol (f state) in
   return
     (Csexp_rpc.Implementation.Group.create
        [ impl Protocol.l_input Main.l_input
@@ -14,7 +15,7 @@ let group (module Display : Geo_graph.Display_intf.S) ~log_s =
        ; impl Protocol.load_laser Main.load_laser
        ; impl Protocol.restock_laser Main.restock_laser
        ; impl Protocol.shoot_laser Main.shoot_laser
-       ; impl Protocol.step Main.step
+       ; impl' Protocol.step Main.step
        ; impl Protocol.boost Main.boost
        ; impl Protocol.just_returned_flag Main.just_returned_flag
        ; impl Protocol.just_killed Main.just_killed
