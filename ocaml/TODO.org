@@ -1,12 +1,14 @@
 * Things [0/4]
 
-- [ ] Write a README for the game, hopefully mapping out the API.
-- [ ] Support production builds (no sourcemap, so no
-  main.runtime.bc.js)
 - [ ] At the same time, support prod mode, where we have a pre-built
   javascript executable
   - write a shell-script to build and put the artifacts in the right
     place
   - Have some support in Racket for running both ways
+- [ ] Write a README for the game, hopefully mapping out the API.
+- [ ] Write more tutorials (like how to write a PID controller)
+- [ ] Write some code to auto-install packages, maybe?
 - [ ] Try it out on a user! See if we can get Siggy and Nava up and
   running with it.
+- [ ] Support production builds (no sourcemap, so no
+  main.runtime.bc.js)
