@@ -25,8 +25,6 @@
   response)
 
 (define (launch-and-connect name)
-  (printf "launching and connecting~n")
-  (flush-output (current-output-port))
   (define cmd
     (string-append
      ;; Hack for Zev's machine, because, sigh.

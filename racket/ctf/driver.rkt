@@ -57,15 +57,11 @@
   (set! the-connection ws-conn)
   (define tick-num 0)
   (define (loop)
-    (printf "looping~n")
-    (flush-output (current-output-port))
     (set! the-current-robot offense)
     ((robot-on-tick offense) tick-num)
     (set! the-current-robot defense)
     ((robot-on-tick defense) tick-num)
     (set! the-current-robot '())
-    (printf "stepping~n")
-    (flush-output (current-output-port))
     (step)
     (set! tick-num (+ tick-num 1))
     (loop))
@@ -115,7 +111,6 @@
   (rpc the-connection
        `(,name ,arg)))
 (define (bot-rpc name arg)
-  (printf "definitely calling rpc~n")
   (flush-output (current-output-port))
   (rpc the-connection
        `(,name (,(rpc-name the-current-robot) ,arg))))
