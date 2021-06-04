@@ -1,9 +1,7 @@
 open! Core_kernel
 open! Async_kernel
 
-let group (module Display : Geo_graph.Display_intf.S) ~log_s =
-  let module State = State.Make (Display) in
-  let module Main = Main.Make (Display) in
+let group ~log_s =
   let%bind state = Main.init ~log_s in
   let impl protocol f = Csexp_rpc.Implementation.create protocol (f state) in
   let impl' protocol f = Csexp_rpc.Implementation.create' protocol (f state) in

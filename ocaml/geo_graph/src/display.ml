@@ -2,7 +2,6 @@ open! Core_kernel
 open! Async_kernel
 open Geo
 open Brr
-module Color = Geo_graph.Color
 module Canvas = Brr_canvas.Canvas
 module C2d = Brr_canvas.C2d
 module Matrix4 = Brr_canvas.Matrix4

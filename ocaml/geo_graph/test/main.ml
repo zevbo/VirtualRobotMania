@@ -2,11 +2,10 @@ open! Core_kernel
 open! Async_kernel
 open Geo
 module Color = Geo_graph.Color
+module Display = Geo_graph.Display
 
 let pelosi =
   "https://cdn.britannica.com/s:250x250,c:crop/93/204193-050-16E326DA/Nancy-Pelosi-2018.jpg"
-
-module Display = Geo_graph_js.Display
 
 let rec pairs l =
   match l with
