@@ -33,7 +33,6 @@
          "eval $(opam env); ")
      "cd $(git rev-parse --show-toplevel)/ocaml; "
      "dune build @all"))
-  (printf "RUNNING: ~s~n" cmd)
   (if (not (system cmd))
       (raise "Failed to build OCaml engine")
       '()))
