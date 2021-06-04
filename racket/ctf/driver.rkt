@@ -51,19 +51,12 @@
       "You put an offense both in the second spot, which is reserved for defense")]
     [other (unknown-kind other)]))
 
-(define (startup offense defense #:ws-conn [ws-conn #f])
-  (printf "take this bitch I got one~n")
-  (flush-output (current-output-port))
+(define (startup offense defense ws-conn)
   (check-offense-defense offense defense)
-  (printf "gonna launch and connect~n")
-  (flush-output (current-output-port))
-  (set! the-connection
-        (if (boolean? ws-conn)
-            (launch-and-connect "ctf")
-            (launch-and-connect-ws "ctf" ws-conn)))
+  (set! the-connection (launch-and-connect-ws "ctf" ws-conn))
   the-connection)
 (define (run-internal offense defense #:ws-conn [ws-conn #f])
-  (set! the-connection (startup offense defense #:ws-conn ws-conn))
+  (set! the-connection (startup offense defense ws-conn))
   (define tick-num 0)
   (define (loop)
     (printf "looping~n")
