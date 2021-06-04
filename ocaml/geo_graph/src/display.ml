@@ -84,9 +84,6 @@ module Image = struct
     Image image
 end
 
-(** Display is automatically refreshed after control is returned to browser *)
-let present _t = ()
-
 let clear t color =
   let color = C2d.color (Jstr.of_string (Color.to_js_string color)) in
   C2d.set_fill_style t.c2d color;

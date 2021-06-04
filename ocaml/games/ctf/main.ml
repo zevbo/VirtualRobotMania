@@ -113,7 +113,6 @@ let step (state : State.t) () =
               image
               ~center:robot.pos
               ~angle:robot.angle)));
-  Display.present state.display;
   let%map () =
     match state.last_step_end with
     | None -> return ()

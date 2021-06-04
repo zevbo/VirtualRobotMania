@@ -74,7 +74,6 @@ let () =
           pairs [ v (-.x) (-.y); v x (-.y); v x y; v (-.x) y; v (-.x) (-.y) ])
          ~f:(fun (v1, v2) ->
            Display.draw_line display ~width:5. v1 v2 (nth_color n));
-       Display.present display;
        let%bind () =
          Clock_ns.at (Time_ns.add start_cycle (Time_ns.Span.of_ms 16.))
        in

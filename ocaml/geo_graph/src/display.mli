@@ -27,9 +27,6 @@ module Image : sig
   val of_name : display -> string -> t Async_kernel.Deferred.t
 end
 
-(** Take whatever has been drawn, and present that to the user *)
-val present : t -> unit
-
 (** {2 Drawing operations}
 
     Note that these operations do not immediately show up until someone calls
