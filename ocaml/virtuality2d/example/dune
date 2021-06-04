@@ -1,6 +1,0 @@
-(executables
- (names test)
- (libraries core geo base virtuality2d geo_graph_tsdl)
- (modules simple long_rec with_border random_bodies_with_border test helpers)
- (preprocess
-  (pps ppx_jane)))

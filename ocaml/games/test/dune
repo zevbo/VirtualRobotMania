@@ -1,5 +1,0 @@
-(library
- (name test_game)
- (libraries core async core_kernel geo geo_graph_tsdl virtuality2d csexp_rpc)
- (preprocess
-  (pps ppx_jane)))
