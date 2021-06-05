@@ -52,14 +52,14 @@
        (ws-serve
         #:port 8080
         (lambda (conn s)
-          (run-internal offense defense #:ws-conn conn)
+          (run-internal offense defense (not cached?) #:ws-conn conn)
           ))
        (define JS-MIME #"text/javascript; charset=utf-8")
        (define HTML-MIME #"text/html; charset=utf-8")
        (define PNG-MIME #"image/png; charset=utf-8")
        (define BMP-MIME #"image/bmp; charset=utf-8")
        (define (game-file-bytes mime file)
-         (cons mime (file->bytes (string-append game-files "index.html"))))
+         (cons mime (file->bytes (string-append game-files file))))
        (define index (game-file-bytes HTML-MIME "index.html"))
        (define main-js (game-file-bytes JS-MIME "main.bc.js"))
        (define main-runtime-js (game-file-bytes JS-MIME "main.bc.runtime.js"))

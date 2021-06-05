@@ -51,9 +51,9 @@
       "You put an offense both in the second spot, which is reserved for defense")]
     [other (unknown-kind other)]))
 
-(define (run-internal offense defense #:ws-conn [ws-conn #f])
+(define (run-internal offense defense build? #:ws-conn [ws-conn #f])
   (check-offense-defense offense defense)
-  (build-ocaml)
+  (cond [build? (build-ocaml)])
   (set! the-connection ws-conn)
   (define tick-num 0)
   (define (loop)
