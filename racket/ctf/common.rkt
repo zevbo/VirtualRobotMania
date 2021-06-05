@@ -37,14 +37,15 @@
   (delete-file image-file)
   bytes)
 
-(define (with-ws? run-internal)
+(define (with-ws? run-internal cached?)
   (define extra
     (with-output-to-string
       (lambda () (system "git rev-parse --show-prefix"))))
   (define depth (- (length (string-split extra "/")) 1))
   (define head (string-append (string-join (make-list depth "..") "/")))
   (define images-folder (string-append head "/images/"))
-  (define game-server-js (string-append head "/ocaml/_build/default/game_server_js/"))
+  (define game-files
+    (string-append head (if cached? "/ocaml/cached/" "/ocaml/_build/default/game_server_js/")))
   (define (run offense defense ws?)
     (cond
       [ws?
@@ -57,9 +58,11 @@
        (define HTML-MIME #"text/html; charset=utf-8")
        (define PNG-MIME #"image/png; charset=utf-8")
        (define BMP-MIME #"image/bmp; charset=utf-8")
-       (define index (cons HTML-MIME (file->bytes (string-append game-server-js "index.html"))))
-       (define main-js (cons JS-MIME (file->bytes (string-append game-server-js "main.bc.js"))))
-       (define main-runtime-js (cons JS-MIME (file->bytes (string-append game-server-js "main.bc.runtime.js"))))
+       (define (game-file-bytes mime file)
+         (cons mime (file->bytes (string-append game-files "index.html"))))
+       (define index (game-file-bytes HTML-MIME "index.html"))
+       (define main-js (game-file-bytes JS-MIME "main.bc.js"))
+       (define main-runtime-js (game-file-bytes JS-MIME "main.bc.runtime.js"))
        (define pages
          (make-immutable-hash
           (list
@@ -74,12 +77,13 @@
        ]
       [else (run-internal offense defense)]
       )
-
     )
   run)
 
-(define run (with-ws? run-internal))
-(define run-double (with-ws? run-double-internal))
+(define run (with-ws? run-internal #t))
+(define run-double (with-ws? run-double-internal #t))
+(define run-dev (with-ws? run-internal #f))
+(define run-double-dev (with-ws? run-double-internal #f))
 
 (define degrees-mode degrees-mode-internal)
 (define radians-mode radians-mode-internal)
