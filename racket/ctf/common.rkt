@@ -62,17 +62,19 @@
          (cons mime (file->bytes (string-append game-files file))))
        (define index (game-file-bytes HTML-MIME "index.html"))
        (define main-js (game-file-bytes JS-MIME "main.bc.js"))
-       (define main-runtime-js (game-file-bytes JS-MIME "main.bc.runtime.js"))
+       (define use-runtime? (file-exists? (string-append game-files "main.bc.runtime.js")))
+       (define main-runtime-js (if use-runtime? (game-file-bytes JS-MIME "main.bc.runtime.js") #f))
        (define pages
-         (make-immutable-hash
+         (make-hash
           (list
            (cons "offense-bot" (cons PNG-MIME (image->bytes (robot-image offense))))
            (cons "defense-bot" (cons PNG-MIME (image->bytes (robot-image defense))))
            (cons "flag" (cons PNG-MIME (file->bytes (string-append images-folder "flag.png"))))
            (cons "flag-protector" (cons BMP-MIME (file->bytes (string-append images-folder "green-outline.bmp"))))
            (cons "index.html" index)
-           (cons "main.bc.js" main-js)
-           (cons "main.bc.runtime.js" main-runtime-js))))
+           (cons "main.bc.js" main-js))))
+       (cond
+         [use-runtime? (hash-set! pages "main.bc.runtime.js" main-runtime-js)])
        (serve-website pages index 8000)
        ]
       [else (run-internal offense defense)]

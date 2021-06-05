@@ -5,7 +5,7 @@ module Color = Geo_graph.Color
 open! Geo
 module Display = Geo_graph.Display
 
-let fps = 20.
+let fps = 100.
 
 let frame =
   Int.of_float Ctf_consts.frame_width, Int.of_float Ctf_consts.frame_height
