@@ -35,7 +35,12 @@ edition!
 @itemlist[
 
  @item{A @link["racket-cheatsheet.html"]{cheatsheet} and short
- introduction to Racket.}
+ introduction to Racket that was written by us!}
+
+ @item{A
+ @link["https://cs.uwaterloo.ca/~plragde/flaneries/TYR"]{tutorial
+ for people who are already programmers}.  It's nice and concise, but
+ is probably as good for someone brand new.}
 
  @item{@link["https://learnxinyminutes.com/docs/racket/"]{Learn X in Y
  minutes} has some more detailed coverage of how to use Racket, with

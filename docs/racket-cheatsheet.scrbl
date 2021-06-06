@@ -4,9 +4,8 @@
 
 @title{A Racket Cheatsheet}
 
-This is meant to serve two purposes: A @bold{quick reference} on
-racket itself, and an @bold{introduction for people with some
-programming experience}.
+This is meant to serve two purposes: A @bold{quick reference} and an
+@bold{introduction to the language}.
 
 @section{The Basics}
 
