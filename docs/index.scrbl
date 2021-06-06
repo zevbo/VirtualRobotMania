@@ -38,9 +38,9 @@ edition!
  introduction to Racket that was written by us!}
 
  @item{A
- @link["https://cs.uwaterloo.ca/~plragde/flaneries/TYR"]{tutorial
- for people who are already programmers}.  It's nice and concise, but
- is probably as good for someone brand new.}
+ @link["https://cs.uwaterloo.ca/~plragde/flaneries/TYR"]{tutorial for
+ people who are already programmers}.  It's clear and concise, but is
+ probably not as good for someone now to programming.}
 
  @item{@link["https://docs.racket-lang.org/reference/"]{The Racket
  Manual}. Most people shouldn't need this, but if you do, Racket's
