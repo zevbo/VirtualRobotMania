@@ -66,19 +66,17 @@ let _status_s sexp =
   in
   Out_channel.write_all "/tmp/status.sexp" ~data
 
-let display_step (state : State.t) =
-  for i = 1 to Int.of_float (dt_display /. dt_sim) do
-    Advance.run state ~dt:(dt_sim *. speed_constant) i;
-    state.ts <- state.ts +. dt_sim
-  done;
-  Display.clear state.display (Color.rgb 240 240 240);
+(* Changing data: state.invisible state.offense_bot.bot.lives state.world *)
+let draw_end_line (state : State.t) =
   Display.draw_image_wh
     state.display
     ~w:Ctf_consts.End_line.w
     ~h:Ctf_consts.frame_height
     state.end_line
     ~center:(Vec.create Ctf_consts.End_line.x 0.)
-    ~angle:0.;
+    ~angle:0.
+
+let draw_flags (state : State.t) =
   for num_flag = 0 to state.offense_bot.bot.num_flags - 1 do
     Display.draw_image_wh
       state.display
@@ -91,29 +89,67 @@ let display_step (state : State.t) =
            (Ctf_consts.Flag.max_y
            -. (Float.of_int num_flag *. Ctf_consts.Flag.display_y_diff)))
       ~angle:0.
+  done
+
+let display_body
+    (state : State.t)
+    (display_data : State.Display_data.t)
+    ~key:(id : World.Id.t)
+    ~data:(robot : Body.t)
+  =
+  match Map.find state.images id with
+  | None -> ()
+  | Some image ->
+    if not (Set.mem display_data.invisible id)
+    then (
+      let w = robot.shape.bounding_box.width in
+      let h = robot.shape.bounding_box.height in
+      let alpha =
+        if robot.collision_group = Ctf_consts.Bots.Offense.coll_group
+        then
+          255
+          / Ctf_consts.Bots.Offense.start_lives
+          * display_data.offense_bot_lives
+        else 255
+      in
+      Display.draw_image_wh
+        state.display
+        ~w
+        ~h
+        ~alpha
+        image
+        ~center:robot.pos
+        ~angle:robot.angle)
+
+let add_display_data (state : State.t) =
+  let data =
+    State.Display_data.create
+      state.offense_bot.bot.lives
+      state.world
+      state.invisible
+  in
+  state.past_display_data <- data :: state.past_display_data
+
+let display_data_max_length = Int.of_float (dt_racket /. dt_display)
+
+let display (state : State.t) =
+  (match List.nth state.past_display_data (display_data_max_length - 1) with
+  | None -> ()
+  | Some display_data ->
+    Display.clear state.display (Color.rgb 240 240 240);
+    draw_end_line state;
+    draw_flags state;
+    Map.iteri display_data.world.bodies ~f:(display_body state display_data));
+  add_display_data state;
+  state.past_display_data
+    <- List.take state.past_display_data display_data_max_length
+
+let display_step (state : State.t) =
+  for i = 1 to Int.of_float (dt_display /. dt_sim) do
+    Advance.run state ~dt:(dt_sim *. speed_constant) i;
+    state.ts <- state.ts +. dt_sim
   done;
-  Map.iteri state.world.bodies ~f:(fun ~key:id ~data:robot ->
-      Option.iter (Map.find state.images id) ~f:(fun image ->
-          if not (Set.mem state.invisible id)
-          then (
-            let w = robot.shape.bounding_box.width in
-            let h = robot.shape.bounding_box.height in
-            let alpha =
-              if robot.collision_group = Ctf_consts.Bots.Offense.coll_group
-              then
-                255
-                / Ctf_consts.Bots.Offense.start_lives
-                * state.offense_bot.bot.lives
-              else 255
-            in
-            Display.draw_image_wh
-              state.display
-              ~w
-              ~h
-              ~alpha
-              image
-              ~center:robot.pos
-              ~angle:robot.angle)));
+  display state;
   let%map () =
     match state.last_step_end with
     | None -> return ()
@@ -134,7 +170,9 @@ let step (state : State.t) () =
       let%bind () = display_step state in
       helper (ticks - 1))
   in
-  helper (Int.of_float (dt_racket /. dt_display))
+  let%bind () = state.display_wait in
+  state.display_wait <- helper (Int.of_float (dt_racket /. dt_display));
+  Deferred.return ()
 
 let max_input = 1.
 

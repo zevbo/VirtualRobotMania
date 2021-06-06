@@ -19,6 +19,17 @@ module Laser = struct
   let create loaded_ts = { power = 1; loaded = true; loaded_ts }
 end
 
+module Display_data = struct
+  type t =
+    { offense_bot_lives : int
+    ; world : World.t
+    ; invisible : Set.M(World.Id).t
+    }
+
+  let create offense_bot_lives world invisible =
+    { offense_bot_lives; world; invisible }
+end
+
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
@@ -37,6 +48,8 @@ type t =
   ; end_line : Display.Image.t
   ; offense_shield : World.Id.t
   ; mutable last_wall_enhance : float
+  ; mutable past_display_data : Display_data.t list
+  ; mutable display_wait : unit Deferred.t
   }
 
 let set_image_gen t id image_thunk =
@@ -74,6 +87,8 @@ let create
     ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
     ; offense_shield = offense_shield_id
     ; last_wall_enhance = -.Ctf_consts.Border.enhance_period
+    ; past_display_data = []
+    ; display_wait = Deferred.return ()
     }
   in
   let%bind () = set_image_by_name state state.offense_bot.id "offense-bot" in

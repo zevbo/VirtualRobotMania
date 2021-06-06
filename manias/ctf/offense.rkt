@@ -28,5 +28,11 @@
        [(< control -1.8) (set! control -1.8)]
        [(> control 1.8) (set! control 1.8)])|#
      (define default (if backwards? -1 1))
+     (define (do-stuff amount)
+       (cond
+         [(> amount 0)
+          (offense-has-flag?)
+          (do-stuff (- amount 1))]))
+     ;(do-stuff 10)
      (set-motors (- default control) (+ default control)))
    #:body-color 'green))
