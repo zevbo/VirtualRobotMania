@@ -42,6 +42,10 @@ edition!
  for people who are already programmers}.  It's nice and concise, but
  is probably as good for someone brand new.}
 
+ @item{@link["https://docs.racket-lang.org/reference/"]{The Racket
+ Manual}. Most people shouldn't need this, but if you do, Racket's
+ manual is well written and well organized.}
+
  @item{@link["https://learnxinyminutes.com/docs/racket/"]{Learn X in Y
  minutes} has some more detailed coverage of how to use Racket, with
  lots of examples.}
