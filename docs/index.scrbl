@@ -44,7 +44,10 @@ edition!
 
  @item{@link["https://docs.racket-lang.org/reference/"]{The Racket
  Manual}. Most people shouldn't need this, but if you do, Racket's
- manual is well written and well organized.}
+ manual is well written and well organized.
+
+ Note that the manual has a pretty good search mechanism, so you can
+ type in search terms in the bar on the upper left.}
 
  @item{@link["https://learnxinyminutes.com/docs/racket/"]{Learn X in Y
  minutes} has some more detailed coverage of how to use Racket, with
