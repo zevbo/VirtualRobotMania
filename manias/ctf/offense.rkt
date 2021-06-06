@@ -17,10 +17,16 @@
    "Green offenders"
    (lambda (tick#)
      (define pid-using (if (offense-has-flag?) return-pid flag-pid))
-     (define error (if (offense-has-flag?) (normalize-angle (- 180 (get-robot-angle))) (angle-to-flag)))
+     (define backwards? (and (offense-has-flag?) (< (abs (get-robot-angle)) 90)))
+     (define robot-angle (normalize-angle (+ (if backwards? 180 0) (get-robot-angle))))
+     (define error (if (offense-has-flag?) (normalize-angle (- 180 robot-angle)) (angle-to-flag)))
      (cond
-       [(= (modulo tick# 50) 0) (printf "error: ~s~n" error)]) 
+       [(= (modulo tick# 5) 0) (printf "error: ~s~n" error)]) 
      (add-error pid-using error)
      (define control (PID-output pid-using))
-     (set-motors (- 1 control) (+ 1 control)))
+     #|(cond
+       [(< control -1.8) (set! control -1.8)]
+       [(> control 1.8) (set! control 1.8)])|#
+     (define default (if backwards? -1 1))
+     (set-motors (- default control) (+ default control)))
    #:body-color 'green))

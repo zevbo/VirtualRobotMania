@@ -83,3 +83,6 @@ let load_laser = Call.create "load-laser" (module With_bot (Unit)) (module Unit)
 
 let restock_laser =
   Call.create "restock-laser" (module With_bot (Unit)) (module Unit)
+
+let next_laser_power =
+  Call.create "next-laser-power" (module With_bot (Unit)) (module Int)

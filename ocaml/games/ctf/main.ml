@@ -5,14 +5,15 @@ module Color = Geo_graph.Color
 open! Geo
 module Display = Geo_graph.Display
 
-let fps = 100.
-
 let frame =
   Int.of_float Ctf_consts.frame_width, Int.of_float Ctf_consts.frame_height
 
-let dt = 1. /. fps
-let dt_sim_dt = 10.
-let dt_sim = dt /. dt_sim_dt
+let dt_racket = 0.1
+let dt_display = 0.02
+let dt_sim = 0.002
+let is_int f = Float.(Float.of_int (Int.of_float f) = f)
+let () = assert (is_int (dt_racket /. dt_display))
+let () = assert (is_int (dt_display /. dt_sim))
 let speed_constant = 0.2
 
 let init ~log_s =
@@ -65,8 +66,8 @@ let _status_s sexp =
   in
   Out_channel.write_all "/tmp/status.sexp" ~data
 
-let step (state : State.t) () =
-  for i = 1 to Int.of_float dt_sim_dt do
+let display_step (state : State.t) =
+  for i = 1 to Int.of_float (dt_display /. dt_sim) do
     Advance.run state ~dt:(dt_sim *. speed_constant) i;
     state.ts <- state.ts +. dt_sim
   done;
@@ -119,11 +120,21 @@ let step (state : State.t) () =
     | Some last_step_end ->
       let now = Time.now () in
       let elapsed_ms = Time.Span.to_ms (Time.diff now last_step_end) in
-      let target_delay_ms = 1000. *. dt in
+      let target_delay_ms = 1000. *. dt_display in
       let time_left_ms = Float.max 0. (target_delay_ms -. elapsed_ms) in
       Clock_ns.after (Time_ns.Span.of_ms time_left_ms)
   in
   state.last_step_end <- Some (Time.now ())
+
+let step (state : State.t) () =
+  let rec helper ticks =
+    if ticks = 0
+    then Deferred.return ()
+    else (
+      let%bind () = display_step state in
+      helper (ticks - 1))
+  in
+  helper (Int.of_float (dt_racket /. dt_display))
 
 let max_input = 1.
 
@@ -179,13 +190,11 @@ let load_laser (state : State.t) ((bot_name : Bot_name.t), ()) =
 let shoot_laser state ((bot_name : Bot_name.t), ()) =
   if usable state state.defense_bot.bot.last_fire_ts Ctf_consts.Laser.cooldown
   then (
-    if Option.is_none state.defense_bot.bot.loaded_laser
-    then load_laser state ((bot_name : Bot_name.t), ());
     match state.defense_bot.bot.loaded_laser with
     | Some id ->
       Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts;
       Laser_logic.shoot_laser state id
-    | None -> ())
+    | None -> load_laser state ((bot_name : Bot_name.t), ()))
 
 let restock_laser (state : State.t) ((_bot_name : Bot_name.t), ()) =
   match state.defense_bot.bot.loaded_laser with
@@ -311,6 +320,14 @@ let just_returned_flag (state : State.t) () =
   Float.O.(state.offense_bot.bot.last_flag_return = state.ts)
 
 let just_killed (state : State.t) () =
-  Float.O.(state.offense_bot.bot.last_kill +. dt +. (dt_sim /. 2.) >= state.ts)
+  Float.O.(
+    state.offense_bot.bot.last_kill +. dt_racket +. (dt_sim /. 2.) >= state.ts)
 
 let offense_has_flag (state : State.t) (_, _) = state.offense_bot.bot.has_flag
+
+let next_laser_power (state : State.t) ((_bot_name : Bot_name.t), ()) =
+  match state.defense_bot.bot.loaded_laser with
+  | None -> 0
+  | Some laser_id ->
+    let laser = Map.find_exn state.lasers laser_id in
+    Laser_logic.current_power state laser.loaded_ts

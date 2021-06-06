@@ -32,4 +32,5 @@ let group ~log_s =
        ; impl Protocol.boost_cooldown_left Main.boost_cooldown_left
        ; impl Protocol.looking_dist Main.looking_dist
        ; impl Protocol.offense_has_flag Main.offense_has_flag
+       ; impl Protocol.next_laser_power Main.next_laser_power
        ])

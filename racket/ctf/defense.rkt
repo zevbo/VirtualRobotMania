@@ -11,3 +11,4 @@
 (define (laser-cooldown-left) (bot-rpc-num #"laser-cooldown-left" `()))
 (define (opp-just-boosted?) (bot-rpc-bool #"just-boosted" `()))
 (define (restock-laser) (bot-rpc #"restock-laser" '()))
+(define (next-laser-power) (bot-rpc-num #"next-laser-power" '()))

@@ -41,3 +41,4 @@ val just_boosted : (unit, bool) bot_func
 val boost_cooldown_left : (unit, int) bot_func
 val looking_dist : (float, float) bot_func
 val offense_has_flag : (unit, bool) bot_func
+val next_laser_power : (unit, int) bot_func

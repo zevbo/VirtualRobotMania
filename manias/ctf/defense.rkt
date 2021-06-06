@@ -8,9 +8,26 @@
 ;; trigonometric functions like sin, cos, etc.
 ;(radians mode)
 
+(struct PID (p i d [last-error #:mutable] [output #:mutable]))
+(define (add-error pid error)
+  (set-PID-output! pid (+ (* (PID-p pid) error) (* (PID-d pid) (- error (PID-last-error pid)))))
+  (set-PID-last-error! pid error))
+(define (make-PID p i predict)
+  (PID p i (* predict p) 0.0 0.0))
+
+(define follow-pid (make-PID 0.2 0.0 30))
+
 (define (on-tick tick-num)
-  (set-motors 1 -1)
-  (shoot-laser))
+  (add-error follow-pid (angle-to-opp))
+  (define control (PID-output follow-pid))
+  (define default 0.5)
+  (set-motors (- default control) (+ default control))
+  (cond
+    [(and
+      (>= (next-laser-power) 3)
+      (< (abs (angle-to-opp)) 15))
+     (shoot-laser)]
+    [else (load-laser)]))
 
 (define defense-bot
   (make-robot

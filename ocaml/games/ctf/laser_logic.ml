@@ -18,20 +18,8 @@ let laser ~(bot : Body.t) =
     ~black_list:Ctf_consts.Laser.black_list
     Ctf_consts.Laser.shape
 
-let power_of ts (laser : State.Laser.t) =
-  1 + Int.of_float ((ts -. laser.loaded_ts) /. Ctf_consts.Laser.next_level_time)
-
-let shoot_laser (state : State.t) (laser_id : World.Id.t) =
-  let laser = World.get_body_exn state.world laser_id in
-  let v =
-    Vec.scale
-      (Vec.unit_vec (State.get_defense_bot_body state).angle)
-      Ctf_consts.Laser.v
-  in
-  let world = World.set_body state.world laser_id { laser with v } in
-  (Map.find_exn state.lasers laser_id).loaded <- false;
-  state.defense_bot.bot.loaded_laser <- None;
-  state.world <- world
+let current_power (state : State.t) loaded_ts =
+  1 + Int.of_float ((state.ts -. loaded_ts) /. Ctf_consts.Laser.next_level_time)
 
 let out_of_frame (laser : Body.t) =
   Float.O.(
@@ -98,13 +86,26 @@ let update_loaded (state : State.t) id =
   in
   let laser = { laser with angle = bot.angle; pos } in
   let t = Map.find_exn state.lasers id in
-  t.power <- power_of state.ts t;
+  t.power <- current_power state t.loaded_ts;
   if t.power > List.length Ctf_consts.Laser.colors
   then restock_laser state id
   else (
     let image = List.nth_exn state.laser (t.power - 1) in
     state.images <- Map.set state.images ~key:id ~data:image;
     state.world <- World.set_body state.world id laser)
+
+let shoot_laser (state : State.t) (laser_id : World.Id.t) =
+  update_loaded state laser_id;
+  let laser = World.get_body_exn state.world laser_id in
+  let v =
+    Vec.scale
+      (Vec.unit_vec (State.get_defense_bot_body state).angle)
+      Ctf_consts.Laser.v
+  in
+  let world = World.set_body state.world laser_id { laser with v } in
+  (Map.find_exn state.lasers laser_id).loaded <- false;
+  state.defense_bot.bot.loaded_laser <- None;
+  state.world <- world
 
 let update_one (state : State.t) id =
   (if (Map.find_exn state.lasers id).loaded
