@@ -54,3 +54,8 @@ edition!
  lots of examples.}
 
  ]
+
+@section{The Game}
+
+
+Read more about @link["ctf.html"]{capture the flag}, our latest game!

@@ -1,6 +1,6 @@
 #lang scribble/manual
 @(require scribble/manual scribble/eval)
-
+@defmodule[pervasives]
 
 @title{A Racket Cheatsheet}
 
@@ -104,9 +104,10 @@ there are logical operations for combining them.
 Another common data type is the @bold{list}.  You can construct a list
 using the @racket[list] function.
 
-@defproc[#:link-target? #f
-         (list [element any?] ...)
-         list?]
+@defproc[
+
+(list [element any?] ...)
+list?]
 
 @interaction[
 (list 1 3 2)
@@ -117,7 +118,7 @@ there's a function called @racket[filter], which takes two arguments:
 a function and a list.
 
 @defproc[
-#:link-target? #f
+
 (filter [include? func?] [list list?])
 list?]
 
@@ -146,7 +147,6 @@ Another really useful function is map, which can transform the
 elements of a list.
 
 @defproc[
-#:link-target? #f
 (map [transform func?] [list list?])
 list?]
 
@@ -159,7 +159,6 @@ list?]
 You can also fetch particular items out of a list.
 
 @defproc[
-#:link-target? #f
 (list-ref [list list?] [pos int?])
 any?]
 
