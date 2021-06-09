@@ -26,7 +26,7 @@ slow-moving) lasers at it.
 @section{Where to work}
 
 Each kind of robot (defense or offense) has its own library of
-commands.  If you look in the `manias/ctf` directory, you should find
+commands.  If you look in the @racket[manias/ctf] directory, you should find
 three files, with starting templates and some very basic bots to build
 off of.
 
@@ -50,7 +50,7 @@ some are only available for offense or defense.
 @defproc[
 (set-motors [left number?] [right number?])
 nothing?
-]
+]{
 
 The left and right motors on your car determine the force on that side
 of the car.  The power to each motor ranges from -1 (maximum push in
@@ -69,7 +69,7 @@ Some examples.
 
  @item{@racket[(set-motors 1 0.5)] will cause your car to circle forward and to
     the right.}
-]
+]}
 
 @defproc[
 (get-motor-left)
