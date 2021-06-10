@@ -12,6 +12,12 @@
 (define flag-pid (make-PID 0.01 0.0 10))
 (define return-pid (make-PID 0.01 0.0 30))
 
+(define (go-right)
+  (degrees-mode)
+  (cond 
+    [(> (get-robot-angle) 15) (set-motors 0.5 0.35)]
+    [else (set-motors 0.5 0.35)]))
+
 (define offense-bot
   (make-robot
    "Green offenders"
@@ -22,5 +28,6 @@
        [(= (modulo tick# 50) 0) (printf "error: ~s~n" error)]) 
      (add-error pid-using error)
      (define control (PID-output pid-using))
-     (set-motors (- 1 control) (+ 1 control)))
+     (set-motors (- 1 control) (+ 1 control))
+     (go-right))
    #:body-color 'green))
