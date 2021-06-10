@@ -59,3 +59,9 @@ edition!
 
 
 Read more about @link["ctf.html"]{capture the flag}, our latest game!
+
+
+@section{Algorithims}
+
+An algorithim simply means the method that we use to decide what we will do. 
+Read more about some simple @link["algorithims.html"]{standard algorithims} we think are helpful. 

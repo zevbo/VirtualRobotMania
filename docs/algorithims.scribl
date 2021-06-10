@@ -1,0 +1,16 @@
+#lang scribble/manual
+
+@title{Algorithims}
+
+Most of the algorithims you will need to complete an awesome virtual robot can be classified into one of two groups
+
+@itemlist[
+    @item{Controllers - a controller is an algorithim that given some input or the state of the game, makes a desicion about what the robot should do.
+    For instance, a controller for the offense robot might take as an input the angle to the flag, and output how much the motors should turn.
+    A controller for the offense bot might take into account where the offense robot is, and decide whether or not to shoot.}
+    @item{Predictors - a predictor (not a formal robotics term) is an algorithim that guesses what will happen in the fututre.
+    The defense bot for instance might want to guess where the offense bot will be in some amount of time, so that it can better decide whether or not to shoot.}
+
+]
+
+@section{Controller}
