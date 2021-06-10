@@ -15,7 +15,7 @@
 (define (make-PID p i predict)
   (PID p i (* predict p) 0.0 0.0))
 
-(define follow-pid (make-PID 0.2 0.0 30))
+(define follow-pid (make-PID 0.05 0.0 10))
 
 (define (on-tick tick-num)
   (add-error follow-pid (angle-to-opp))
@@ -27,7 +27,7 @@
       (>= (next-laser-power) 3)
       (< (abs (angle-to-opp)) 15))
      (shoot-laser)]
-    [else (load-laser)]))
+    [(< (abs (angle-to-opp)) 25) (load-laser)]))
 
 (define defense-bot
   (make-robot

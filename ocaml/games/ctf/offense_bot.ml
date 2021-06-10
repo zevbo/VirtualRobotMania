@@ -55,12 +55,15 @@ let update t ~dt (body : Body.t) ts =
     t.l_input
     t.r_input
 
-let reset (body : Body.t) =
-  { body with
-    pos = Ctf_consts.Bots.Offense.start_pos
-  ; v = Vec.origin
-  ; angle = Ctf_consts.Bots.start_angle
-  }
+let reset (body : Body.t) start =
+  let start_pos = Ctf_consts.Bots.Offense.start_pos in
+  let my = Ctf_consts.Bots.Offense.max_restart_y in
+  let pos =
+    if start
+    then start_pos
+    else Vec.create start_pos.x (Random.float_range (-.my) my)
+  in
+  { body with pos; v = Vec.origin; angle = Ctf_consts.Bots.start_angle }
 
 let body =
   reset
@@ -68,6 +71,7 @@ let body =
        ~m:Ctf_consts.Bots.mass
        ~collision_group:Ctf_consts.Bots.Offense.coll_group
        Ctf_consts.Bots.shape)
+    true
 
 let shield =
   Body.create
@@ -83,5 +87,5 @@ let remove_live t ?(num_lives = 1) (offense_bot_body : Body.t) ts =
     t.lives <- Ctf_consts.Bots.Offense.start_lives;
     t.has_flag <- false;
     t.last_kill <- ts;
-    reset offense_bot_body)
+    reset offense_bot_body false)
   else offense_bot_body

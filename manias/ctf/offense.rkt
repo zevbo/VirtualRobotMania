@@ -33,6 +33,6 @@
          [(> amount 0)
           (offense-has-flag?)
           (do-stuff (- amount 1))]))
-     ;(do-stuff 10)
+     (do-stuff 5)
      (set-motors (- default control) (+ default control)))
    #:body-color 'green))

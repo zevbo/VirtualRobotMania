@@ -8,7 +8,7 @@ module Display = Geo_graph.Display
 let frame =
   Int.of_float Ctf_consts.frame_width, Int.of_float Ctf_consts.frame_height
 
-let dt_racket = 0.1
+let dt_racket = 0.2
 let dt_display = 0.02
 let dt_sim = 0.002
 let is_int f = Float.(Float.of_int (Int.of_float f) = f)

@@ -27,6 +27,7 @@ module Bots = struct
 
   module Offense = struct
     let start_pos = Geo.Vec.create (-.x_mag) y_offset
+    let max_restart_y = frame_height /. 3.
     let boost_cooldown = 15.
     let boost_v_scale = 2.
     let start_lives = 3
