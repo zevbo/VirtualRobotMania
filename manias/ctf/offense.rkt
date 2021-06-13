@@ -16,6 +16,8 @@
   (make-robot
    "Green offenders"
    (lambda (tick#)
+     (cond
+       [(= tick# 0) (get-simple-data)])
      (define pid-using (if (offense-has-flag?) return-pid flag-pid))
      (define backwards? (and (offense-has-flag?) (< (abs (get-robot-angle)) 90)))
      (define robot-angle (normalize-angle (+ (if backwards? 180 0) (get-robot-angle))))
@@ -34,5 +36,7 @@
           (offense-has-flag?)
           (do-stuff (- amount 1))]))
      (do-stuff 5)
-     (set-motors (- default control) (+ default control)))
+     (set-motors (- default control) (+ default control))
+     (cond
+       [(opp-just-fired?) (boost)]))
    #:body-color 'green))

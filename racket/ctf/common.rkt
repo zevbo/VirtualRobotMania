@@ -22,6 +22,12 @@
 (define (looking-dist theta)
   (bot-rpc-num #"looking-dist" (to-radians theta)))
 (define (offense-has-flag?) (bot-rpc-bool #"offense-has-flag" '()))
+(define (offense-lives-left) (bot-rpc-num #"lives-left" '()))
+
+
+(define (get-simple-data)
+  (define s-exp (bot-rpc #"get-simple-data" '()))
+  (printf "bytes:~s" s-exp))
 
 (define (flmod x m)
   (- x (* (floor (/ x m)) m)))
@@ -37,12 +43,15 @@
   (delete-file image-file)
   bytes)
 
-(define (with-ws? run-internal cached?)
+(define (get-head)
   (define extra
     (with-output-to-string
       (lambda () (system "git rev-parse --show-prefix"))))
   (define depth (- (length (string-split extra "/")) 1))
-  (define head (string-append (string-join (make-list depth "..") "/")))
+  (string-append (string-join (make-list depth "..") "/")))
+
+(define (with-ws? run-internal cached?)
+  (define head (get-head))
   (define images-folder (string-append head "/images/"))
   (define game-files
     (string-append head (if cached? "/ocaml/cached/" "/ocaml/_build/default/game_server_js/")))
@@ -58,24 +67,30 @@
        (define HTML-MIME #"text/html; charset=utf-8")
        (define PNG-MIME #"image/png; charset=utf-8")
        (define BMP-MIME #"image/bmp; charset=utf-8")
-       (define (game-file-bytes mime file)
-         (cons mime (file->bytes (string-append game-files file))))
-       (define index (game-file-bytes HTML-MIME "index.html"))
-       (define main-js (game-file-bytes JS-MIME "main.bc.js"))
-       (define use-runtime? (file-exists? (string-append game-files "main.bc.runtime.js")))
-       (define main-runtime-js (if use-runtime? (game-file-bytes JS-MIME "main.bc.runtime.js") #f))
+       (define (entry name mime bytes)
+         (cons name (cons mime bytes)))
+       (define (file-entry name mime head path)
+         (entry name mime (file->bytes (string-append head path))))
+       (define (image-entry name image)
+         (entry name PNG-MIME (image->bytes image)))
+       (define index (file-entry "index.html" HTML-MIME game-files "index.html"))
        (define pages
          (make-hash
           (list
-           (cons "offense-bot" (cons PNG-MIME (image->bytes (robot-image offense))))
-           (cons "defense-bot" (cons PNG-MIME (image->bytes (robot-image defense))))
-           (cons "flag" (cons PNG-MIME (file->bytes (string-append images-folder "flag.png"))))
-           (cons "flag-protector" (cons BMP-MIME (file->bytes (string-append images-folder "green-outline.bmp"))))
-           (cons "index.html" index)
-           (cons "main.bc.js" main-js))))
+           (image-entry "offense-bot" (robot-image offense))
+           (image-entry "defense-bot" (robot-image defense))
+           (file-entry "boost-image" PNG-MIME images-folder "boost-fire.png")
+           (file-entry "flag" PNG-MIME images-folder "flag.png")
+           (file-entry "flag-protector" BMP-MIME images-folder "green-outline.bmp")
+           (file-entry "main.bc.js" JS-MIME game-files "main.bc.js")
+           index)))
        (cond
-         [use-runtime? (hash-set! pages "main.bc.runtime.js" main-runtime-js)])
-       (serve-website pages index 8000)
+         [(file-exists? (string-append game-files "main.bc.runtime.js"))
+          (printf "here~n")
+          (define main-runtime-js
+            (file-entry "main.bc.runtime.js" JS-MIME game-files "main.bc.runtime.js"))
+          (hash-set! pages (car main-runtime-js) (cdr main-runtime-js))])
+       (serve-website pages (cdr index) 8000)
        ]
       [else (run-internal offense defense)]
       )
@@ -83,9 +98,9 @@
   run)
 
 (define run (with-ws? run-internal #t))
-(define run-double (with-ws? run-double-internal #t))
+;(define run-double (with-ws? run-double-internal #t))
 (define run-dev (with-ws? run-internal #f))
-(define run-double-dev (with-ws? run-double-internal #f))
+;(define run-double-dev (with-ws? run-double-internal #f))
 
 (define degrees-mode degrees-mode-internal)
 (define radians-mode radians-mode-internal)

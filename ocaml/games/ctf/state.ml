@@ -43,6 +43,7 @@ type t =
   ; defense_bot : Defense_bot.t with_id
   ; flag : World.Id.t
   ; flag_protector : World.Id.t
+  ; boost : World.Id.t
   ; mutable ts : float
   ; laser : Display.Image.t list
   ; end_line : Display.Image.t
@@ -69,6 +70,7 @@ let create
     defense_bot
     flag_id
     flag_protector_id
+    boost_id
     offense_shield_id
   =
   let state =
@@ -82,6 +84,7 @@ let create
     ; defense_bot
     ; flag = flag_id
     ; flag_protector = flag_protector_id
+    ; boost = boost_id
     ; ts = 0.
     ; laser = List.map Ctf_consts.Laser.colors ~f:(Display.Image.pixel display)
     ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
@@ -93,6 +96,7 @@ let create
   in
   let%bind () = set_image_by_name state state.offense_bot.id "offense-bot" in
   let%bind () = set_image_by_name state state.defense_bot.id "defense-bot" in
+  let%bind () = set_image_by_name state state.boost "boost-image" in
   let%bind () = set_image_by_name state state.flag "flag" in
   let%bind () = set_image_by_name state state.flag_protector "flag-protector" in
   return state

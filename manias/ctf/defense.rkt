@@ -23,9 +23,7 @@
   (define default 0.5)
   (set-motors (- default control) (+ default control))
   (cond
-    [(and
-      (>= (next-laser-power) 3)
-      (< (abs (angle-to-opp)) 15))
+    [(< (abs (angle-to-opp)) (* (+ (- 3 (offense-lives-left)) (next-laser-power)) 5))
      (shoot-laser)]
     [(< (abs (angle-to-opp)) 25) (load-laser)]))
 

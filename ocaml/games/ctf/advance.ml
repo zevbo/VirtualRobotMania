@@ -39,13 +39,24 @@ let run (state : State.t) ~dt i =
       Defense_bot.update state.defense_bot.bot ~dt body);
   update_body state.offense_shield (fun body ->
       Offense_bot.update_shield
-        (World.get_body_exn state.world state.offense_shield)
-        body);
+        body
+        (World.get_body_exn state.world state.offense_bot.id));
+  update_body state.boost (fun body ->
+      Offense_bot.update_boost
+        body
+        (World.get_body_exn state.world state.offense_bot.id)
+        state.offense_bot.bot);
+  let in_boost =
+    Float.(
+      state.ts -. state.offense_bot.bot.last_boost
+      <= Ctf_consts.Bots.Offense.boost_time)
+  in
+  state.invisible
+    <- (if in_boost then Set.remove else Set.add) state.invisible state.boost;
   if i = 1
   then
     assert (
-      (World.get_body_exn state.world state.offense_shield).collision_group = 6
-    );
+      (World.get_body_exn state.world state.offense_shield).collision_group = 6);
   check_wall_enhance state;
   check_shield state;
   Flag_logic.update state;

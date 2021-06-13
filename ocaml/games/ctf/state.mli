@@ -41,6 +41,7 @@ type t =
   ; defense_bot : Defense_bot.t with_id
   ; flag : World.Id.t
   ; flag_protector : World.Id.t
+  ; boost : World.Id.t
   ; mutable ts : float
   ; laser : Display.Image.t list
   ; end_line : Display.Image.t
@@ -56,6 +57,7 @@ val create
   -> Display.t
   -> Offense_bot.t with_id
   -> Defense_bot.t with_id
+  -> World.Id.t
   -> World.Id.t
   -> World.Id.t
   -> World.Id.t

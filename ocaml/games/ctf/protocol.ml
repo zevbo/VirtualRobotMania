@@ -29,14 +29,6 @@ let set_motors =
   in
   Call.create "set-motors" (module With_bot (Query)) (module Unit)
 
-let l_input = Call.create "l-input" (module With_bot (Unit)) (module Float)
-let r_input = Call.create "r-input" (module With_bot (Unit)) (module Float)
-
-let shoot_laser =
-  Call.create "shoot-laser" (module With_bot (Unit)) (module Unit)
-
-let boost = Call.create "boost" (module With_bot (Unit)) (module Unit)
-
 let just_returned_flag =
   Call.create "just-returned-flag" (module Unit) (module Bool)
 
@@ -44,6 +36,22 @@ let just_killed = Call.create "just-killed" (module Unit) (module Bool)
 let enhance_border = Call.create "enhance-border" (module Unit) (module Unit)
 let setup_shield = Call.create "setup-shield" (module Unit) (module Unit)
 let num_flags = Call.create "num-flags" (module Unit) (module Int)
+let load_laser = Call.create "load-laser" (module With_bot (Unit)) (module Unit)
+
+let restock_laser =
+  Call.create "restock-laser" (module With_bot (Unit)) (module Unit)
+
+let shoot_laser =
+  Call.create "shoot-laser" (module With_bot (Unit)) (module Unit)
+
+let boost = Call.create "boost" (module With_bot (Unit)) (module Unit)
+
+let looking_dist =
+  Call.create "looking-dist" (module With_bot (Float)) (module Float)
+
+(* Simple Data *)
+let get_simple_data =
+  Call.create "get-simple-data" (module With_bot (Unit)) (module Simple_data)
 
 let offense_has_flag =
   Call.create "offense-has-flag" (module With_bot (Unit)) (module Bool)
@@ -76,13 +84,9 @@ let just_boosted =
 let boost_cooldown_left =
   Call.create "boost-cooldown-left" (module With_bot (Unit)) (module Int)
 
-let looking_dist =
-  Call.create "looking-dist" (module With_bot (Float)) (module Float)
-
-let load_laser = Call.create "load-laser" (module With_bot (Unit)) (module Unit)
-
-let restock_laser =
-  Call.create "restock-laser" (module With_bot (Unit)) (module Unit)
-
 let next_laser_power =
   Call.create "next-laser-power" (module With_bot (Unit)) (module Int)
+
+let lives_left = Call.create "lives-left" (module With_bot (Unit)) (module Int)
+let l_input = Call.create "l-input" (module With_bot (Unit)) (module Float)
+let r_input = Call.create "r-input" (module With_bot (Unit)) (module Float)

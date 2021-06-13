@@ -51,6 +51,10 @@
       "You put an offense both in the second spot, which is reserved for defense")]
     [other (unknown-kind other)]))
 
+(define dt_racket 0.12)
+(define game-time 100)
+(define total-ticks (floor (/ game-time dt_racket)))
+
 (define (run-internal offense defense build? #:ws-conn [ws-conn #f])
   (check-offense-defense offense defense)
   (cond [build? (build-ocaml)])
@@ -64,17 +68,14 @@
     (set! the-current-robot '())
     (step)
     (set! tick-num (+ tick-num 1))
-    (loop))
+    (cond
+      [(< tick-num total-ticks) (loop)]))
   (loop))
 (define start-wait-time 5)
-(define (run-double-internal)
-  #false)
-#|
-(define (run-double-internal off1 def1 off2 def2 #:ws-conn [ws-conn #f])
+
+(define (run-double-internal off1 def1 off2 def2 conn1 conn2)
   (check-offense-defense off1 def1)
   (check-offense-defense off2 def2)
-  (define conn1 (startup off1 def1))
-  (define conn2 (startup off2 def2))
   (define tick-num 0)
   (define (tick)
     (define (run-game c other-c off def)
@@ -84,15 +85,13 @@
       (set! the-current-robot def)
       ((robot-on-tick def) tick-num)
       (set! the-current-robot '())
+      (set! the-connection other-c)
       (cond
-        [(just-killed?)
-         (set! the-connection other-c)
-         (setup-shield)]
-        [(set! the-connection other-c)
-         (enhance-border)])
+        [(just-killed?) (setup-shield)]
+        [(just-returned-flag?) (enhance-border)])
       (step))
-    (run-game conn1 conn2 off1 def1 #:ws-conn ws-conn)
-    (run-game conn2 conn1 off2 def2 #:ws-conn ws-conn)
+    (run-game conn1 conn2 off1 def1)
+    (run-game conn2 conn1 off2 def2)
     (set! tick-num (+ tick-num 1)))
   (tick)
   (sleep start-wait-time)
@@ -100,7 +99,7 @@
     (tick)
     (loop))
   (loop))
-|#
+
 (define (encode-number x)
   (string->bytes/utf-8 (number->string x)))
 
@@ -135,6 +134,7 @@
   (non-bot-rpc #"enhance-border" '()))
 (define (setup-shield)
   (non-bot-rpc #"setup-shield" '()))
+(define current-simple-data (void))
 
 (define degrees-over-radians (/ 180 pi))
 (define x-over-radians degrees-over-radians)

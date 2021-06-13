@@ -33,4 +33,6 @@ let group ~log_s =
        ; impl Protocol.looking_dist Main.looking_dist
        ; impl Protocol.offense_has_flag Main.offense_has_flag
        ; impl Protocol.next_laser_power Main.next_laser_power
+       ; impl Protocol.lives_left Main.lives_left
+       ; impl Protocol.get_simple_data Main.get_simple_data
        ])

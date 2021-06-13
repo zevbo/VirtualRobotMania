@@ -32,6 +32,7 @@ let init ~log_s =
   let offense_robot_state = Offense_bot.create () in
   let defense_robot_state = Defense_bot.create () in
   let world, offense_body_id = World.add_body world Offense_bot.body in
+  let world, boost_id = World.add_body world Offense_bot.boost in
   let world, offense_shield_id = World.add_body world Offense_bot.shield in
   let defense_body = Defense_bot.defense_bot () in
   let world, defense_body_id = World.add_body world defense_body in
@@ -50,6 +51,7 @@ let init ~log_s =
       { bot = defense_robot_state; id = defense_body_id }
       flag_id
       flag_protector_id
+      boost_id
       offense_shield_id
   in
   state.world <- world;
@@ -76,8 +78,20 @@ let draw_end_line (state : State.t) =
     ~center:(Vec.create Ctf_consts.End_line.x 0.)
     ~angle:0.
 
+let get_alpha lives total_lives = 255 * lives / total_lives
+
 let draw_flags (state : State.t) =
-  for num_flag = 0 to state.offense_bot.bot.num_flags - 1 do
+  for flag_num = 0 to state.offense_bot.bot.num_flags - 1 do
+    let alpha =
+      if flag_num = state.offense_bot.bot.num_flags - 1
+      then (
+        let total_lives = Ctf_consts.Bots.Offense.deaths_per_flag in
+        let lives =
+          total_lives - (state.offense_bot.bot.times_killed % total_lives)
+        in
+        get_alpha lives total_lives)
+      else 255
+    in
     Display.draw_image_wh
       state.display
       ~w:Ctf_consts.Flag.width
@@ -87,8 +101,9 @@ let draw_flags (state : State.t) =
         (Vec.create
            Ctf_consts.Flag.display_x
            (Ctf_consts.Flag.max_y
-           -. (Float.of_int num_flag *. Ctf_consts.Flag.display_y_diff)))
+           -. (Float.of_int flag_num *. Ctf_consts.Flag.display_y_diff)))
       ~angle:0.
+      ~alpha
   done
 
 let display_body
@@ -107,9 +122,9 @@ let display_body
       let alpha =
         if robot.collision_group = Ctf_consts.Bots.Offense.coll_group
         then
-          255
-          / Ctf_consts.Bots.Offense.start_lives
-          * display_data.offense_bot_lives
+          get_alpha
+            display_data.offense_bot_lives
+            Ctf_consts.Bots.Offense.start_lives
         else 255
       in
       Display.draw_image_wh
@@ -175,12 +190,15 @@ let step (state : State.t) () =
   Deferred.return ()
 
 let max_input = 1.
+let min_input = -0.8
 
 let set_motors (state : State.t) ((bot_name : Bot_name.t), (l_input, r_input)) =
   let make_valid input =
-    if Float.O.(Float.abs input < max_input)
-    then input
-    else Float.copysign max_input input
+    if Float.(input > max_input)
+    then max_input
+    else if Float.(input < min_input)
+    then min_input
+    else input
   in
   match bot_name with
   | Offense ->
@@ -286,7 +304,8 @@ let get_opp_angle state ((bot_name : Bot_name.t), ()) =
 let ts_to_ticks ts = Int.of_float (ts *. speed_constant *. dt_sim)
 
 let just_fired (state : State.t) ((_bot_name : Bot_name.t), ()) =
-  Float.O.(state.ts = state.defense_bot.bot.last_fire_ts)
+  Float.O.(not (state.defense_bot.bot.last_fire_ts = 0.))
+  && Float.O.(state.ts <= state.defense_bot.bot.last_fire_ts + dt_racket)
 
 let laser_cooldown_left (state : State.t) ((_bot_name : Bot_name.t), ()) =
   ts_to_ticks
@@ -327,6 +346,7 @@ let looking_dist (state : State.t) ((bot_name : Bot_name.t), angle) =
   | None -> -1.
 
 let boost (state : State.t) ((bot_name : Bot_name.t), ()) =
+  assert (1 > 0);
   match bot_name with
   | Defense -> ()
   | Offense ->
@@ -369,3 +389,26 @@ let next_laser_power (state : State.t) ((_bot_name : Bot_name.t), ()) =
   | Some laser_id ->
     let laser = Map.find_exn state.lasers laser_id in
     Laser_logic.current_power state laser.loaded_ts
+
+let lives_left (state : State.t) ((_bot_name : Bot_name.t), ()) =
+  state.offense_bot.bot.lives
+
+let get_simple_data state bot_name_unit =
+  let app f = f state bot_name_unit in
+  Simple_data.
+    { offense_has_flag = app offense_has_flag
+    ; angle_to_opp = app angle_to_opp
+    ; dist_to_opp = app dist_to_opp
+    ; angle_to_flag = app angle_to_flag
+    ; dist_to_flag = app dist_to_flag
+    ; get_angle = app get_angle
+    ; get_opp_angle = app get_opp_angle
+    ; just_fired = app just_fired
+    ; laser_cooldown_left = app laser_cooldown_left
+    ; just_boosted = app just_boosted
+    ; boost_cooldown_left = app boost_cooldown_left
+    ; next_laser_power = app next_laser_power
+    ; lives_left = app lives_left
+    ; l_input = app l_input
+    ; r_input = app r_input
+    }
