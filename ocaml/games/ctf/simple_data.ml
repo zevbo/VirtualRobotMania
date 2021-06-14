@@ -10,7 +10,6 @@ type t =
   ; get_opp_angle : float
   ; just_fired : bool
   ; laser_cooldown_left : int
-  ; just_boosted : bool
   ; boost_cooldown_left : int
   ; next_laser_power : int
   ; lives_left : int

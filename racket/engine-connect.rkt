@@ -18,11 +18,13 @@
 
 (define (rpc c message)
   (define w-bytes (csexp->bytes message))
+  (printf "message encoded~n")
   (define w-length (encode-length (bytes-length w-bytes)))
   (ws-send! c (bytes-append w-length w-bytes) #:payload-type 'binary)
   (define raw-resp (ws-recv c #:payload-type 'binary))
-  (define response (bytes->csexp (subbytes raw-resp 2)))
-  response)
+  (printf "raw resp:~s~n" raw-resp)
+  (define bytes (subbytes raw-resp 4))
+  (bytes->csexp bytes))
 
 (define (build-ocaml)
   (define cmd

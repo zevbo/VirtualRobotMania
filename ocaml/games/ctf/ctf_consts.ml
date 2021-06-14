@@ -79,7 +79,7 @@ module Laser = struct
   let black_list = [ 1; 2; 3; 4 ]
   let material = Material.create ~energy_ret:2.
   let shape = Shape.create_standard_rect length width ~material
-  let v = 1000.
+  let v = 1500.
   let cooldown = 3.
   let wall_enhance_period = 10.
 end
@@ -91,7 +91,7 @@ module Flag = struct
   let no_defense_dist = 75.
   let max_y = (frame_height /. 2.) -. 30.
   let min_y = no_defense_dist +. 40.
-  let min_x = 100.
+  let min_x = -120.
   let max_x = (frame_width /. 2.) -. width
   let m = Float.infinity
   let top_display_x = (frame_height /. 2.) -. 80.

@@ -8,13 +8,13 @@ module Display = Geo_graph.Display
 let frame =
   Int.of_float Ctf_consts.frame_width, Int.of_float Ctf_consts.frame_height
 
-let dt_racket = 0.2
+let dt_racket = 0.1
 let dt_display = 0.02
 let dt_sim = 0.002
 let is_int f = Float.(Float.of_int (Int.of_float f) = f)
 let () = assert (is_int (dt_racket /. dt_display))
 let () = assert (is_int (dt_display /. dt_sim))
-let speed_constant = 0.2
+let speed_constant = 0.3
 
 let init ~log_s =
   let display =
@@ -405,7 +405,6 @@ let get_simple_data state bot_name_unit =
     ; get_opp_angle = app get_opp_angle
     ; just_fired = app just_fired
     ; laser_cooldown_left = app laser_cooldown_left
-    ; just_boosted = app just_boosted
     ; boost_cooldown_left = app boost_cooldown_left
     ; next_laser_power = app next_laser_power
     ; lives_left = app lives_left

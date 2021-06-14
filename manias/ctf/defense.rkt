@@ -15,15 +15,15 @@
 (define (make-PID p i predict)
   (PID p i (* predict p) 0.0 0.0))
 
-(define follow-pid (make-PID 0.05 0.0 10))
+(define follow-pid (make-PID 0.08 0.0 10))
 
 (define (on-tick tick-num)
   (add-error follow-pid (angle-to-opp))
   (define control (PID-output follow-pid))
-  (define default 0.5)
-  (set-motors (- default control) (+ default control))
+  (define speed (- (/ (dist-to-opp) 200) 0.5))
+  (set-motors (- speed control) (+ speed control))
   (cond
-    [(< (abs (angle-to-opp)) (* (+ (- 3 (offense-lives-left)) (next-laser-power)) 5))
+    [(< (abs (angle-to-opp)) (* (if (= (offense-lives-left) (next-laser-power)) 3 (next-laser-power)) 5))
      (shoot-laser)]
     [(< (abs (angle-to-opp)) 25) (load-laser)]))
 
