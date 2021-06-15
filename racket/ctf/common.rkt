@@ -77,12 +77,12 @@
            (image-entry "defense-bot" (robot-image defense))
            (file-entry "boost-image" PNG-MIME images-folder "boost-fire.png")
            (file-entry "flag" PNG-MIME images-folder "flag.png")
+           (file-entry "game-over" PNG-MIME images-folder "game-over.png")
            (file-entry "flag-protector" BMP-MIME images-folder "green-outline.bmp")
            (file-entry "main.bc.js" JS-MIME game-files "main.bc.js")
            index)))
        (cond
          [(file-exists? (string-append game-files "main.bc.runtime.js"))
-          (printf "here~n")
           (define main-runtime-js
             (file-entry "main.bc.runtime.js" JS-MIME game-files "main.bc.runtime.js"))
           (hash-set! pages (car main-runtime-js) (cdr main-runtime-js))])

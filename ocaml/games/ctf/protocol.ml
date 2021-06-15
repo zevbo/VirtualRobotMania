@@ -36,6 +36,15 @@ let just_killed = Call.create "just-killed" (module Unit) (module Bool)
 let enhance_border = Call.create "enhance-border" (module Unit) (module Unit)
 let setup_shield = Call.create "setup-shield" (module Unit) (module Unit)
 let num_flags = Call.create "num-flags" (module Unit) (module Int)
+
+module Deffered_unit = struct
+  type t = unit Async_kernel.Deferred.t
+
+  let t_of_sexp _sexp = Async_kernel.return ()
+  let sexp_of_t _t = Unit.sexp_of_t ()
+end
+
+let end_game = Call.create "end-game" (module Unit) (module Deffered_unit)
 let load_laser = Call.create "load-laser" (module With_bot (Unit)) (module Unit)
 
 let restock_laser =

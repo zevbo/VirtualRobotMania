@@ -393,6 +393,30 @@ let next_laser_power (state : State.t) ((_bot_name : Bot_name.t), ()) =
 let lives_left (state : State.t) ((_bot_name : Bot_name.t), ()) =
   state.offense_bot.bot.lives
 
+let end_game_time = 1.5
+
+let end_game (state : State.t) () =
+  let starting_x = -.Ctf_consts.frame_width /. 2. in
+  let dx = 5. in
+  let dt = end_game_time /. (-.starting_x /. dx) in
+  print_endline "ending game";
+  let%bind image = Display.Image.of_name state.display "game-over" in
+  let rec move_it x =
+    print_endline "move it";
+    let a = Clock_ns.after (Time_ns.Span.of_sec dt) in
+    display state;
+    Display.draw_image_wh
+      ~h:300.
+      ~w:400.
+      state.display
+      image
+      ~center:(Vec.create x 0.0)
+      ~angle:0.;
+    let%bind () = a in
+    if Float.(x < 0.) then move_it (x +. dx) else return ()
+  in
+  move_it starting_x
+
 let get_simple_data state bot_name_unit =
   let app f = f state bot_name_unit in
   Simple_data.

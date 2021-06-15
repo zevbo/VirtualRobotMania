@@ -35,4 +35,5 @@ let group ~log_s =
        ; impl Protocol.next_laser_power Main.next_laser_power
        ; impl Protocol.lives_left Main.lives_left
        ; impl Protocol.get_simple_data Main.get_simple_data
+       ; impl Protocol.end_game Main.end_game
        ])

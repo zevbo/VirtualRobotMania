@@ -16,6 +16,7 @@ val just_killed : (unit, bool) state_func
 val enhance_border : (unit, unit) state_func
 val setup_shield : (unit, unit) state_func
 val num_flags : (unit, int) state_func
+val end_game : (unit, unit Deferred.t) state_func
 
 (** User actuator functions *)
 

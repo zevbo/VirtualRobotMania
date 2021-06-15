@@ -54,7 +54,7 @@
     [other (unknown-kind other)]))
 
 (define dt_racket 0.12)
-(define game-time 100)
+(define game-time 1)
 (define total-ticks (floor (/ game-time dt_racket)))
 
 (define (run-internal offense defense build? #:ws-conn [ws-conn #f])
@@ -74,7 +74,8 @@
     (set! tick-num (+ tick-num 1))
     (cond
       [(< tick-num total-ticks) (loop)]))
-  (loop))
+  (loop)
+  (end-game))
 (define start-wait-time 5)
 
 (define (encode-number x)
@@ -113,6 +114,7 @@
   (non-bot-rpc #"enhance-border" '()))
 (define (setup-shield)
   (non-bot-rpc #"setup-shield" '()))
+(define (end-game) (rpc the-connection '(#"end-game" ())))
 (define current-simple-data (void))
 
 (define (get-simple-data tick#)
