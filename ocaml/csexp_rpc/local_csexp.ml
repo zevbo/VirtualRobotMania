@@ -21,13 +21,22 @@ let%expect_test _ =
   of_csexp "(4:#123(5:hello22:whatever (with) spaces)(5:never))";
   [%expect {| (#123 (hello "whatever (with) spaces") (never)) |}]
 
+let length_digits = 4
+
 let encode sexp =
   let sexp_string = Csexp.to_string sexp in
   let length = String.length sexp_string in
-  let bytes = Bytes.create (length + 2) in
-  Bytes.set bytes 0 (Char.of_int_exn ((length lsr 8) land 0xFF));
-  Bytes.set bytes 1 (Char.of_int_exn (length land 0xFF));
-  Bytes.From_string.blito ~src:sexp_string ~dst:bytes ~dst_pos:2 ();
+  let trimmed_length_str = Int.to_string length in
+  assert (String.length trimmed_length_str <= length_digits);
+  let length_str =
+    String.concat
+      [ String.make (length_digits - String.length trimmed_length_str) '0'
+      ; trimmed_length_str
+      ]
+  in
+  let full_str = String.concat [ length_str; sexp_string ] in
+  let bytes = Bytes.create (length + length_digits) in
+  Bytes.From_string.blito ~src:full_str ~dst:bytes ~dst_pos:0 ();
   bytes
 
 let decode_length bytes =

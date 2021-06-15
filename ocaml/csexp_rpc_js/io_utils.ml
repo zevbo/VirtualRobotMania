@@ -114,6 +114,8 @@ let output_of_websocket ws closed =
       closed)
     ~close_finished:(fun () -> closed)
     ~write_bytes:(fun () bytes ->
+      (* Bug here: converting the bytes to a string because the int at the start
+         cannot always be converted to a string *)
       Websocket.send_string ws (Jstr.of_string (Bytes.to_string bytes)))
 
 let io_of_websocket ws =

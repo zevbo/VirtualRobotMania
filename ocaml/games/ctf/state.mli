@@ -18,6 +18,16 @@ module Laser : sig
   val create : float -> t
 end
 
+module Display_data : sig
+  type t =
+    { offense_bot_lives : int
+    ; world : World.t
+    ; invisible : Set.M(World.Id).t
+    }
+
+  val create : int -> World.t -> Set.M(World.Id).t -> t
+end
+
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
@@ -31,11 +41,14 @@ type t =
   ; defense_bot : Defense_bot.t with_id
   ; flag : World.Id.t
   ; flag_protector : World.Id.t
+  ; boost : World.Id.t
   ; mutable ts : float
   ; laser : Display.Image.t list
   ; end_line : Display.Image.t
   ; offense_shield : World.Id.t
   ; mutable last_wall_enhance : float
+  ; mutable past_display_data : Display_data.t list
+  ; mutable display_wait : unit Deferred.t
   }
 
 val create
@@ -44,6 +57,7 @@ val create
   -> Display.t
   -> Offense_bot.t with_id
   -> Defense_bot.t with_id
+  -> World.Id.t
   -> World.Id.t
   -> World.Id.t
   -> World.Id.t

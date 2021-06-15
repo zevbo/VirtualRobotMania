@@ -3,6 +3,7 @@
 (require "../engine-connect.rkt")
 (require "../robotVisualization.rkt")
 (provide (all-defined-out))
+(require csexp)
 
 (struct robot (name kind on-tick image))
 
@@ -34,6 +35,7 @@
 
 (define the-current-robot '())
 (define the-connection '())
+(define the-current-data '())
 
 (define (step) (rpc the-connection `(#"step" ())))
 
@@ -51,56 +53,31 @@
       "You put an offense both in the second spot, which is reserved for defense")]
     [other (unknown-kind other)]))
 
-(define (run-internal offense defense #:ws-conn [ws-conn #f])
+(define dt_racket 0.12)
+(define game-time 1)
+(define total-ticks (floor (/ game-time dt_racket)))
+
+(define (run-internal offense defense build? #:ws-conn [ws-conn #f])
   (check-offense-defense offense defense)
-  (build-ocaml)
+  (cond [build? (build-ocaml)])
   (set! the-connection ws-conn)
   (define tick-num 0)
   (define (loop)
     (set! the-current-robot offense)
+    (set! the-current-data (get-simple-data tick-num))
     ((robot-on-tick offense) tick-num)
     (set! the-current-robot defense)
+    (set! the-current-data (get-simple-data tick-num))
     ((robot-on-tick defense) tick-num)
     (set! the-current-robot '())
     (step)
     (set! tick-num (+ tick-num 1))
-    (loop))
-  (loop))
+    (cond
+      [(< tick-num total-ticks) (loop)]))
+  (loop)
+  (end-game))
 (define start-wait-time 5)
-(define (run-double-internal)
-  #false)
-#|
-(define (run-double-internal off1 def1 off2 def2 #:ws-conn [ws-conn #f])
-  (check-offense-defense off1 def1)
-  (check-offense-defense off2 def2)
-  (define conn1 (startup off1 def1))
-  (define conn2 (startup off2 def2))
-  (define tick-num 0)
-  (define (tick)
-    (define (run-game c other-c off def)
-      (set! the-connection c)
-      (set! the-current-robot off)
-      ((robot-on-tick off) tick-num)
-      (set! the-current-robot def)
-      ((robot-on-tick def) tick-num)
-      (set! the-current-robot '())
-      (cond
-        [(just-killed?)
-         (set! the-connection other-c)
-         (setup-shield)]
-        [(set! the-connection other-c)
-         (enhance-border)])
-      (step))
-    (run-game conn1 conn2 off1 def1 #:ws-conn ws-conn)
-    (run-game conn2 conn1 off2 def2 #:ws-conn ws-conn)
-    (set! tick-num (+ tick-num 1)))
-  (tick)
-  (sleep start-wait-time)
-  (define (loop)
-    (tick)
-    (loop))
-  (loop))
-|#
+
 (define (encode-number x)
   (string->bytes/utf-8 (number->string x)))
 
@@ -110,13 +87,15 @@
 (define (non-bot-rpc name arg)
   (rpc the-connection
        `(,name ,arg)))
-(define (bot-rpc name arg)
+(define (bot-rpc name arg simple?)
   (flush-output (current-output-port))
-  (rpc the-connection
-       `(,name (,(rpc-name the-current-robot) ,arg))))
+  (if simple?
+      (hash-ref the-current-data name)
+      (rpc the-connection
+           `(,name (,(rpc-name the-current-robot) ,arg)))))
 
-(define (bot-rpc-num name arg)
-  (decode-number (bot-rpc name arg)))
+(define (bot-rpc-num name arg simple?)
+  (decode-number (bot-rpc name arg simple?)))
 
 (define (decode-bool b)
   (match (bytes->string/utf-8 b)
@@ -124,8 +103,8 @@
     ["false" #f]
     [other #t]));(error "Expected true or false" other)]))
 
-(define (bot-rpc-bool name arg)
-  (decode-bool (bot-rpc name arg)))
+(define (bot-rpc-bool name arg simple?)
+  (decode-bool (bot-rpc name arg simple?)))
 
 (define (just-returned-flag?)
   (decode-bool (non-bot-rpc #"just-returned-flag" '())))
@@ -135,6 +114,23 @@
   (non-bot-rpc #"enhance-border" '()))
 (define (setup-shield)
   (non-bot-rpc #"setup-shield" '()))
+(define (end-game) (rpc the-connection '(#"end-game" ())))
+(define current-simple-data (void))
+
+(define (get-simple-data tick#)
+  (define csexp (bot-rpc #"get-simple-data" '() #f))
+  (define bytes (csexp->bytes csexp))
+  (define str (bytes->string/utf-8 bytes))
+  (set! str (substring str 2 (- (string-length str) 2)))
+  (define byte-datas (string-split str ")("))
+  (define (byte-data->data byte-data)
+    (define split (string-split byte-data ":"))
+    (define len1 (string->number (first split)))
+    (define key (string->bytes/utf-8 (string-replace (substring (second split) 0 len1) "_" "-")))
+    (define value (string->bytes/utf-8 (third split)))
+    (cons key value))
+  (define all-data (make-immutable-hash (map byte-data->data byte-datas)))
+  all-data)
 
 (define degrees-over-radians (/ 180 pi))
 (define x-over-radians degrees-over-radians)

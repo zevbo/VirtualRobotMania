@@ -21,8 +21,8 @@
   (define w-length (encode-length (bytes-length w-bytes)))
   (ws-send! c (bytes-append w-length w-bytes) #:payload-type 'binary)
   (define raw-resp (ws-recv c #:payload-type 'binary))
-  (define response (bytes->csexp (subbytes raw-resp 2)))
-  response)
+  (define bytes (subbytes raw-resp 4))
+  (bytes->csexp bytes))
 
 (define (build-ocaml)
   (define cmd

@@ -16,6 +16,7 @@ val just_killed : (unit, bool) state_func
 val enhance_border : (unit, unit) state_func
 val setup_shield : (unit, unit) state_func
 val num_flags : (unit, int) state_func
+val end_game : (unit, unit Deferred.t) state_func
 
 (** User actuator functions *)
 
@@ -41,3 +42,6 @@ val just_boosted : (unit, bool) bot_func
 val boost_cooldown_left : (unit, int) bot_func
 val looking_dist : (float, float) bot_func
 val offense_has_flag : (unit, bool) bot_func
+val next_laser_power : (unit, int) bot_func
+val lives_left : (unit, int) bot_func
+val get_simple_data : (unit, Simple_data.t) bot_func

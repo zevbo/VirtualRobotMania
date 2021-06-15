@@ -1,27 +1,29 @@
 #lang racket
 (require "driver.rkt")
 (require net/rfc6455)
+(require csexp)
 (require "../common/server-helper.rkt")
 
 (require 2htdp/image)
 (provide (all-defined-out))
 
-(define (bot-rpc-ang msg args)
-  (of-radians (bot-rpc-num msg args)))
+(define (bot-rpc-ang msg args simple?)
+  (of-radians (bot-rpc-num msg args simple?)))
 
 (define (set-motors l r)
-  (bot-rpc #"set-motors" `(,l ,r)))
-(define (get-left-input) (bot-rpc-num #"l-input" '()))
-(define (get-right-input) (bot-rpc-num #"r-input" '()))
-(define (angle-to-opp) (bot-rpc-ang #"angle-to-opp" '()))
-(define (dist-to-opp) (bot-rpc-num #"dist-to-opp" '()))
-(define (angle-to-flag) (bot-rpc-ang #"angle-to-flag" '()))
-(define (dist-to-flag) (bot-rpc-num #"dist-to-flag" '()))
-(define (get-robot-angle) (bot-rpc-ang #"get-angle" '()))
-(define (get-opp-angle) (bot-rpc-ang #"get-opp-angle" '()))
+  (bot-rpc #"set-motors" `(,l ,r) #f))
+(define (get-left-input) (bot-rpc-num #"l-input" '() #t))
+(define (get-right-input) (bot-rpc-num #"r-input" '() #t))
+(define (angle-to-opp) (bot-rpc-ang #"angle-to-opp" '() #t))
+(define (dist-to-opp) (bot-rpc-num #"dist-to-opp" '() #t))
+(define (angle-to-flag) (bot-rpc-ang #"angle-to-flag" '() #t))
+(define (dist-to-flag) (bot-rpc-num #"dist-to-flag" '() #t))
+(define (get-robot-angle) (bot-rpc-ang #"get-angle" '() #t))
+(define (get-opp-angle) (bot-rpc-ang #"get-opp-angle" '() #t))
 (define (looking-dist theta)
-  (bot-rpc-num #"looking-dist" (to-radians theta)))
-(define (offense-has-flag?) (bot-rpc-bool #"offense-has-flag" '()))
+  (bot-rpc-num #"looking-dist" (to-radians theta) #f))
+(define (offense-has-flag?) (bot-rpc-bool #"offense-has-flag" '() #t))
+(define (offense-lives-left) (bot-rpc-num #"lives-left" '() #t))
 
 (define (flmod x m)
   (- x (* (floor (/ x m)) m)))
@@ -37,49 +39,64 @@
   (delete-file image-file)
   bytes)
 
-(define (with-ws? run-internal)
+(define (get-head)
   (define extra
     (with-output-to-string
       (lambda () (system "git rev-parse --show-prefix"))))
   (define depth (- (length (string-split extra "/")) 1))
-  (define head (string-append (string-join (make-list depth "..") "/")))
+  (string-append (string-join (make-list depth "..") "/")))
+
+(define (with-ws? run-internal cached?)
+  (define head (get-head))
   (define images-folder (string-append head "/images/"))
-  (define game-server-js (string-append head "/ocaml/_build/default/game_server_js/"))
+  (define game-files
+    (string-append head (if cached? "/ocaml/cached/" "/ocaml/_build/default/game_server_js/")))
   (define (run offense defense ws?)
     (cond
       [ws?
        (ws-serve
         #:port 8080
         (lambda (conn s)
-          (run-internal offense defense #:ws-conn conn)
+          (run-internal offense defense (not cached?) #:ws-conn conn)
           ))
        (define JS-MIME #"text/javascript; charset=utf-8")
        (define HTML-MIME #"text/html; charset=utf-8")
        (define PNG-MIME #"image/png; charset=utf-8")
        (define BMP-MIME #"image/bmp; charset=utf-8")
-       (define index (cons HTML-MIME (file->bytes (string-append game-server-js "index.html"))))
-       (define main-js (cons JS-MIME (file->bytes (string-append game-server-js "main.bc.js"))))
-       (define main-runtime-js (cons JS-MIME (file->bytes (string-append game-server-js "main.bc.runtime.js"))))
+       (define (entry name mime bytes)
+         (cons name (cons mime bytes)))
+       (define (file-entry name mime head path)
+         (entry name mime (file->bytes (string-append head path))))
+       (define (image-entry name image)
+         (entry name PNG-MIME (image->bytes image)))
+       (define index (file-entry "index.html" HTML-MIME game-files "index.html"))
        (define pages
-         (make-immutable-hash
+         (make-hash
           (list
-           (cons "offense-bot" (cons PNG-MIME (image->bytes (robot-image offense))))
-           (cons "defense-bot" (cons PNG-MIME (image->bytes (robot-image defense))))
-           (cons "flag" (cons PNG-MIME (file->bytes (string-append images-folder "flag.png"))))
-           (cons "flag-protector" (cons BMP-MIME (file->bytes (string-append images-folder "green-outline.bmp"))))
-           (cons "index.html" index)
-           (cons "main.bc.js" main-js)
-           (cons "main.bc.runtime.js" main-runtime-js))))
-       (serve-website pages index 8000)
+           (image-entry "offense-bot" (robot-image offense))
+           (image-entry "defense-bot" (robot-image defense))
+           (file-entry "boost-image" PNG-MIME images-folder "boost-fire.png")
+           (file-entry "flag" PNG-MIME images-folder "flag.png")
+           (file-entry "game-over" PNG-MIME images-folder "game-over.png")
+           (file-entry "flag-protector" BMP-MIME images-folder "green-outline.bmp")
+           (file-entry "main.bc.js" JS-MIME game-files "main.bc.js")
+           index)))
+       (cond
+         [(file-exists? (string-append game-files "main.bc.runtime.js"))
+          (define main-runtime-js
+            (file-entry "main.bc.runtime.js" JS-MIME game-files "main.bc.runtime.js"))
+          (hash-set! pages (car main-runtime-js) (cdr main-runtime-js))])
+       (serve-website pages (cdr index) 8000)
        ]
       [else (run-internal offense defense)]
       )
-
     )
   run)
 
-(define run (with-ws? run-internal))
-(define run-double (with-ws? run-double-internal))
+(define run (with-ws? run-internal #t))
+;(define run-double (with-ws? run-double-internal #t))
+(define run-dev (with-ws? run-internal #f))
+;(define run-double-dev (with-ws? run-double-internal #f))
 
 (define degrees-mode degrees-mode-internal)
 (define radians-mode radians-mode-internal)

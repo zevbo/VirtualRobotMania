@@ -19,6 +19,17 @@ module Laser = struct
   let create loaded_ts = { power = 1; loaded = true; loaded_ts }
 end
 
+module Display_data = struct
+  type t =
+    { offense_bot_lives : int
+    ; world : World.t
+    ; invisible : Set.M(World.Id).t
+    }
+
+  let create offense_bot_lives world invisible =
+    { offense_bot_lives; world; invisible }
+end
+
 type t =
   { mutable world : World.t
   ; mutable last_step_end : Time.t option
@@ -32,11 +43,14 @@ type t =
   ; defense_bot : Defense_bot.t with_id
   ; flag : World.Id.t
   ; flag_protector : World.Id.t
+  ; boost : World.Id.t
   ; mutable ts : float
   ; laser : Display.Image.t list
   ; end_line : Display.Image.t
   ; offense_shield : World.Id.t
   ; mutable last_wall_enhance : float
+  ; mutable past_display_data : Display_data.t list
+  ; mutable display_wait : unit Deferred.t
   }
 
 let set_image_gen t id image_thunk =
@@ -56,6 +70,7 @@ let create
     defense_bot
     flag_id
     flag_protector_id
+    boost_id
     offense_shield_id
   =
   let state =
@@ -69,15 +84,19 @@ let create
     ; defense_bot
     ; flag = flag_id
     ; flag_protector = flag_protector_id
+    ; boost = boost_id
     ; ts = 0.
     ; laser = List.map Ctf_consts.Laser.colors ~f:(Display.Image.pixel display)
     ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
     ; offense_shield = offense_shield_id
     ; last_wall_enhance = -.Ctf_consts.Border.enhance_period
+    ; past_display_data = []
+    ; display_wait = Deferred.return ()
     }
   in
   let%bind () = set_image_by_name state state.offense_bot.id "offense-bot" in
   let%bind () = set_image_by_name state state.defense_bot.id "defense-bot" in
+  let%bind () = set_image_by_name state state.boost "boost-image" in
   let%bind () = set_image_by_name state state.flag "flag" in
   let%bind () = set_image_by_name state state.flag_protector "flag-protector" in
   return state

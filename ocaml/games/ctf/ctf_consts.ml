@@ -27,11 +27,15 @@ module Bots = struct
 
   module Offense = struct
     let start_pos = Geo.Vec.create (-.x_mag) y_offset
+    let max_restart_y = frame_height /. 3.
     let boost_cooldown = 15.
-    let boost_v_scale = 2.
+    let boost_v_scale = 1.3
+    let boost_power_scale = 1.9
+    let boost_time = 1.7
     let start_lives = 3
     let force_over_input = 650.
     let coll_group = 1
+    let deaths_per_flag = 3
 
     module Shield = struct
       let width = width *. 1.4
@@ -42,6 +46,19 @@ module Bots = struct
       let off_black_list = [ 0; 1; 2; 3; 4; 5 ]
       let on_black_list = [ 0; 1; 2; 4; 5 ]
       let time = 5.
+    end
+
+    module Boost = struct
+      let height = height *. 0.7
+      let width_new = height
+      let offset = Geo.Vec.create ((-0.5 *. width) -. (width_new /. 2.)) 0.0
+      let width = width_new
+
+      (* -1 implies no interactions with anyone *)
+      let coll_group = -1
+      let black_list = List.range (-1) 7
+      let material = Material.create ~energy_ret:1.
+      let shape = Shape.create_standard_rect width height ~material
     end
   end
 
@@ -62,8 +79,8 @@ module Laser = struct
   let black_list = [ 1; 2; 3; 4 ]
   let material = Material.create ~energy_ret:2.
   let shape = Shape.create_standard_rect length width ~material
-  let v = 1000.
-  let cooldown = 4.
+  let v = 1500.
+  let cooldown = 3.
   let wall_enhance_period = 10.
 end
 
@@ -74,7 +91,7 @@ module Flag = struct
   let no_defense_dist = 75.
   let max_y = (frame_height /. 2.) -. 30.
   let min_y = no_defense_dist +. 40.
-  let min_x = 100.
+  let min_x = -120.
   let max_x = (frame_width /. 2.) -. width
   let m = Float.infinity
   let top_display_x = (frame_height /. 2.) -. 80.

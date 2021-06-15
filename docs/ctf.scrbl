@@ -72,19 +72,19 @@ Some examples.
 ]}
 
 @defproc[
-(get-motor-left)
+(get-left-input)
 number?
 ]
 
 @defproc[
-(get-motor-right)
+(get-right-input)
 number?
 ]
 
 These calls allow you to read off the state of your motors.  So, if in
 a previous round you called @racket[(set-motors 0.3 0.6)], then
-@racket[(get-motor-let)] will return 0.3, and
-@racket[(get-motor-right)] will return 0.6
+@racket[(get-left-input)] will return 0.3, and
+@racket[(get-right-input)] will return 0.6
 
 
 @defproc[
@@ -117,9 +117,9 @@ Note that it still works when the flag has been picked up by your
 opponent!}
 
 @defproc[
-(distance-to-flag) distance?]{
+(dist-to-flag) distance?]{
 
-Like @racket[distance-to-opp], except for the flag instead of the
+Like @racket[dist-to-opp], except for the flag instead of the
 opponent.}
 
 
@@ -149,28 +149,47 @@ in @racket[defense.rkt].
 @defproc[
 (shoot-laser) nothing?]{
 
-@racket[(shoot-laser)] fires a bullet in the direction your car is
+@racket[(shoot-laser)] fires a laser in the direction your car is
 pointed.  But you can't do it too often! Note that you can't always
 shoot a laser. That's what the next command is for.}
+
+@def-proc[
+  (load-laser) nothing?
+]{
+  (load-laser) loads the laser onto the front of your defense bot. 
+  Every few ticks (if you want to know, you can figure it out!)
+  while the laser is loaded it will get darker and therefore able to knock out one
+  more of the offense bot's lives. After it has a power of 3, rather than getting
+  strong, your laser will simply restock.
+
+  While your laser is loaded, you cannot give input to your motors.
+}
 
 @defproc[
 (laser-cooldown-left) nothing?]{
 
 @racket[(laser-cooldown-left)] tells you how many ticks need to elapse
-until you can fire your laser again.}
-
-@defproc[(opp-just-boosted?) bool?]{
-
-This lets you tell if your opponent has just called @racket[(boost)]!
-See the offense bot section above to see what boost does!}
+until you can fire or load your laser again.}
 
 
 @section{Offense bot}
 
-THIS SECTION IS UNFINISHED
+@defproc[
+  (boost) void?
+]
+{
+  If your cooldown from the previous boost is over, @racket[(boost)] will immediatly give you a speed multiplier,
+  as well as increase the power of your motors for a couple of seconds.
+}
 
-- boost
-- opponent-angle
-- opponent-distance
-- opponent-shot?
-- flag-angle
+@defproc [
+  (boost-cooldown-left) integer?
+]{
+  @racket[(boost-cooldown-left)] will return the number of ticks until you can use @racket[(boost)] again.
+}
+
+@defproc [
+  (opp-just-fired?) bool?
+]{
+  @racket[(opp-just-fired?)] will tell you if this past tick, the defense bot fired.
+}

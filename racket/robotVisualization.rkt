@@ -2,7 +2,8 @@
 (require 2htdp/image)
 (provide create-robot-img
          ROBOT_WIDTH ROBOT_LENGTH
-         OPTIONAL_DEFAULT)
+         OPTIONAL_DEFAULT
+         append-images-horizontally)
 
 (define ROBOT_WIDTH 200.0)
 
