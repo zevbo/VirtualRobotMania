@@ -19,10 +19,13 @@ make two different robots together:
   getting the flag.}
 ]
 
-The defense bot has two ways of interfering with the offense bot: it
-can get in the other bot's way, and it can fire (strangely
-slow-moving) lasers at it.
+The defense bot can stop the offense bot by firing lasers at it.
+The offense bot starts out with 3 lives, and each laser by default
+will make the offense bot lose 1 life. If the offense bot loses all
+of their lives, it will lose the flag and be teliported back to the start.
 
+Also, for every 3 kills the defense bot gets, the offense bot will lose
+1 flag.
 @section{Where to work}
 
 Each kind of robot (defense or offense) has its own library of

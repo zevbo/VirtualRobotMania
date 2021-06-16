@@ -109,7 +109,9 @@ let remove_live t ?(num_lives = 1) (offense_bot_body : Body.t) ts =
     t.lives <- Ctf_consts.Bots.Offense.start_lives;
     t.has_flag <- false;
     t.last_kill <- ts;
-    t.times_killed <- t.times_killed + 1;
+    if t.num_flags = 0
+    then t.times_killed <- 0
+    else t.times_killed <- t.times_killed + 1;
     if t.times_killed % Ctf_consts.Bots.Offense.deaths_per_flag = 0
        && t.num_flags > 0
     then t.num_flags <- t.num_flags - 1;

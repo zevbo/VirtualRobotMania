@@ -427,8 +427,8 @@ let end_game (state : State.t) () =
     let a = Clock_ns.after (Time_ns.Span.of_sec dt) in
     display state;
     Display.draw_image_wh
-      ~h:300.
-      ~w:400.
+      ~h:410.
+      ~w:500.
       state.display
       image
       ~center:(Vec.create x 0.0)

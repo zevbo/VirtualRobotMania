@@ -3,4 +3,4 @@
 (require "offense.rkt")
 (require "../../racket/ctf/offense.rkt")
 
-(run-dev offense-bot defense-bot)
+(run offense-bot defense-bot)
