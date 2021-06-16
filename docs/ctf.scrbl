@@ -156,10 +156,10 @@ in @racket[defense.rkt].
 pointed.  But you can't do it too often! Note that you can't always
 shoot a laser. That's what the next command is for.}
 
-@def-proc[
+@defproc[
   (load-laser) nothing?
 ]{
-  (load-laser) loads the laser onto the front of your defense bot. 
+  (load-laser) loads the laser onto the front of your defense bot.
   Every few ticks (if you want to know, you can figure it out!)
   while the laser is loaded it will get darker and therefore able to knock out one
   more of the offense bot's lives. After it has a power of 3, rather than getting
@@ -178,21 +178,23 @@ until you can fire or load your laser again.}
 @section{Offense bot}
 
 @defproc[
-  (boost) void?
-]
-{
-  If your cooldown from the previous boost is over, @racket[(boost)] will immediatly give you a speed multiplier,
-  as well as increase the power of your motors for a couple of seconds.
-}
+  (boost) nothing?
+]{
 
-@defproc [
+If your cooldown from the previous boost is over, @racket[(boost)]
+will immediatly give you a speed multiplier, as well as increase the
+power of your motors for a couple of seconds.  }
+
+@defproc[
   (boost-cooldown-left) integer?
 ]{
-  @racket[(boost-cooldown-left)] will return the number of ticks until you can use @racket[(boost)] again.
-}
 
-@defproc [
+@racket[(boost-cooldown-left)] will return the number of ticks until
+you can use @racket[(boost)] again.  }
+
+@defproc[
   (opp-just-fired?) bool?
 ]{
-  @racket[(opp-just-fired?)] will tell you if this past tick, the defense bot fired.
-}
+
+  @racket[(opp-just-fired?)] will tell you if this past tick, the
+defense bot fired.  }
