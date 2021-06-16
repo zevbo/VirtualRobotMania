@@ -25,6 +25,12 @@ module Bots = struct
   let side_fric_k = 100000.
   let air_resistance_c = 1.
 
+  module Powered = struct
+    let w = 10.
+    let h = w
+    let offset = Geo.Vec.create 0.0 0.0
+  end
+
   module Offense = struct
     let start_pos = Geo.Vec.create (-.x_mag) y_offset
     let max_restart_y = frame_height /. 3.

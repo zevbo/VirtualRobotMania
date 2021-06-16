@@ -51,9 +51,7 @@
   (define images-folder (string-append head "/images/"))
   (define game-files
     (string-append head (if cached? "/ocaml/cached/" "/ocaml/_build/default/game_server_js/")))
-  (define (run offense defense ws?)
-    (cond
-      [ws?
+  (define (run offense defense)
        (ws-serve
         #:port 8080
         (lambda (conn s)
@@ -75,6 +73,7 @@
           (list
            (image-entry "offense-bot" (robot-image offense))
            (image-entry "defense-bot" (robot-image defense))
+           (file-entry "powered" PNG-MIME images-folder "powered.png")
            (file-entry "boost-image" PNG-MIME images-folder "boost-fire.png")
            (file-entry "flag" PNG-MIME images-folder "flag.png")
            (file-entry "game-over" PNG-MIME images-folder "game-over.png")
@@ -87,12 +86,9 @@
             (file-entry "main.bc.runtime.js" JS-MIME game-files "main.bc.runtime.js"))
           (hash-set! pages (car main-runtime-js) (cdr main-runtime-js))])
        (serve-website pages (cdr index) 8000)
-       ]
-      [else (run-internal offense defense)]
-      )
     )
   run)
-
+  
 (define run (with-ws? run-internal #t))
 ;(define run-double (with-ws? run-double-internal #t))
 (define run-dev (with-ws? run-internal #f))

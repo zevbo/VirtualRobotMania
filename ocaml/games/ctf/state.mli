@@ -45,6 +45,7 @@ type t =
   ; mutable ts : float
   ; laser : Display.Image.t list
   ; end_line : Display.Image.t
+  ; powered : Display.Image.t
   ; offense_shield : World.Id.t
   ; mutable last_wall_enhance : float
   ; mutable past_display_data : Display_data.t list
@@ -61,6 +62,7 @@ val create
   -> World.Id.t
   -> World.Id.t
   -> World.Id.t
+  -> Display.Image.t
   -> t Deferred.t
 
 val set_world : t -> World.t -> unit

@@ -54,7 +54,7 @@
     [other (unknown-kind other)]))
 
 (define dt_racket 0.12)
-(define game-time 1)
+(define game-time 100)
 (define total-ticks (floor (/ game-time dt_racket)))
 
 (define (run-internal offense defense build? #:ws-conn [ws-conn #f])

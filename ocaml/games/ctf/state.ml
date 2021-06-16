@@ -47,6 +47,7 @@ type t =
   ; mutable ts : float
   ; laser : Display.Image.t list
   ; end_line : Display.Image.t
+  ; powered : Display.Image.t
   ; offense_shield : World.Id.t
   ; mutable last_wall_enhance : float
   ; mutable past_display_data : Display_data.t list
@@ -72,6 +73,7 @@ let create
     flag_protector_id
     boost_id
     offense_shield_id
+    powered_image
   =
   let state =
     { world
@@ -88,6 +90,7 @@ let create
     ; ts = 0.
     ; laser = List.map Ctf_consts.Laser.colors ~f:(Display.Image.pixel display)
     ; end_line = Display.Image.pixel display (Color.rgb 0 255 255)
+    ; powered = powered_image
     ; offense_shield = offense_shield_id
     ; last_wall_enhance = -.Ctf_consts.Border.enhance_period
     ; past_display_data = []

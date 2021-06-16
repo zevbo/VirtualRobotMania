@@ -42,6 +42,7 @@ let init ~log_s =
       world
       (Flag_logic.flag_protector (World.get_body_exn world flag_id))
   in
+  let%bind powered_image = Display.Image.of_name display "powered" in
   let%bind state =
     State.create
       world
@@ -53,6 +54,7 @@ let init ~log_s =
       flag_protector_id
       boost_id
       offense_shield_id
+      powered_image
   in
   state.world <- world;
   state.invisible <- Set.add state.invisible state.offense_shield;
@@ -147,6 +149,35 @@ let add_display_data (state : State.t) =
 
 let display_data_max_length = Int.of_float (dt_racket /. dt_display)
 
+let usable (state : State.t) last_ts cooldown =
+  Float.(last_ts +. cooldown < state.ts)
+
+let can_boost (state : State.t) =
+  usable
+    state
+    state.offense_bot.bot.last_boost
+    Ctf_consts.Bots.Offense.boost_cooldown
+
+let can_shoot (state : State.t) =
+  usable state state.defense_bot.bot.last_fire_ts Ctf_consts.Laser.cooldown
+
+let display_powered (state : State.t) (bot : Body.t) =
+  let real_offset = Vec.rotate Ctf_consts.Bots.Powered.offset bot.angle in
+  Display.draw_image_wh
+    state.display
+    ~w:Ctf_consts.Bots.Powered.w
+    ~h:Ctf_consts.Bots.Powered.h
+    state.powered
+    ~center:(Vec.add bot.pos real_offset)
+    ~angle:0.0
+
+let display_powereds (state : State.t) (display_data : State.Display_data.t) =
+  let apply_powered (id : World.Id.t) =
+    display_powered state (World.get_body_exn display_data.world id)
+  in
+  if can_boost state then apply_powered state.offense_bot.id;
+  if can_shoot state then apply_powered state.defense_bot.id
+
 let display (state : State.t) =
   (match List.nth state.past_display_data (display_data_max_length - 1) with
   | None -> ()
@@ -154,7 +185,8 @@ let display (state : State.t) =
     Display.clear state.display (Color.rgb 240 240 240);
     draw_end_line state;
     draw_flags state;
-    Map.iteri display_data.world.bodies ~f:(display_body state display_data));
+    Map.iteri display_data.world.bodies ~f:(display_body state display_data);
+    display_powereds state display_data);
   add_display_data state;
   state.past_display_data
     <- List.take state.past_display_data display_data_max_length
@@ -218,19 +250,12 @@ let r_input (state : State.t) ((bot_name : Bot_name.t), ()) =
   | Offense -> state.offense_bot.bot.r_input
   | Defense -> state.defense_bot.bot.r_input
 
-let usable (state : State.t) last_ts cooldown =
-  Float.(last_ts +. cooldown < state.ts)
-
 let load_laser (state : State.t) ((bot_name : Bot_name.t), ()) =
   match bot_name with
   | Offense -> ()
   | Defense ->
     let is_loaded = Option.is_some state.defense_bot.bot.loaded_laser in
-    if (not is_loaded)
-       && usable
-            state
-            state.defense_bot.bot.last_fire_ts
-            Ctf_consts.Laser.cooldown
+    if (not is_loaded) && can_shoot state
     then (
       let laser_body =
         Laser_logic.laser ~bot:(State.get_defense_bot_body state)
@@ -350,11 +375,7 @@ let boost (state : State.t) ((bot_name : Bot_name.t), ()) =
   match bot_name with
   | Defense -> ()
   | Offense ->
-    if usable
-         state
-         state.offense_bot.bot.last_boost
-         Ctf_consts.Bots.Offense.boost_cooldown
-    then state.offense_bot.bot.last_boost <- state.ts
+    if can_boost state then state.offense_bot.bot.last_boost <- state.ts
 
 let enhance_border (state : State.t) () =
   state.last_wall_enhance <- state.ts;
