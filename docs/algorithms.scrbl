@@ -39,7 +39,7 @@ otherwise.  Similarly, let's consider the following bang bang
 contorller for a virtual robot that wanted to go 15 degrees north of
 east (ie: with angle 15).
 
-@racket[
+@racketblock[
     (define (go-right)
       (degrees-mode)
       (cond
