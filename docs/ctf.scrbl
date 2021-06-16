@@ -175,21 +175,23 @@ until you can fire or load your laser again.}
 @section{Offense bot}
 
 @defproc[
-  (boost) void?
-]
-{
-  If your cooldown from the previous boost is over, @racket[(boost)] will immediatly give you a speed multiplier,
-  as well as increase the power of your motors for a couple of seconds.
-}
+  (boost) nothing?
+]{
+
+If your cooldown from the previous boost is over, @racket[(boost)]
+will immediatly give you a speed multiplier, as well as increase the
+power of your motors for a couple of seconds.  }
 
 @defproc[
   (boost-cooldown-left) integer?
 ]{
-  @racket[(boost-cooldown-left)] will return the number of ticks until you can use @racket[(boost)] again.
-}
+
+@racket[(boost-cooldown-left)] will return the number of ticks until
+you can use @racket[(boost)] again.  }
 
 @defproc[
   (opp-just-fired?) bool?
 ]{
-  @racket[(opp-just-fired?)] will tell you if this past tick, the defense bot fired.
-}
+
+  @racket[(opp-just-fired?)] will tell you if this past tick, the
+defense bot fired.  }
