@@ -1,15 +1,24 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=0.8"/><title>Welcome to Virtual Robotics</title><link rel="stylesheet" type="text/css" href="scribble.css" title="default"/><link rel="stylesheet" type="text/css" href="racket.css" title="default"/><link rel="stylesheet" type="text/css" href="manual-style.css" title="default"/><link rel="stylesheet" type="text/css" href="manual-racket.css" title="default"/><script type="text/javascript" src="scribble-common.js"></script><script type="text/javascript" src="manual-racket.js"></script><!--[if IE 6]><style type="text/css">.SIEHidden { overflow: hidden; }</style><![endif]--></head><body id="scribble-racket-lang-org"><div class="tocset"><div class="tocview"><div class="tocviewlist tocviewlisttopspace"><div class="tocviewtitle"><table cellspacing="0" cellpadding="0"><tr><td style="width: 1em;"><a href="javascript:void(0);" title="Expand/Collapse" class="tocviewtoggle" onclick="TocviewToggle(this,&quot;tocview_0&quot;);">&#9658;</a></td><td></td><td><a href="" class="tocviewselflink" data-pltdoc="x">Welcome to Virtual Robotics</a></td></tr></table></div><div class="tocviewsublistonly" style="display: none;" id="tocview_0"><table cellspacing="0" cellpadding="0"><tr><td align="right">1&nbsp;</td><td><a href="#%28part._.Getting_.Started%29" class="tocviewlink" data-pltdoc="x">Getting Started</a></td></tr><tr><td align="right">2&nbsp;</td><td><a href="#%28part._.Learning_.Racket%29" class="tocviewlink" data-pltdoc="x">Learning Racket</a></td></tr><tr><td align="right">3&nbsp;</td><td><a href="#%28part._.The_.Game%29" class="tocviewlink" data-pltdoc="x">The Game</a></td></tr><tr><td align="right">4&nbsp;</td><td><a href="#%28part._.Algorithms%29" class="tocviewlink" data-pltdoc="x">Algorithms</a></td></tr></table></div></div></div><div class="tocsub"><table class="tocsublist" cellspacing="0"><tr><td><span class="tocsublinknumber"></span><a href="#%28part._.Welcome_to_.Virtual_.Robotics%29" class="tocsubseclink" data-pltdoc="x">Welcome to Virtual Robotics</a></td></tr><tr><td><span class="tocsublinknumber">1<tt>&nbsp;</tt></span><a href="#%28part._.Getting_.Started%29" class="tocsubseclink" data-pltdoc="x">Getting Started</a></td></tr><tr><td><span class="tocsublinknumber">2<tt>&nbsp;</tt></span><a href="#%28part._.Learning_.Racket%29" class="tocsubseclink" data-pltdoc="x">Learning Racket</a></td></tr><tr><td><span class="tocsublinknumber">3<tt>&nbsp;</tt></span><a href="#%28part._.The_.Game%29" class="tocsubseclink" data-pltdoc="x">The Game</a></td></tr><tr><td><span class="tocsublinknumber">4<tt>&nbsp;</tt></span><a href="#%28part._.Algorithms%29" class="tocsubseclink" data-pltdoc="x">Algorithms</a></td></tr></table></div></div><div class="maincolumn"><div class="main"><div class="versionbox"><span class="versionNoNav">8.1</span></div><h2><a name="(part._.Welcome_to_.Virtual_.Robotics)"></a>Welcome to Virtual Robotics</h2><p>If you&rsquo;re here, you&rsquo;re probably looking for some documentation for the
 Virtual Robotics competition, specifically, the CTF (Capture the Flag)
-edition!</p><h3>1<tt>&nbsp;</tt><a name="(part._.Getting_.Started)"></a>Getting Started</h3><ul><li><p>Download DrRacket from
+edition!</p><h3>1<tt>&nbsp;</tt><a name="(part._.Getting_.Started)"></a>Getting Started</h3><ul><li><p><span style="font-weight: bold">Download DrRacket</span> from
 <a href="https://download.racket-lang.org/">here</a> and install
-it.</p></li><li><p>You can get the code
+it.</p></li><li><p>You can <span style="font-weight: bold">get the code</span>
 <a href="https://github.com/zevbo/VirtualRobotMania">from
 github</a>.  The best way to do that is to use git.  If you don&rsquo;t
-know how, ask for help!</p></li><li><p>Open DrRacket</p></li><li><p>In DrRacket, click file -&gt; open (on the top) and navigate to
-VirtualRobotMania/manias/.</p></li><li><p>Open up the example in <span class="RktVal">"manias/ctf/together.rkt"</span> from inside
-your copy of the code.</p></li><li><p>Press run button in the top right.  That should launch the
-game in a web-browser tab.  Watch the robots battle it out! </p></li></ul><h3>2<tt>&nbsp;</tt><a name="(part._.Learning_.Racket)"></a>Learning Racket</h3><ul><li><p>A <a href="racket-cheatsheet.html">cheatsheet</a> and short
+know how, ask for help!</p></li><li><p><span style="font-weight: bold">Open DrRacket</span></p></li><li><p><span style="font-weight: bold">Open the files.</span> In DrRacket, click file -&gt; open (on
+the top) and navigate to VirtualRobotMania/manias/.  Then open
+up the example in <span class="RktVal">"manias/ctf/together.rkt"</span> from inside
+DrRacket.</p></li><li><p><span style="font-weight: bold">Install packages.</span> There are two racket packages you
+need: <span class="RktSym">csexp</span> and <span class="RktSym">rfc6455</span>. If you click the run
+button on the top right, you&rsquo;ll get an error, with an embedded
+link offering to update the racket package directory. Click on it!
+Then try again, and it will offer you the chance to install a
+missing package.  Keep on doing this until they&rsquo;re all installed.</p></li><li><p><span style="font-weight: bold">Start the game.</span>  Press run button in the top right.  That
+should launch the game in a web-browser tab.  The robots won&rsquo;t be
+doing anything too interesting yet, but now you have everything
+you need to work on your robots.  Go <a href="ctf.html">here</a> to
+learn more about the game.</p></li></ul><h3>2<tt>&nbsp;</tt><a name="(part._.Learning_.Racket)"></a>Learning Racket</h3><ul><li><p>A <a href="racket-cheatsheet.html">cheatsheet</a> and short
 introduction to Racket that was written by us!</p></li><li><p>A
 <a href="https://cs.uwaterloo.ca/~plragde/flaneries/TYR">tutorial for
 people who are already programmers</a>.  It&rsquo;s clear and concise, but is
