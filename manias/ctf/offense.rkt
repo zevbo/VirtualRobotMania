@@ -2,6 +2,8 @@
 (require "../../racket/ctf/offense.rkt")
 (provide offense-bot)
 
+(degrees-mode)
+
 (define (on-tick tick#)
   (set-motors 0 0))
 
