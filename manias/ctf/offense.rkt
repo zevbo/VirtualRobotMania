@@ -2,9 +2,11 @@
 (require "../../racket/ctf/offense.rkt")
 (provide offense-bot)
 
+(define (on-tick tick#)
+  (set-motors 0 0))
+
 (define offense-bot
   (make-robot
    "Green offenders"
-   (lambda (tick#)
-     (set-motors 0 0))
+   on-tick
    #:body-color 'green))
