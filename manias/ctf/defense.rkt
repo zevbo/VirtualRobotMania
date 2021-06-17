@@ -5,7 +5,7 @@
 (degrees-mode)
 
 (define (on-tick tick-num)
-  (set-motors 0 0))
+  (set-motors 0 0.1))
 
 (define defense-bot
   (make-robot
