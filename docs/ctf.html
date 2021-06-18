@@ -4,9 +4,11 @@ is a step up in the complexity of the tasks, but writing bots should
 still be easy for beginners.</p><p>Everyone is going to work in teams of two, and those teams need to
 make two different robots together:</p><ul><li><p>An <span style="font-weight: bold">offense bot</span>, whose goal is to capture the flag, and bring it
 back to its home base.</p></li><li><p>A <span style="font-weight: bold">defense bot</span> whose goal is to stop the offense bot from
-getting the flag.</p></li></ul><p>The defense bot has two ways of interfering with the offense bot: it
-can get in the other bot&rsquo;s way, and it can fire (strangely
-slow-moving) lasers at it.</p><h3>1<tt>&nbsp;</tt><a name="(part._.Where_to_work)"></a>Where to work</h3><p>Each kind of robot (defense or offense) has its own library of
+getting the flag.</p></li></ul><p>The defense bot can stop the offense bot by firing lasers at it.
+The offense bot starts out with 3 lives, and each laser by default
+will make the offense bot lose 1 life. If the offense bot loses all
+of their lives, it will lose the flag and be teliported back to the start.</p><p>Also, for every 3 kills the defense bot gets, the offense bot will lose
+1 flag.</p><h3>1<tt>&nbsp;</tt><a name="(part._.Where_to_work)"></a>Where to work</h3><p>Each kind of robot (defense or offense) has its own library of
 commands.  If you look in the <span class="RktSym">manias/ctf</span> directory, you should find
 three files, with starting templates and some very basic bots to build
 off of.</p><ul><li><p><span class="RktSym">offense.rkt</span> is for writing your offense bot.</p></li><li><p><span class="RktSym">defense.rkt</span> is for writing your defense bot.</p></li><li><p><span class="RktSym">together.rkt</span> brings them both together. This is where

@@ -268,14 +268,16 @@ let load_laser (state : State.t) ((bot_name : Bot_name.t), ()) =
       state.lasers <- Map.set state.lasers ~key:laser_id ~data:laser_state;
       state.defense_bot.bot.loaded_laser <- Some laser_id)
 
-let shoot_laser state ((bot_name : Bot_name.t), ()) =
+let rec shoot_laser state ((bot_name : Bot_name.t), ()) =
   if usable state state.defense_bot.bot.last_fire_ts Ctf_consts.Laser.cooldown
   then (
     match state.defense_bot.bot.loaded_laser with
     | Some id ->
       Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts;
       Laser_logic.shoot_laser state id
-    | None -> load_laser state ((bot_name : Bot_name.t), ()))
+    | None ->
+      load_laser state ((bot_name : Bot_name.t), ());
+      shoot_laser state (bot_name, ()))
 
 let restock_laser (state : State.t) ((_bot_name : Bot_name.t), ()) =
   match state.defense_bot.bot.loaded_laser with

@@ -89,6 +89,25 @@ a previous round you called @racket[(set-motors 0.3 0.6)], then
 @racket[(get-left-input)] will return 0.3, and
 @racket[(get-right-input)] will return 0.6
 
+@defproc[
+(radians-mode) 
+nothing?
+]
+@defproc[
+(degrees-mode)
+nothing?
+]
+
+These calls allow you to either use radians or degrees.
+
+@defproc[
+(normalize-angle [angle angle?]) angle?
+]{
+  @racket[(normalize-angle angle)] returns an angle with equivilant direction, but between
+  180 and -180 if you are in degree mode, or between pi and -pi if you are in radians mode.
+
+  For example, in degrees mode, @racket[(normalize-angle 320)] will return @racket[-40].
+}
 
 @defproc[
 (angle-to-opp)

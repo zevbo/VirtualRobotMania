@@ -10,25 +10,35 @@ edition!
 
 @itemlist[
 
-    @item{Download DrRacket from
+    @item{@bold{Download DrRacket} from
        @link["https://download.racket-lang.org/"]{here} and install
        it.}
 
-    @item{You can get the code
+    @item{You can @bold{get the code}
       @link["https://github.com/zevbo/VirtualRobotMania"]{from
       github}.  The best way to do that is to use git.  If you don't
       know how, ask for help!}
 
-    @item{Open DrRacket}
+    @item{@bold{Open DrRacket}}
 
-    @item{In DrRacket, click file -> open (on the top) and navigate to
-      VirtualRobotMania/manias/.}
+    @item{@bold{Open the files.} In DrRacket, click file -> open (on
+      the top) and navigate to VirtualRobotMania/manias/.  Then open
+      up the example in @racket{manias/ctf/together.rkt} from inside
+      DrRacket.}
 
-    @item{Open up the example in @racket{manias/ctf/together.rkt} from inside
-      your copy of the code.}
+    @item{@bold{Install packages.} There are two racket packages you
+    need: @racket[csexp] and @racket[rfc6455]. If you click the run
+    button on the top right, you'll get an error, with an embedded
+    link offering to update the racket package directory. Click on it!
+    Then try again, and it will offer you the chance to install a
+    missing package.  Keep on doing this until they're all installed.}
 
-    @item{Press run button in the top right.  That should launch the
-      game in a web-browser tab.  Watch the robots battle it out! } ]
+    @item{@bold{Start the game.}  Press run button in the top right.  That
+    should launch the game in a web-browser tab.  The robots won't be
+    doing anything too interesting yet, but now you have everything
+    you need to work on your robots.  Go @link["ctf.html"]{here} to
+    learn more about the game.}
+]
 
 @section{Learning Racket}
 
