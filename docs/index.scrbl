@@ -70,6 +70,16 @@ edition!
 
 Read more about @link["ctf.html"]{capture the flag}, our latest game!
 
+@section{Geometry}
+
+For the more advanced players, it will likely be helpful to create a
+more precise description of the physical geometry of the game.
+
+In order to make that slightly more possible, we have provided some code
+that you can trust works. That way, it will be easier to make progress
+and you won't feel like you are simply walking in circles.
+
+Documentation for using this code can be found @link["geometry.html"]{here}.
 
 @section{Algorithms}
 
