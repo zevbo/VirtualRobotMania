@@ -1,8 +1,8 @@
 #lang racket
 (require "../../racket/ctf/offense.rkt")
+(require "../../racket/ctf/vector.rkt")
+(require "../../racket/ctf/ll.rkt")
 (provide offense-bot)
-
-(degrees-mode)
 
 (define (on-tick tick-num)
   (set-motors 0.1 0))
