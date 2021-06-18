@@ -88,7 +88,6 @@
   (rpc the-connection
        `(,name ,arg)))
 (define (bot-rpc name arg simple?)
-  (flush-output (current-output-port))
   (if simple?
       (hash-ref the-current-data name)
       (rpc the-connection
