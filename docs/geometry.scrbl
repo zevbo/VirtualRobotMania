@@ -1,9 +1,12 @@
+#lang scribble/manual
+@defmodule[geometry]
+
 Note: if you are using this code, it is assumed you will be working in (radians-mode)
 
 @section{Vector}
 
-To use vectors, make sure to put @racket[(require "../../racket/ctf/vector.rkt")] 
-at the top of your file.
+To use vectors, make sure to put @racket[(require
+"../../racket/ctf/vector.rkt")] at the top of your file.
 
 @defproc[
     (vec [x number?] [y number?]) vec?
@@ -13,7 +16,7 @@ at the top of your file.
 @defproc[(vec-y [vec vec?]) number?]
 
 @racket[(vec x y)] will return a value with the given x and y stored
-in it. You can then get out those values using @racket[vec-x] and 
+in it. You can then get out those values using @racket[vec-x] and
 @racket[vec-y]. For example @racket[(vec-y (vec 1 2.5))] returns
 2.5.
 
@@ -31,7 +34,7 @@ in it. You can then get out those values using @racket[vec-x] and
     Returns a new vector that is vec rotated angle radians to the right
 }
 
-@defproc[(polar [r number?] [angle number?])]{
+@defproc[(polar [r number?] [angle number?]) vec?]{
     Returns a vector whose magnitude is r and whose angle with the positive x-axis is angle
 }
 @defproc[(angle-of [vec vec?]) number?]{
@@ -46,13 +49,13 @@ in it. You can then get out those values using @racket[vec-x] and
 
 @section{Line Like}
 
-To use line like, make sure to put @racket[(require "../../racket/ctf/ll.rkt")] 
+To use line like, make sure to put @racket[(require "../../racket/ctf/ll.rkt")]
 at the top of your file.
 
 A "line like" (not a real term) is any shape that is a subset of a single line.
 The three that we are dealing with are:
-- Lines 
-- Rays 
+- Lines
+- Rays
 - Line Segments
 When we say line like, or ll, we are referring to any one of these 3 shapes.
 
@@ -60,15 +63,15 @@ When we say line like, or ll, we are referring to any one of these 3 shapes.
     Returns a line like that is treated as the line that goes through p1 and p2
 }
 @defproc[(line-pa [p vec?] [angle number?]) ll?]{
-    Returns a line like that is treated as the line that starts at p, 
+    Returns a line like that is treated as the line that starts at p,
     and travels in the direction of the given angle
 }
 @defproc[(ray-pa [p vec?] [angle number?]) ll?]{
-    Returns a line like that is treated as the ray that starts at p, 
+    Returns a line like that is treated as the ray that starts at p,
     and travels in the direction of the given angle
 }
 @defproc[(line-segment-pp [p1 vec?] [p2 vec?]) ll?]{
-    Returns a line like that is treated as the line segment 
+    Returns a line like that is treated as the line segment
     with ends at p1 and p2
 }
 @defproc[(angle-of-ll [ll ll?]) number?]{
@@ -80,5 +83,5 @@ When we say line like, or ll, we are referring to any one of these 3 shapes.
     it will be one of its end points.
 }
 @defproc[(ll-p2 [ll ll?]) vec?]{
-    Same as @racket[ll-p1] except 
+    Same as @racket[ll-p1] except
 }
