@@ -2,8 +2,12 @@
 (require "vector.rkt")
 (provide intersection
          line-pp
+         line-pa
          ray-pa
-         line-segment-pp)
+         line-segment-pp
+         ll-p1
+         ll-p2
+         angle-of-ll)
 
 (define delta 1)
 (define epsilon 0.0001)
@@ -62,6 +66,9 @@
      (in-bounds (vec-y p) (vec-y p1) (vec-y p2))))
   (ll p1 p2 contains?))
 
-(define (angle-of-line ll)
-  ; This is kinda whack cause it means that (ll p1 p2) \neq (ll p2 p1)
-  (angle-of (vec-sub (ll-p2 ll) (ll-p1))))
+(define (angle-of-ll ll)
+  (define full-angle (angle-of (vec-sub (ll-p2 ll) (ll-p1))))
+  (cond
+    [(>= full-angle (/ pi 2)) (- full-angle pi)]
+    [(< full-angle (/ pi -2)) (+ full-angle pi)]
+    [else full-angle]))
