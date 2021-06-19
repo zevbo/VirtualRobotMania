@@ -149,7 +149,7 @@ opponent.}
 (get-robot-angle) angle?]{
 
 This returns the absolute angle of your angle.  i.e., 0 degrees means
-you're pointed to the left, 90 degrees is straight up, 180 degrees is
+you're pointed to the right, 90 degrees is straight up, 180 degrees is
 to the left, and so on.}
 
 @defproc[
