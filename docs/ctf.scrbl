@@ -98,13 +98,20 @@ a previous round you called @racket[(set-motors 0.3 0.6)], then
 @defproc[
 (radians-mode)
 nothing?
-]
+]{
+
+Causes all angle-returning and angle-taking functions in the game to
+use radians.}
+
+
+
 @defproc[
 (degrees-mode)
 nothing?
-]
+]{
 
-These calls allow you to either use radians or degrees.
+Causes all angle-returning and angle-taking functions in the game to
+use radians.  This is the default}
 
 @defproc[
 (normalize-angle [angle angle?]) angle?
