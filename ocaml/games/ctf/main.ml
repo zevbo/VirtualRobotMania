@@ -355,21 +355,23 @@ let boost_cooldown_left (state : State.t) ((_bot_name : Bot_name.t), ()) =
 
 let looking_dist (state : State.t) ((bot_name : Bot_name.t), angle) =
   let body = body_of state bot_name in
-  let looking_ray =
-    Line_like.ray_of_point_angle body.pos (angle +. body.angle)
+  let half_width =
+    Vec.rotate (Vec.create (Ctf_consts.Bots.width /. 2.) 0.0) body.angle
   in
+  let pos = Vec.add body.pos half_width in
+  let looking_ray = Line_like.ray_of_point_angle pos (angle +. body.angle) in
   let all_bodies = List.map (Map.to_alist state.world.bodies) ~f:snd in
   let all_edges =
     List.fold all_bodies ~init:[] ~f:(fun edges body ->
         List.append (Body.get_edges_w_global_pos body) edges)
   in
-  let dist = Vec.dist_sq body.pos in
+  let dist = Vec.dist_sq pos in
   let intersection_distances =
     List.filter_map all_edges ~f:(fun edge ->
         Option.map (Line_like.intersection looking_ray edge.ls) ~f:dist)
   in
   match List.min_elt intersection_distances ~compare:Float.compare with
-  | Some min_dist -> min_dist -. (Ctf_consts.Bots.width /. 2.)
+  | Some min_dist -> min_dist
   | None -> -1.
 
 let boost (state : State.t) ((bot_name : Bot_name.t), ()) =
