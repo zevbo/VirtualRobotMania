@@ -51,7 +51,7 @@ some are only available for offense or defense.
 @section{Common commands}
 
 @defproc[
-(offense-has-flag?) nothing?
+(offense-has-flag?) bool?
 ]{
 
 Returns @racket[#t] if offense has the flag, @racket[#f] otherwise.}
@@ -161,7 +161,7 @@ opponent.}
 @defproc[
 (get-robot-angle) angle?]{
 
-This returns the absolute angle of your angle.  i.e., 0 degrees means
+This returns the absolute angle of your robot.  i.e., 0 degrees means
 you're pointed to the right, 90 degrees is straight up, 180 degrees is
 to the left, and so on.}
 
