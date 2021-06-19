@@ -4,17 +4,21 @@
 (require "../../racket/ctf/ll.rkt")
 (provide offense-bot)
 
+(define (set-motors-vec v)
+  (set-motors (vec-x v) (vec-y v)))
 
+(define (turn-vec x)
+  (vec (- x) x))
 
 (define (on-tick tick-num)
-  (println (cons 'offense (looking-dist 0)))
-  (define thresh (/ pi 10))
+  (define thresh (/ pi 2))
   (define angle (angle-to-flag))
   (cond
-    [(> angle thresh)
-     (set-motors -1 1)]
-    [(< angle (- thresh))
-     (set-motors 1 -1)]
+    [(offense-has-flag?) (set-motors 0. 0.)]
+    [(or (> angle thresh) (< angle (- thresh)))
+     (set-motors-vec (vec-add
+                      (vec 0.3 0.3)
+                      (turn-vec (/ angle 100))))]
     [else (set-motors 1. 1.)]
     ))
 
