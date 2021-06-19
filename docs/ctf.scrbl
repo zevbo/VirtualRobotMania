@@ -176,6 +176,11 @@ Like @racket[get-robot-angle], but for your opponent!}
 tells you how much distance there is to the next obstacle, be it a
 wall, a robot or a laser.}
 
+@defproc[
+  (offense-has-flag?) boolean?]{
+    #t if the offense bot has the flag, #f otherwise
+  }
+
 @section{Defense bot}
 
 These calls are only for the defense bot, and you should only use them
