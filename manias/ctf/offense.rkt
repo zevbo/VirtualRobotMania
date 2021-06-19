@@ -17,9 +17,9 @@
     ))
 |#
 
-(define flag-angle-pid (pid-init  0.2 0 0))
-(define back-angle-pid (pid-init  -0.1 0 0))
-(define flag-dist-pid  (pid-init  1   0 0))
+(define flag-angle-pid (pid-init  0.3 0 -0.1))
+(define back-angle-pid (pid-init  0.1 0 -0.1))
+(define flag-dist-pid  (pid-init  1   0 0.2))
 
 
 (define (normalize v)
@@ -42,7 +42,6 @@
   (pid-update flag-angle-pid (angle-to-flag))
   (pid-update back-angle-pid (robot-angle))
   (pid-update flag-dist-pid (dist-to-flag))
-  (println (robot-angle))
   (define turn
     (cond
       [(offense-has-flag?)
@@ -51,17 +50,16 @@
        (turn-vec (pid-eval flag-angle-pid))]))
   (define speed
     (cond
-      [(offense-has-flag?)  (vec 1. 1.)]
+      [(offense-has-flag?)  (vec -1. -1.)]
       [else
        (define x (max -1 (min 1 (pid-eval flag-dist-pid))))
        (vec x x)]))
   (define action (normalize (vec-add turn speed)))
-  (println (cons 'action action))
   (set-motors-vec action)
   )
 
   (define offense-bot
   (make-robot
-   "Green offenders"
+   "Cyan offenders"
    on-tick
-   #:body-color 'cyan))
+   #:body-color 'chartreuse))
