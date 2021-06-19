@@ -1,5 +1,7 @@
 #lang scribble/manual
-@defmodule[geometry]
+@defmodule["../../racket/ctf/vector.rkt"]
+
+@title{Geometry}
 
 Note: if you are using this code, it is assumed you will be working in (radians-mode)
 
