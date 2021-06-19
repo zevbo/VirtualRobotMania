@@ -51,6 +51,12 @@ some are only available for offense or defense.
 @section{Common commands}
 
 @defproc[
+(offense-has-flag?) nothing?
+]{
+
+Returns @racket[#t] if offense has the flag, @racket[#f] otherwise.}
+
+@defproc[
 (set-motors [left number?] [right number?])
 nothing?
 ]{
@@ -90,15 +96,22 @@ a previous round you called @racket[(set-motors 0.3 0.6)], then
 @racket[(get-right-input)] will return 0.6
 
 @defproc[
-(radians-mode) 
+(radians-mode)
 nothing?
-]
+]{
+
+Causes all angle-returning and angle-taking functions in the game to
+use radians.}
+
+
+
 @defproc[
 (degrees-mode)
 nothing?
-]
+]{
 
-These calls allow you to either use radians or degrees.
+Causes all angle-returning and angle-taking functions in the game to
+use radians.  This is the default}
 
 @defproc[
 (normalize-angle [angle angle?]) angle?
