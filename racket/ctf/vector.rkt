@@ -3,7 +3,7 @@
 
 ;; Currently all in degrees
 
-(struct vec (x y))
+(struct vec (x y) #:transparent)
 
 (define (vec-add v1 v2)
   (vec (+ (vec-x v1) (vec-x v2)) (+ (vec-y v1) (vec-y v2))))

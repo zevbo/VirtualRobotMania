@@ -8,7 +8,7 @@
 (define delta 1)
 (define epsilon 0.0001)
 
-(struct ll (p1 p2 contains?))
+(struct ll (p1 p2 contains?) #:transparent)
 
 (define (intersection l1 l2)
   ;; Algorithim: http://geomalgorithms.com/a05-_intersect-1.html
@@ -41,8 +41,8 @@
   (define p2 (polar epsilon angle))
   (define line (line-pp p1 p2))
   (define (contains? p)
-    (define a1 (angle-of (vec-sub p p1))) 
-    (define a2 (angle-of (vec-sub p2 p1))) 
+    (define a1 (angle-of (vec-sub p p1)))
+    (define a2 (angle-of (vec-sub p2 p1)))
     (and
      ((ll-contains? line) p)
      (< (abs (- a1 a2)) 90)))
