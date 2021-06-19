@@ -359,11 +359,16 @@ let looking_dist (state : State.t) ((bot_name : Bot_name.t), angle) =
     Line_like.ray_of_point_angle body.pos (angle +. body.angle)
   in
   let all_bodies = List.map (Map.to_alist state.world.bodies) ~f:snd in
+  let all_bodies_to_hit =
+    List.filter all_bodies ~f:(fun body ->
+        let cg = Ctf_consts.Bots.Offense.coll_group in
+        (not (body.collision_group = cg)) && not (Set.mem body.black_list cg))
+  in
   let all_edges =
-    List.fold all_bodies ~init:[] ~f:(fun edges body ->
+    List.fold all_bodies_to_hit ~init:[] ~f:(fun edges body ->
         List.append (Body.get_edges_w_global_pos body) edges)
   in
-  let dist = Vec.dist_sq body.pos in
+  let dist (pt : Vec.t) = Vec.dist body.pos pt in
   let intersection_distances =
     List.filter_map all_edges ~f:(fun edge ->
         Option.map (Line_like.intersection looking_ray edge.ls) ~f:dist)

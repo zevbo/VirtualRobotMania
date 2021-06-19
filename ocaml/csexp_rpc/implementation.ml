@@ -47,9 +47,7 @@ module Group = struct
                 "Failure creating response sexp"
                   (rpc_name : string)
                   (exn : Exn.t)]
-          | sexp ->
-            printf "sexp: %s" (Sexp.to_string sexp);
-            return sexp)))
+          | sexp -> return sexp)))
 
   let handle_query (t : t) (sexp : Sexp.t) =
     let rpc_name, body =
