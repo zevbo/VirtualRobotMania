@@ -191,14 +191,29 @@ shoot a laser. That's what the next command is for.}
 @defproc[
   (load-laser) nothing?
 ]{
-  (load-laser) loads the laser onto the front of your defense bot.
-  Every few ticks (if you want to know, you can figure it out!)
-  while the laser is loaded it will get darker and therefore able to knock out one
-  more of the offense bot's lives. After it has a power of 3, rather than getting
-  strong, your laser will simply restock.
+ @racket[(load-laser)] let's you increase the power of your laser shot.
 
-  While your laser is loaded, you cannot give input to your motors.
-}
+Here's how it works.
+
+ @itemlist[
+
+ @item{First, call @racket[(load-laser)].  That puts you into
+  @bold{loading mode}.  Important note: when you're in loading mode,
+  your motors won't respond to your instructions.  }
+
+ @item{After some period of time, your laser will get more powerful,
+ first becoming worth two ordinary laser fires, then three.  You can
+ experiment to find the right timing.  Note that the laser darkens
+ when it goes up in power.}
+
+ @item{Call @racket[(shoot-laser)] when you're ready.  That will take
+ you out of loading mode.}
+
+ @item{If you don't call @racket[(shoot-laser)], loading mode will
+ eventually time out on its own, and everything goes back to normal}
+
+]}
+
 
 @defproc[
 (laser-cooldown-left) nothing?]{
