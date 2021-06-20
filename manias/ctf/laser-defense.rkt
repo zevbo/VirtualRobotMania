@@ -5,28 +5,11 @@
 (require "pid.rkt")
 (provide defense-bot)
 
-(define load-expiration 100)
+(define load-expiration 30)
 (define fire-delay 20)
 
-;; either 'nil, 'next, or 'ready
-(define shoot-readiness 'nil)
-
-(define (record-shot)
-  (println (cons 'record-shot shoot-readiness))
-  (cond
-    [(eq? shoot-readiness 'ready)
-     (set! shoot-readiness 'nil)]))
-
-(define (update-shoot-readiness)
-  (cond
-    [(and (eq? shoot-readiness 'nil)
-          (= (laser-cooldown-left) 0))
-     (set! shoot-readiness 'next)]
-    [(eq? shoot-readiness 'next)
-     (set! shoot-readiness 'ready)]))
-
 (define (ready-to-shoot)
-  (eq? shoot-readiness 'ready))
+  (= (laser-cooldown-left) 0))
 
 (define load-tick 'nil)
 (define (maybe-clear-loading tick-num)
@@ -43,20 +26,24 @@
 
 (define (my-shoot-laser)
   (println (list 'shooting))
-  (record-shot)
   (shoot-laser)
   (set! load-tick 'nil))
 
 (define (loading) (not (eq? 'nil load-tick)))
 
 (define (on-tick tick-num)
-  (update-shoot-readiness)
+  (define angle-thresh (/ pi 40))
   (println (list (list 'load-tick load-tick)
                  (list 'tick-num tick-num)
                  (list 'laser-cooldown-left (laser-cooldown-left))
-                 (list 'shoot-readiness shoot-readiness)
+                 (list 'angle angle-thresh)
+                 (list 'to-opp (angle-to-opp))
                  ))
   (maybe-clear-loading tick-num)
+  (cond
+    [(> (angle-to-opp) angle-thresh)     (set-motors -0.1 0.1)]
+    [(< (angle-to-opp) (- angle-thresh)) (set-motors 0.1 -0.1)]
+    [ else (set-motors 0 0)])
   (cond
     [(and
       (ready-to-shoot)

@@ -5,18 +5,46 @@
 (require "pid.rkt")
 (provide defense-bot)
 
+;; BASIC MATH
+
 (define (set-motors-vec v) (set-motors (vec-x v) (vec-y v)))
 (define (turn-vec x) (vec x (- x)))
 (define (acc-vec x) (vec x x))
 
-;; For degrees mode
-; (define opp-angle-pid (pid-init -0.01 5))
-; (define opp-dist-pid  (pid-init 0.004 5))
+;; CONSTANTS
+
+(define load-expiration 100)
+(define fire-delay 20)
+
+;; LASER LOADING
+
+(define load-tick 'nil)
+(define (maybe-clear-loading tick-num)
+  (cond
+    [(and (not (eq? load-tick 'nil))
+          (> (- tick-num load-tick) load-expiration))
+     (set! load-tick 'nil)
+     ]))
+
+(define (my-load-laser tick-num)
+  (println (list 'loading-laser tick-num))
+  (load-laser)
+  (set! load-tick tick-num))
+
+(define (my-shoot-laser)
+  (println (list 'shooting))
+  (shoot-laser)
+  (set! load-tick 'nil))
+
+(define (loading) (not (eq? 'nil load-tick)))
+
+(define (ready-to-shoot)
+  (= (laser-cooldown-left) 0))
+
+;; PIDs
 
 (define opp-angle-pid (pid-init -0.6 5))
 (define opp-dist-pid  (pid-init 0.004 5))
-
-(define load-tick 'nil)
 
 (define (rescale-vec v)
   (define s (max 1 (abs (vec-x v)) (abs (vec-y v))))
