@@ -8,7 +8,7 @@
 (define load-expiration 100)
 (define fire-delay 20)
 
-;; either 'nil, 'almost, 'next, or 'ready
+;; either 'nil, 'next, or 'ready
 (define shoot-readiness 'nil)
 
 (define (record-shot)
@@ -21,8 +21,6 @@
   (cond
     [(and (eq? shoot-readiness 'nil)
           (= (laser-cooldown-left) 0))
-     (set! shoot-readiness 'almost)]
-    [(eq? shoot-readiness 'almost)
      (set! shoot-readiness 'next)]
     [(eq? shoot-readiness 'next)
      (set! shoot-readiness 'ready)]))
