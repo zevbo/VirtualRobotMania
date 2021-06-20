@@ -1,5 +1,5 @@
 #lang racket
-(require "defense.rkt")
+(require "laser-defense.rkt")
 (require "offense-saba.rkt")
 (require "../../racket/ctf/offense.rkt")
 

@@ -5,8 +5,8 @@
   (kp ki kd [p #:mutable] [i #:mutable] [d #:mutable])
   #:transparent)
 
-(define (pid-init kp ki kd)
-  (pid kp ki kd 0 0 0))
+(define (pid-init kp kpred)
+  (pid kp 0 (* kp kpred) 0 0 0))
 
 (define (pid-update pid p)
   (set-pid-p! pid p)
