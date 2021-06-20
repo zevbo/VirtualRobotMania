@@ -1,4 +1,4 @@
-#lang racket
+j#lang racket
 (require "../../racket/ctf/defense.rkt")
 (require "../../racket/ctf/vector.rkt")
 (require "../../racket/ctf/ll.rkt")
@@ -13,8 +13,8 @@
 
 ;; CONSTANTS
 
-(define load-expiration 100)
-(define fire-delay 20)
+(define load-expiration 30)
+(define powerup-delay 10)
 
 ;; LASER LOADING
 
@@ -31,6 +31,15 @@
   (load-laser)
   (set! load-tick tick-num))
 
+(define (will-kill tick-num)
+  (or
+   (= (offense-lives-left) 1)
+   (and
+    (loading)
+    (>=
+     (- tick-num load-tick)
+     (* (+ -1 (offense-lives-left)) powerup-delay)))))
+
 (define (my-shoot-laser)
   (println (list 'shooting))
   (shoot-laser)
@@ -38,7 +47,7 @@
 
 (define (loading) (not (eq? 'nil load-tick)))
 
-(define (ready-to-shoot)
+(define (can-shoot)
   (= (laser-cooldown-left) 0))
 
 ;; PIDs
@@ -71,16 +80,23 @@
   (define shoot-thresh
     (min pi
          (* 20 (/ 1 (dist-to-opp)) (/ pi 4))))
-  (define (should-shoot x)
+  (define (should-shoot-scale x)
     (define thresh (* shoot-thresh x))
-    (and (< a thresh)
-         (> a (- thresh))))
+    (and
+     (can-shoot)
+     (< a thresh)
+     (> a (- thresh))))
+  (define (should-shoot)
+    (cond
+      [(and (should-shoot-scale 1)
+
+      [(and (< (dist-to-opp) 200)
+            (should-shoot-scale 0.5))
+       (my-load-laser tick-num)]
+      )
   #;(println (list (list 'angle a)
                  (list 'should should-shoot)
                  (list 'thresh shoot-thresh)))
-  (cond [(should-shoot 0.5)
-         (load-laser)
-         (set! load-tick )])
   (cond
     [(should-shoot 1.) (shoot-laser)]))
 
