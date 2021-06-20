@@ -328,7 +328,7 @@ let get_angle state ((bot_name : Bot_name.t), ()) =
 let get_opp_angle state ((bot_name : Bot_name.t), ()) =
   Vec.normalize_angle (opp_of state bot_name).angle
 
-let ts_to_ticks ts = Int.of_float (ts /. dt_racket)
+let ts_to_ticks ts = Float.iround_up_exn (ts /. dt_racket)
 
 let just_fired (state : State.t) ((_bot_name : Bot_name.t), ()) =
   Float.O.(not (state.defense_bot.bot.last_fire_ts = 0.))
