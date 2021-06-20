@@ -225,7 +225,7 @@ Here's how it works.
 
 
 @defproc[
-(laser-cooldown-left) nothing?]{
+(laser-cooldown-left) number?]{
 
 @racket[(laser-cooldown-left)] tells you how many ticks need to elapse
 until you can fire or load your laser again.}
