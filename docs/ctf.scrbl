@@ -57,6 +57,15 @@ some are only available for offense or defense.
 Returns @racket[#t] if offense has the flag, @racket[#f] otherwise.}
 
 @defproc[
+(offense-lives-left) number?
+]{
+
+Returns number of lives that the offense bot has left.
+}
+
+
+
+@defproc[
 (set-motors [left number?] [right number?])
 nothing?
 ]{
