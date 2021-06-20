@@ -202,6 +202,12 @@ shoot a laser. That's what the next command is for.}
 ]{
  @racket[(load-laser)] let's you increase the power of your laser shot.
 
+@defproc[
+  (restock-laser) nothing?
+]{
+
+Let's you exit loading mode, without firing the laser}
+
 Here's how it works.
 
  @itemlist[
@@ -217,6 +223,9 @@ Here's how it works.
 
  @item{Call @racket[(shoot-laser)] when you're ready.  That will take
  you out of loading mode.}
+
+ @item{If you want to exit loading mode without shooting, you can call
+ @racket[(restock-laser)].}
 
  @item{If you don't call @racket[(shoot-laser)], loading mode will
  eventually time out on its own, and everything goes back to normal}
