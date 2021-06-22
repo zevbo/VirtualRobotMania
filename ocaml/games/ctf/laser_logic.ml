@@ -96,16 +96,20 @@ let update_loaded (state : State.t) id =
 
 let shoot_laser (state : State.t) (laser_id : World.Id.t) =
   update_loaded state laser_id;
-  let laser = World.get_body_exn state.world laser_id in
-  let v =
-    Vec.scale
-      (Vec.unit_vec (State.get_defense_bot_body state).angle)
-      Ctf_consts.Laser.v
-  in
-  let world = World.set_body state.world laser_id { laser with v } in
-  (Map.find_exn state.lasers laser_id).loaded <- false;
-  state.defense_bot.bot.loaded_laser <- None;
-  state.world <- world
+  if not (Map.mem state.world.bodies laser_id)
+  then false
+  else (
+    let laser = World.get_body_exn state.world laser_id in
+    let v =
+      Vec.scale
+        (Vec.unit_vec (State.get_defense_bot_body state).angle)
+        Ctf_consts.Laser.v
+    in
+    let world = World.set_body state.world laser_id { laser with v } in
+    (Map.find_exn state.lasers laser_id).loaded <- false;
+    state.defense_bot.bot.loaded_laser <- None;
+    state.world <- world;
+    true)
 
 let update_one (state : State.t) id =
   (if (Map.find_exn state.lasers id).loaded

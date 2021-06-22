@@ -269,12 +269,14 @@ let load_laser (state : State.t) ((bot_name : Bot_name.t), ()) =
       state.defense_bot.bot.loaded_laser <- Some laser_id)
 
 let rec shoot_laser state ((bot_name : Bot_name.t), ()) =
+  printf "shooting laser\n";
   if usable state state.defense_bot.bot.last_fire_ts Ctf_consts.Laser.cooldown
   then (
     match state.defense_bot.bot.loaded_laser with
     | Some id ->
-      Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts;
-      Laser_logic.shoot_laser state id
+      let completed = Laser_logic.shoot_laser state id in
+      if not completed then shoot_laser state (bot_name, ());
+      Defense_bot.set_last_fire_ts state.defense_bot.bot state.ts
     | None ->
       load_laser state ((bot_name : Bot_name.t), ());
       shoot_laser state (bot_name, ()))
