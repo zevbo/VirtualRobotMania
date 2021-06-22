@@ -51,10 +51,19 @@ some are only available for offense or defense.
 @section{Common commands}
 
 @defproc[
-(offense-has-flag?) nothing?
+(offense-has-flag?) bool?
 ]{
 
 Returns @racket[#t] if offense has the flag, @racket[#f] otherwise.}
+
+@defproc[
+(offense-lives-left) number?
+]{
+
+Returns number of lives that the offense bot has left.
+}
+
+
 
 @defproc[
 (set-motors [left number?] [right number?])
@@ -161,7 +170,7 @@ opponent.}
 @defproc[
 (get-robot-angle) angle?]{
 
-This returns the absolute angle of your angle.  i.e., 0 degrees means
+This returns the absolute angle of your robot.  i.e., 0 degrees means
 you're pointed to the right, 90 degrees is straight up, 180 degrees is
 to the left, and so on.}
 
@@ -175,11 +184,6 @@ Like @racket[get-robot-angle], but for your opponent!}
 
 tells you how much distance there is to the next obstacle, be it a
 wall, a robot or a laser.}
-
-@defproc[
-  (offense-has-flag?) boolean?]{
-    #t if the offense bot has the flag, #f otherwise
-  }
 
 @section{Defense bot}
 
@@ -196,17 +200,41 @@ shoot a laser. That's what the next command is for.}
 @defproc[
   (load-laser) nothing?
 ]{
-  (load-laser) loads the laser onto the front of your defense bot.
-  Every few ticks (if you want to know, you can figure it out!)
-  while the laser is loaded it will get darker and therefore able to knock out one
-  more of the offense bot's lives. After it has a power of 3, rather than getting
-  strong, your laser will simply restock.
-
-  While your laser is loaded, you cannot give input to your motors.
-}
+ @racket[(load-laser)] let's you increase the power of your laser shot.
 
 @defproc[
-(laser-cooldown-left) nothing?]{
+  (restock-laser) nothing?
+]{
+
+Let's you exit loading mode, without firing the laser}
+
+Here's how it works.
+
+ @itemlist[
+
+ @item{First, call @racket[(load-laser)].  That puts you into
+  @bold{loading mode}.  Important note: when you're in loading mode,
+  your motors won't respond to your instructions.  }
+
+ @item{After some period of time, your laser will get more powerful,
+ first becoming worth two ordinary laser fires, then three.  You can
+ experiment to find the right timing.  Note that the laser darkens
+ when it goes up in power.}
+
+ @item{Call @racket[(shoot-laser)] when you're ready.  That will take
+ you out of loading mode.}
+
+ @item{If you want to exit loading mode without shooting, you can call
+ @racket[(restock-laser)].}
+
+ @item{If you don't call @racket[(shoot-laser)], loading mode will
+ eventually time out on its own, and everything goes back to normal}
+
+]}
+
+
+@defproc[
+(laser-cooldown-left) number?]{
 
 @racket[(laser-cooldown-left)] tells you how many ticks need to elapse
 until you can fire or load your laser again.}
