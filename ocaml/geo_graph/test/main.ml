@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open! Async_kernel
 open Geo
 module Color = Geo_graph.Color
@@ -91,11 +91,9 @@ let load_image url =
   let img = El.img ~at:[ At.src (Jstr.of_string url) ] () in
   let loaded = Ivar.create () in
   let on_load _ = Ivar.fill loaded () in
-  let%bind () =
-    Ev.listen Ev.load on_load (El.as_target img);
-    Ivar.read loaded
-  in
-  Ev.unlisten Ev.load on_load (El.as_target img);
+  let listener = Ev.listen Ev.load on_load (El.as_target img) in
+  let%bind () = Ivar.read loaded in
+  Ev.unlisten listener;
   return img
 
 let _run () =
@@ -104,7 +102,7 @@ let _run () =
      let h = 500 in
      let canvas = Brr_canvas.Canvas.create ~d:G.document ~w:500 ~h:500 [] in
      El.set_children (Document.body G.document) [ Canvas.to_el canvas ];
-     let c2d = C2d.create canvas in
+     let c2d = C2d.get_context canvas in
      let draw_lines lines =
        let path = C2d.Path.create () in
        List.iter lines ~f:(fun (x, y) -> C2d.Path.line_to path ~x ~y);

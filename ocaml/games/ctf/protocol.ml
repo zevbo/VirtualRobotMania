@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 module Call = Csexp_rpc.Call
 
 module With_bot (M : Sexpable) = struct

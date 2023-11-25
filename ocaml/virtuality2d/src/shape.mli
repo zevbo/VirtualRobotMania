@@ -22,9 +22,9 @@ val create_closed
   -> t
 
 val create_rect
-  :  float
+  :  ?com:Vec.t
   -> float
-  -> ?com:Vec.t
+  -> float
   -> material:Material.t
   -> average_r:float
   -> inertia_over_mass:float

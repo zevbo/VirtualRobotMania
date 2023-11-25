@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open! Async_kernel
 open Geo
 open Brr
@@ -10,11 +10,12 @@ let load_image url =
   let img = El.img ~at:[ At.src (Jstr.of_string url) ] () in
   let loaded = Ivar.create () in
   let on_load _ = Ivar.fill loaded () in
-  let%bind () =
-    Ev.listen Ev.load on_load (El.as_target img);
-    Ivar.read loaded
+  let%bind listener =
+    let listener = Ev.listen Ev.load on_load (El.as_target img) in
+    let%map () = Ivar.read loaded in
+    listener
   in
-  Ev.unlisten Ev.load on_load (El.as_target img);
+  Ev.unlisten listener;
   return img
 
 type t =
@@ -41,7 +42,7 @@ let init ~physical ~logical ~title ~log_s =
   Document.set_title G.document (Jstr.of_string title);
   let body = Document.body G.document in
   El.set_children body [ Canvas.to_el canvas ];
-  let c2d = C2d.create canvas in
+  let c2d = C2d.get_context canvas in
   Async_js.init ();
   let x_over_y = physical.x /. physical.y in
   let t = { physical; logical; log_s; c2d; x_over_y } in
@@ -62,7 +63,9 @@ let init ~physical ~logical ~title ~log_s =
     t.physical <- new_physical
   in
   size_canvas ();
-  Ev.listen Ev.resize (fun _ -> size_canvas ()) (Window.as_target G.window);
+  let _listener =
+    Ev.listen Ev.resize (fun _ -> size_canvas ()) (Window.as_target G.window)
+  in
   t
 
 module Image = struct
@@ -106,13 +109,13 @@ let physical_to_logical t =
   C2d.scale t.c2d ~sx:pl_ratio ~sy:pl_ratio
 
 let draw_image_base
-    t
-    ~(w : float)
-    ~(h : float)
-    ~alpha
-    (image : Image.t)
-    ~(center : Vec.t)
-    ~angle
+  t
+  ~(w : float)
+  ~(h : float)
+  ~alpha
+  (image : Image.t)
+  ~(center : Vec.t)
+  ~angle
   =
   (* physical-to-logical *)
   physical_to_logical t;
@@ -126,21 +129,21 @@ let draw_image_base
   C2d.scale t.c2d ~sx:(w /. Float.of_int iw) ~sy:(h /. Float.of_int ih);
   let shift x = -.Float.of_int x /. 2. in
   (match image with
-  | Pixel color ->
-    let color = Color.alpha color alpha |> color_to_style in
-    C2d.set_fill_style t.c2d color;
-    C2d.fill_rect
-      t.c2d
-      ~x:(shift iw)
-      ~y:(shift ih)
-      ~w:(Float.of_int iw)
-      ~h:(Float.of_int ih)
-  | Image image ->
-    let src = C2d.image_src_of_el image in
-    let alpha = Float.of_int alpha /. 255. in
-    C2d.set_global_alpha t.c2d alpha;
-    C2d.draw_image t.c2d src ~x:(shift iw) ~y:(shift ih);
-    C2d.set_global_alpha t.c2d 1.);
+   | Pixel color ->
+     let color = Color.alpha color alpha |> color_to_style in
+     C2d.set_fill_style t.c2d color;
+     C2d.fill_rect
+       t.c2d
+       ~x:(shift iw)
+       ~y:(shift ih)
+       ~w:(Float.of_int iw)
+       ~h:(Float.of_int ih)
+   | Image image ->
+     let src = C2d.image_src_of_el image in
+     let alpha = Float.of_int alpha /. 255. in
+     C2d.set_global_alpha t.c2d alpha;
+     C2d.draw_image t.c2d src ~x:(shift iw) ~y:(shift ih);
+     C2d.set_global_alpha t.c2d 1.);
   C2d.reset_transform t.c2d
 
 let draw_image_wh t ~w ~h ?(alpha = 255) image ~center ~angle =

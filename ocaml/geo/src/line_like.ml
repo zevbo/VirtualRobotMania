@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 
 type line = Line [@@deriving sexp]
 type segment = Segment [@@deriving sexp]

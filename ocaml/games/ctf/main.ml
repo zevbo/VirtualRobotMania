@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open! Async_kernel
 open Virtuality2d
 module Color = Geo_graph.Color
@@ -27,7 +27,7 @@ let init ~log_s =
   let world = World.empty in
   let world =
     List.fold Border.border ~init:world ~f:(fun world border_edge ->
-        fst (World.add_body world border_edge))
+      fst (World.add_body world border_edge))
   in
   let offense_robot_state = Offense_bot.create () in
   let defense_robot_state = Defense_bot.create () in
@@ -64,7 +64,9 @@ let _status_s sexp =
   let data =
     String.concat
       ~sep:"\n"
-      [ Time.to_string_abs_trimmed ~zone:Time.Zone.utc (Time.now ())
+      [ Time_float.to_string_abs_trimmed
+          ~zone:Time_float.Zone.utc
+          (Time_float.now ())
       ; Sexp.to_string_hum sexp
       ]
   in
@@ -103,16 +105,16 @@ let draw_flags (state : State.t) =
         (Vec.create
            Ctf_consts.Flag.display_x
            (Ctf_consts.Flag.max_y
-           -. (Float.of_int flag_num *. Ctf_consts.Flag.display_y_diff)))
+            -. (Float.of_int flag_num *. Ctf_consts.Flag.display_y_diff)))
       ~angle:0.
       ~alpha
   done
 
 let display_body
-    (state : State.t)
-    (display_data : State.Display_data.t)
-    ~key:(id : World.Id.t)
-    ~data:(robot : Body.t)
+  (state : State.t)
+  (display_data : State.Display_data.t)
+  ~key:(id : World.Id.t)
+  ~data:(robot : Body.t)
   =
   match Map.find state.images id with
   | None -> ()
@@ -180,16 +182,16 @@ let display_powereds (state : State.t) (display_data : State.Display_data.t) =
 
 let display (state : State.t) =
   (match List.nth state.past_display_data (display_data_max_length - 1) with
-  | None -> ()
-  | Some display_data ->
-    Display.clear state.display (Color.rgb 240 240 240);
-    draw_end_line state;
-    draw_flags state;
-    Map.iteri display_data.world.bodies ~f:(display_body state display_data);
-    display_powereds state display_data);
+   | None -> ()
+   | Some display_data ->
+     Display.clear state.display (Color.rgb 240 240 240);
+     draw_end_line state;
+     draw_flags state;
+     Map.iteri display_data.world.bodies ~f:(display_body state display_data);
+     display_powereds state display_data);
   add_display_data state;
   state.past_display_data
-    <- List.take state.past_display_data display_data_max_length
+  <- List.take state.past_display_data display_data_max_length
 
 let display_step (state : State.t) =
   for i = 1 to Int.of_float (dt_display /. dt_sim) do
@@ -201,13 +203,15 @@ let display_step (state : State.t) =
     match state.last_step_end with
     | None -> return ()
     | Some last_step_end ->
-      let now = Time.now () in
-      let elapsed_ms = Time.Span.to_ms (Time.diff now last_step_end) in
+      let now = Time_float.now () in
+      let elapsed_ms =
+        Time_float.Span.to_ms (Time_float.diff now last_step_end)
+      in
       let target_delay_ms = 1000. *. dt_display in
       let time_left_ms = Float.max 0. (target_delay_ms -. elapsed_ms) in
       Clock_ns.after (Time_ns.Span.of_ms time_left_ms)
   in
-  state.last_step_end <- Some (Time.now ())
+  state.last_step_end <- Some (Time_float.now ())
 
 let step (state : State.t) () =
   let rec helper ticks =
@@ -264,7 +268,7 @@ let load_laser (state : State.t) ((bot_name : Bot_name.t), ()) =
       let world, laser_id = World.add_body state.world laser_body in
       state.world <- world;
       state.images
-        <- Map.set state.images ~key:laser_id ~data:(List.nth_exn state.laser 0);
+      <- Map.set state.images ~key:laser_id ~data:(List.nth_exn state.laser 0);
       state.lasers <- Map.set state.lasers ~key:laser_id ~data:laser_state;
       state.defense_bot.bot.loaded_laser <- Some laser_id)
 
@@ -296,8 +300,8 @@ let opp_of (state : State.t) (bot_name : Bot_name.t) =
   body_of
     state
     (match bot_name with
-    | Offense -> Defense
-    | Defense -> Offense)
+     | Offense -> Defense
+     | Defense -> Offense)
 
 let angle_and_dist_to state bot_name other_pos =
   let bot = body_of state bot_name in
@@ -339,8 +343,8 @@ let laser_cooldown_left (state : State.t) ((_bot_name : Bot_name.t), ()) =
     (Float.max
        0.
        (state.defense_bot.bot.last_fire_ts
-       +. Ctf_consts.Laser.cooldown
-       -. state.ts))
+        +. Ctf_consts.Laser.cooldown
+        -. state.ts))
 
 let just_boosted (state : State.t) ((_bot_name : Bot_name.t), ()) =
   Float.O.(state.ts = state.offense_bot.bot.last_boost)
@@ -350,8 +354,8 @@ let boost_cooldown_left (state : State.t) ((_bot_name : Bot_name.t), ()) =
     (Float.max
        0.
        (state.offense_bot.bot.last_boost
-       +. Ctf_consts.Bots.Offense.boost_cooldown
-       -. state.ts))
+        +. Ctf_consts.Bots.Offense.boost_cooldown
+        -. state.ts))
 
 let looking_dist (state : State.t) ((bot_name : Bot_name.t), angle) =
   let body = body_of state bot_name in
@@ -361,17 +365,17 @@ let looking_dist (state : State.t) ((bot_name : Bot_name.t), angle) =
   let all_bodies = List.map (Map.to_alist state.world.bodies) ~f:snd in
   let all_bodies_to_hit =
     List.filter all_bodies ~f:(fun body ->
-        let cg = Ctf_consts.Bots.Offense.coll_group in
-        (not (body.collision_group = cg)) && not (Set.mem body.black_list cg))
+      let cg = Ctf_consts.Bots.Offense.coll_group in
+      (not (body.collision_group = cg)) && not (Set.mem body.black_list cg))
   in
   let all_edges =
     List.fold all_bodies_to_hit ~init:[] ~f:(fun edges body ->
-        List.append (Body.get_edges_w_global_pos body) edges)
+      List.append (Body.get_edges_w_global_pos body) edges)
   in
   let dist (pt : Vec.t) = Vec.dist body.pos pt in
   let intersection_distances =
     List.filter_map all_edges ~f:(fun edge ->
-        Option.map (Line_like.intersection looking_ray edge.ls) ~f:dist)
+      Option.map (Line_like.intersection looking_ray edge.ls) ~f:dist)
   in
   match List.min_elt intersection_distances ~compare:Float.compare with
   | Some min_dist -> min_dist -. (Ctf_consts.Bots.width /. 2.)
@@ -387,9 +391,9 @@ let boost (state : State.t) ((bot_name : Bot_name.t), ()) =
 let enhance_border (state : State.t) () =
   state.last_wall_enhance <- state.ts;
   state.world
-    <- Border.set_border_black_list
-         state.world
-         Ctf_consts.Border.enhanced_black_list
+  <- Border.set_border_black_list
+       state.world
+       Ctf_consts.Border.enhanced_black_list
 
 let setup_shield (state : State.t) () =
   state.offense_bot.bot.last_shield <- state.ts;

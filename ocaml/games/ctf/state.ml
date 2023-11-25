@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open! Async_kernel
 open Virtuality2d
 module Color = Geo_graph.Color
@@ -32,9 +32,9 @@ end
 
 type t =
   { mutable world : World.t
-  ; mutable last_step_end : Time.t option
-        (** The last time step was called. Used to make sure that the step can
-            be elongated to match a single animation frame *)
+  ; mutable last_step_end : Time_float.t option
+  (** The last time step was called. Used to make sure that the step can
+      be elongated to match a single animation frame *)
   ; mutable images : Display.Image.t Map.M(World.Id).t
   ; mutable invisible : Set.M(World.Id).t
   ; mutable lasers : Laser.t Map.M(World.Id).t
@@ -64,16 +64,16 @@ let set_image_by_name t id name =
   set_image_gen t id (fun () -> Display.Image.of_name t.display name)
 
 let create
-    world
-    images
-    display
-    offense_bot
-    defense_bot
-    flag_id
-    flag_protector_id
-    boost_id
-    offense_shield_id
-    powered_image
+  world
+  images
+  display
+  offense_bot
+  defense_bot
+  flag_id
+  flag_protector_id
+  boost_id
+  offense_shield_id
+  powered_image
   =
   let state =
     { world

@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 open Virtuality2d
 module Color = Geo_graph.Color
 

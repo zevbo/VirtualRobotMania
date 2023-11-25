@@ -1,6 +1,6 @@
 open Virtuality2d
 open Geo
-open Core_kernel
+open Core
 
 let laser ~(bot : Body.t) =
   let half_length = Vec.create (Ctf_consts.Bots.width /. 2.) 0. in
@@ -40,10 +40,9 @@ let update_moving (state : State.t) id =
     let hit_offense_body =
       Option.is_some
         (List.find offense_bodies ~f:(fun (_id, body) ->
-             not
-               (List.length
-                  (Body.intersections ~allow_blacklist:true body laser)
-               = 0)))
+           not
+             (List.length (Body.intersections ~allow_blacklist:true body laser)
+             = 0)))
     in
     if hit_offense_body
     then (
@@ -116,5 +115,5 @@ let update_one (state : State.t) id =
 
 let update (state : State.t) =
   List.iter (Map.to_alist state.lasers) ~f:(fun (id, _laser_state) ->
-      update_one state id);
+    update_one state id);
   state.lasers <- Map.filter_keys state.lasers ~f:(Map.mem state.world.bodies)

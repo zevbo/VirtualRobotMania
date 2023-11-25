@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open! Async_kernel
 
 type t =
@@ -28,26 +28,27 @@ module Group = struct
     | Some (T impl) ->
       let (module Query) = impl.rpc.query in
       (match Query.t_of_sexp query_body with
-      | exception exn ->
-        raise_s
-          [%message
-            "Failure parsing query sexp" (rpc_name : string) (exn : Exn.t)]
-      | query ->
-        let%bind response = impl.f query in
-        (match response with
-        | exception exn ->
-          raise_s
-            [%message "Implementation raised" (rpc_name : string) (exn : Exn.t)]
-        | response ->
-          let (module Resp) = impl.rpc.response in
-          (match Resp.sexp_of_t response with
+       | exception exn ->
+         raise_s
+           [%message
+             "Failure parsing query sexp" (rpc_name : string) (exn : Exn.t)]
+       | query ->
+         let%bind response = impl.f query in
+         (match response with
           | exception exn ->
             raise_s
               [%message
-                "Failure creating response sexp"
-                  (rpc_name : string)
-                  (exn : Exn.t)]
-          | sexp -> return sexp)))
+                "Implementation raised" (rpc_name : string) (exn : Exn.t)]
+          | response ->
+            let (module Resp) = impl.rpc.response in
+            (match Resp.sexp_of_t response with
+             | exception exn ->
+               raise_s
+                 [%message
+                   "Failure creating response sexp"
+                     (rpc_name : string)
+                     (exn : Exn.t)]
+             | sexp -> return sexp)))
 
   let handle_query (t : t) (sexp : Sexp.t) =
     let rpc_name, body =

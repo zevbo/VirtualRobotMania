@@ -11,6 +11,6 @@ let connect ~filename =
 let rec connect_aggressively ~filename =
   match%bind try_with (fun () -> connect ~filename) with
   | Error _ ->
-    let%bind () = Clock.after (Time.Span.of_ms 20.) in
+    let%bind () = Clock.after (Time_float.Span.of_ms 20.) in
     connect_aggressively ~filename
   | Ok t -> return t

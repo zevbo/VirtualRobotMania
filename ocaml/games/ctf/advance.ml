@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open Virtuality2d
 
 let check_wall_enhance (state : State.t) =
@@ -28,24 +28,23 @@ let run (state : State.t) ~dt i =
   in
   let update_body id f =
     update_bodies (fun bodies ->
-        Map.update bodies id ~f:(function
-            | None ->
-              raise_s [%message "Id unexpectedly missing" (id : World.Id.t)]
-            | Some body -> f body))
+      Map.update bodies id ~f:(function
+        | None -> raise_s [%message "Id unexpectedly missing" (id : World.Id.t)]
+        | Some body -> f body))
   in
   update_body state.offense_bot.id (fun body ->
-      Offense_bot.update state.offense_bot.bot ~dt body state.ts);
+    Offense_bot.update state.offense_bot.bot ~dt body state.ts);
   update_body state.defense_bot.id (fun body ->
-      Defense_bot.update state.defense_bot.bot ~dt body);
+    Defense_bot.update state.defense_bot.bot ~dt body);
   update_body state.offense_shield (fun body ->
-      Offense_bot.update_shield
-        body
-        (World.get_body_exn state.world state.offense_bot.id));
+    Offense_bot.update_shield
+      body
+      (World.get_body_exn state.world state.offense_bot.id));
   update_body state.boost (fun body ->
-      Offense_bot.update_boost
-        body
-        (World.get_body_exn state.world state.offense_bot.id)
-        state.offense_bot.bot);
+    Offense_bot.update_boost
+      body
+      (World.get_body_exn state.world state.offense_bot.id)
+      state.offense_bot.bot);
   let in_boost =
     Float.(
       state.ts -. state.offense_bot.bot.last_boost

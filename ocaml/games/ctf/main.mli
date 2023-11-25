@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open! Async_kernel
 
 (** The shapes of the functions here mostly matches the protocol, except for the

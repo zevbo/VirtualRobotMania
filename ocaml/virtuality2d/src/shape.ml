@@ -14,7 +14,7 @@ let create ~(edges : Edge.t list) ~average_r ~inertia_over_mass =
   assert (not (Float.is_nan average_r));
   let points =
     List.fold edges ~init:[] ~f:(fun points edge ->
-        Line_like.get_p1 edge.ls :: Line_like.get_p2 edge.ls :: points)
+      Line_like.get_p1 edge.ls :: Line_like.get_p2 edge.ls :: points)
   in
   let center_and_span getter =
     let vals = List.map points ~f:getter in
@@ -59,12 +59,12 @@ let get_corners ?(com = Vec.origin) width height =
   List.map [ tl; tr; br; bl ] ~f:(fun pt -> Vec.sub pt com)
 
 let create_rect
-    width
-    height
-    ?(com = Vec.origin)
-    ~material
-    ~average_r
-    ~inertia_over_mass
+  ?(com = Vec.origin)
+  width
+  height
+  ~material
+  ~average_r
+  ~inertia_over_mass
   =
   let points = get_corners width height ~com in
   create_closed ~points ~material ~average_r ~inertia_over_mass

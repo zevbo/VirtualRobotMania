@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open Virtuality2d
 open Geo
 open Ctf_consts.Flag
@@ -89,5 +89,5 @@ let update (state : State.t) =
     let flag_protector = World.get_body_exn world state.flag_protector in
     (not state.offense_bot.bot.has_flag)
     || Set.exists flag_protector.black_list ~f:(fun group ->
-           group = Ctf_consts.Laser.coll_group));
+         group = Ctf_consts.Laser.coll_group));
   state.world <- world

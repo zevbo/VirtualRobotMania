@@ -1,16 +1,18 @@
 open Common
 open Virtuality2d
-open Core_kernel
+open Core
 
 let border =
-  Border.generate_border ~energy_ret:Ctf_consts.Border.energy_ret
+  Border.generate_border
+    ~energy_ret:Ctf_consts.Border.energy_ret
     ~collision_group:Ctf_consts.Border.coll_group
-    ~black_list:Ctf_consts.Border.black_list Ctf_consts.frame_width
+    ~black_list:Ctf_consts.Border.black_list
+    Ctf_consts.frame_width
     Ctf_consts.frame_height
 
 let border_of_world (world : World.t) =
   List.filter (Map.to_alist world.bodies) ~f:(fun (_id, body) ->
-      body.collision_group = Ctf_consts.Border.coll_group)
+    body.collision_group = Ctf_consts.Border.coll_group)
 
 let set_body_black_list black_list (world : World.t) id =
   let body = World.get_body_exn world id in

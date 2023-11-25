@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open! Async_kernel
 open! Import
 open! Brr
@@ -7,10 +7,13 @@ module Message = Brr_io.Message
 
 let closed ws =
   Deferred.create (fun closed ->
+    let listener =
       Ev.listen
         Websocket.Ev.close
         (fun _ -> Ivar.fill closed ())
-        (Websocket.as_target ws))
+        (Websocket.as_target ws)
+    in
+    ignore listener)
 
 let def fut =
   Deferred.create (fun ivar -> Fut.await fut (fun x -> Ivar.fill ivar x))
@@ -74,15 +77,16 @@ end = struct
 end
 
 let input_of_websocket ws closed =
-  let module Buffer = Core_kernel.Buffer in
+  let module Buffer = Core.Buffer in
   let input_buf = Iobuf.create 10_000 in
   let input_arrived = Bvar.create () in
   let seq = Sequencer.create () in
-  Ev.listen
-    Message.Ev.message
-    (fun message ->
-      don't_wait_for
-        (Throttle.enqueue seq (fun () ->
+  let _listener =
+    Ev.listen
+      Message.Ev.message
+      (fun message ->
+        don't_wait_for
+          (Throttle.enqueue seq (fun () ->
              let message = Ev.as_type message in
              Iobuf.compact input_buf;
              let%bind () =
@@ -90,7 +94,8 @@ let input_of_websocket ws closed =
              in
              Bvar.broadcast input_arrived ();
              return ())))
-    (Websocket.as_target ws);
+      (Websocket.as_target ws)
+  in
   let rec really_read () dst =
     match Iobuf.maybe_consume input_buf dst with
     | Consumed -> return `Ok

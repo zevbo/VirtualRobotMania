@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 open Async_kernel
 open Virtuality2d
 module Display := Geo_graph.Display
@@ -30,9 +30,9 @@ end
 
 type t =
   { mutable world : World.t
-  ; mutable last_step_end : Time.t option
-        (** The last time step was called. Used to make sure that the step can
-            be elongated to match a single animation frame *)
+  ; mutable last_step_end : Time_float.t option
+  (** The last time step was called. Used to make sure that the step can
+      be elongated to match a single animation frame *)
   ; mutable images : Display.Image.t Map.M(World.Id).t
   ; mutable invisible : Set.M(World.Id).t
   ; mutable lasers : Laser.t Map.M(World.Id).t

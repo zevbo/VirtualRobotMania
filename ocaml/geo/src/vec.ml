@@ -8,16 +8,17 @@ type t =
 
 (* We make s-expressions look like simple pairs, eg., (3 4), rather than a
    record, e.g., ((x 3) (y 4)). *)
-include Sexpable.Of_sexpable
-          (struct
-            type t = Float.Terse.t * Float.Terse.t [@@deriving sexp]
-          end)
-          (struct
-            type nonrec t = t
+include
+  Sexpable.Of_sexpable
+    (struct
+      type t = Float.Terse.t * Float.Terse.t [@@deriving sexp]
+    end)
+    (struct
+      type nonrec t = t
 
-            let to_sexpable { x; y } = x, y
-            let of_sexpable (x, y) = { x; y }
-          end)
+      let to_sexpable { x; y } = x, y
+      let of_sexpable (x, y) = { x; y }
+    end)
 
 let normal_angle_range = 2. *. Float.pi
 let center_angle = 0.
@@ -27,7 +28,7 @@ let max_angle = Float.(min_angle + normal_angle_range)
 let normalize_angle ?(min_angle = min_angle) ?(max_angle = max_angle) angle =
   let open Float.O in
   let angle_modulo n1 n2 =
-    let rem = Caml.Float.rem n1 n2 in
+    let rem = Stdlib.Float.rem n1 n2 in
     if rem < 0. then rem + n2 else rem
   in
   angle_modulo (angle - min_angle) (max_angle - min_angle) + min_angle
