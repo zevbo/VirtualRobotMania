@@ -68,7 +68,6 @@ class Board:
                     underlying_view[r_i + 1][c_i + 1] = Piece(self.board[r][c].value * sign)
         assert not isinstance(underlying_view[1][1], Invalid)
         view = View(underlying_view)
-        print(f"For {row = }, {col = } we have view: {underlying_view}")
         return protocol(view)
 
     @staticmethod 
@@ -98,8 +97,8 @@ def count_empty_adjacent(board: Board, r: int, c: int) -> int:
     count = 0
     for r_adj in range(r - 1, r + 2):
         for c_adj in range(c - 1, c + 2):
-            if r_adj != r or c_adj != c:
-                count += board.board[r][c].value == 0 
+            if (r_adj != r or c_adj != c) and board.is_valid(r_adj, c_adj):
+                count += board.board[r_adj][c_adj].value == 0 
     return count
 
 def farm(board: Board, moves: list[list[Move | None]]) -> None:
@@ -108,7 +107,8 @@ def farm(board: Board, moves: list[list[Move | None]]) -> None:
            piece = board.board[r][c]
            move = moves[r][c]
            if move is not None and move.value == 0:
-               piece.value += count_empty_adjacent(board, r, c)
+               sign = int(piece.value / abs(piece.value))
+               piece.value += count_empty_adjacent(board, r, c) * sign
 
 def split(board: Board, moves: list[list[Move | None]]) -> None: 
    for r in range(board.height): 

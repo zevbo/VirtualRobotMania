@@ -5,6 +5,8 @@
 \#*#
 *.DS_Store
 
+
+__pycache__
 */For_Competition/*
 For_Competition/
 */chaseCompetition/*
