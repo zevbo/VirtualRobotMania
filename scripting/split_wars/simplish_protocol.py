@@ -9,4 +9,4 @@ def simplish_protocol(view: View) -> Move:
         return simple_protocol(view)
         
 if __name__ == "__main__":
-    play(simplish_protocol, simplish_protocol)
+    play(simplish_protocol, simplish_protocol, 5, 5)

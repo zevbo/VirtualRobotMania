@@ -3,6 +3,17 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TypeAlias
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 class Invalid(Enum):
     S = 0
 
@@ -108,7 +119,7 @@ def farm(board: Board, moves: list[list[Move | None]]) -> None:
            move = moves[r][c]
            if move is not None and move.value == 0:
                sign = int(piece.value / abs(piece.value))
-               piece.value += count_empty_adjacent(board, r, c) * sign
+               piece.value += int(count_empty_adjacent(board, r, c) / 2) * sign
 
 def split(board: Board, moves: list[list[Move | None]]) -> None: 
    for r in range(board.height): 
@@ -131,14 +142,15 @@ def print_board(board: Board) -> None:
         piece_strings: list[str] = []
         for c in range(board.width):
             piece = board.board[r][c]
-            extras = int(abs(piece.value) < 10) + int(piece.value > 0)
+            extras = int(abs(piece.value) < 10)
             extra_space = " " * extras
-            s = f"{extra_space}{piece.value}" if piece.value != 0 else "   "
+            color = bcolors.OKBLUE if piece.value > 0 else bcolors.OKGREEN
+            s = f"{color}{extra_space}{abs(piece.value)}{bcolors.ENDC}" if piece.value != 0 else "  "
             piece_strings.append(s)
         row_s = "|".join(piece_strings)
         print(row_s)
         if r != board.height - 1:
-            print("-" * len(row_s))
+            print("-" * (2 * board.width + (board.width - 1)))
 
 def color_in(board: Board, color: Color) -> bool: 
     for r in range(board.height): 
